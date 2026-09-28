@@ -61,7 +61,6 @@
     const IconEdit = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>;
     const IconTrash = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>;
     const IconCamera = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>;
-    const IconClock = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>;
 
     function App() {
       const todayStr = new Date().toISOString().split('T')[0];
@@ -76,6 +75,7 @@
       const [categoriaFiltro, setCategoriaFiltro] = useState('Todas');
       const [loading, setLoading] = useState(false);
       const [uploading, setUploading] = useState(false);
+      const [modoPacienteManual, setModoPacienteManual] = useState(false);
 
       // Modais
       const [showNovoPaciente, setShowNovoPaciente] = useState(false);
@@ -253,12 +253,41 @@
       }
 
       // --- AGENDA / CONSULTAS ---
+      function handleAbrirNovoAgendamento(pacientePreSelecionado = null) {
+        if (pacientePreSelecionado) {
+          setModoPacienteManual(false);
+          setFormConsulta({
+            id: null,
+            paciente_id: pacientePreSelecionado.id,
+            paciente_nome: pacientePreSelecionado.nome,
+            procedimento: PROCEDIMENTOS_PRESET[0].nome,
+            procedimento_custom: '',
+            data: todayStr,
+            hora: '14:00',
+            valor: '',
+            status: 'Agendado'
+          });
+        } else {
+          setModoPacienteManual(pacientes.length === 0);
+          setFormConsulta({
+            id: null,
+            paciente_id: pacientes[0]?.id || '',
+            paciente_nome: pacientes[0]?.nome || '',
+            procedimento: PROCEDIMENTOS_PRESET[0].nome,
+            procedimento_custom: '',
+            data: todayStr,
+            hora: '14:00',
+            valor: '',
+            status: 'Agendado'
+          });
+        }
+        setShowNovaConsulta(true);
+      }
+
       function handleProcedimentoChange(nomeProcedimento) {
-        const preset = PROCEDIMENTOS_PRESET.find(p => p.nome === nomeProcedimento);
         setFormConsulta({
           ...formConsulta,
-          procedimento: nomeProcedimento,
-          valor: preset && preset.valor !== "" ? preset.valor : formConsulta.valor
+          procedimento: nomeProcedimento
         });
       }
 
@@ -275,7 +304,7 @@
       async function handleAddConsulta(e) {
         e.preventDefault();
         const procFinal = formConsulta.procedimento === "Outro Procedimento..." ? formConsulta.procedimento_custom : formConsulta.procedimento;
-        if (!procFinal || !formConsulta.paciente_nome) return alert("Selecione um paciente e informe o procedimento.");
+        if (!procFinal || !formConsulta.paciente_nome) return alert("Informe o nome da paciente e o procedimento.");
 
         const payload = {
           paciente_id: formConsulta.paciente_id || null,
@@ -294,6 +323,7 @@
         } else if (data) {
           setConsultas([...consultas, data[0]]);
           setShowNovaConsulta(false);
+          alert("Agendamento criado com sucesso!");
         }
       }
 
@@ -404,20 +434,7 @@
                     <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center"><IconUsers /></div>
                   </button>
 
-                  <button onClick={() => {
-                    setFormConsulta({
-                      id: null,
-                      paciente_id: pacientes[0]?.id || '',
-                      paciente_nome: pacientes[0]?.nome || '',
-                      procedimento: PROCEDIMENTOS_PRESET[0].nome,
-                      procedimento_custom: '',
-                      data: todayStr,
-                      hora: '14:00',
-                      valor: '',
-                      status: 'Agendado'
-                    });
-                    setShowNovaConsulta(true);
-                  }} className="p-4 bg-white border border-rose-100 rounded-2xl shadow-sm text-left flex items-center justify-between active:scale-95 transition-all">
+                  <button onClick={() => handleAbrirNovoAgendamento()} className="p-4 bg-white border border-rose-100 rounded-2xl shadow-sm text-left flex items-center justify-between active:scale-95 transition-all">
                     <div>
                       <p className="text-xs font-bold text-slate-800">+ Agendar</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Nova consulta</p>
@@ -482,8 +499,11 @@
                   </button>
 
                   <div className="flex items-center gap-2">
+                    <button onClick={() => handleAbrirNovoAgendamento(selectedPaciente)} className="p-2 bg-rose-900 text-white rounded-xl shadow-sm font-bold text-xs flex items-center gap-1">
+                      <IconCalendar /> <span>Agendar</span>
+                    </button>
                     <button onClick={() => handleAbrirEditar(selectedPaciente)} className="p-2 bg-amber-50 text-amber-800 rounded-xl border border-amber-200 font-bold text-xs flex items-center gap-1">
-                      <IconEdit /> <span>Editar</span>
+                      <IconEdit />
                     </button>
                     <button onClick={() => handleExcluirPaciente(selectedPaciente.id)} className="p-2 bg-rose-50 text-rose-800 rounded-xl border border-rose-200 font-bold text-xs flex items-center gap-1">
                       <IconTrash />
@@ -580,21 +600,11 @@
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Agenda de Atendimentos</h2>
-                  <button onClick={() => {
-                    setFormConsulta({
-                      id: null,
-                      paciente_id: pacientes[0]?.id || '',
-                      paciente_nome: pacientes[0]?.nome || '',
-                      procedimento: PROCEDIMENTOS_PRESET[0].nome,
-                      procedimento_custom: '',
-                      data: dataFiltro,
-                      hora: '14:00',
-                      valor: '',
-                      status: 'Agendado'
-                    });
-                    setShowNovaConsulta(true);
-                  }} className="px-3 py-1.5 bg-rose-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95">
-                    <IconPlus /> <span>Agendar</span>
+                  <button 
+                    onClick={() => handleAbrirNovoAgendamento()} 
+                    className="px-3.5 py-2 bg-rose-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-md active:scale-95"
+                  >
+                    <IconPlus /> <span>Incluir Agendamento</span>
                   </button>
                 </div>
 
@@ -610,8 +620,14 @@
                 </div>
 
                 {consultasDoDia.length === 0 ? (
-                  <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white">
+                  <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white space-y-3">
                     <p className="text-xs text-slate-400">Nenhuma consulta agendada para este dia.</p>
+                    <button 
+                      onClick={() => handleAbrirNovoAgendamento()} 
+                      className="px-4 py-2 bg-rose-50 text-rose-900 border border-rose-200 text-xs font-bold rounded-xl"
+                    >
+                      + Incluir Agendamento
+                    </button>
                   </div>
                 ) : (
                   <div className="space-y-2.5">
@@ -726,18 +742,28 @@
           {showNovaConsulta && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
               <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-3 max-h-[90vh] overflow-y-auto">
-                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Agendar Atendimento</h3>
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Incluir Agendamento</h3>
                 <form onSubmit={handleAddConsulta} className="space-y-3 text-xs">
                   <div>
-                    <label className="font-bold text-slate-600 block mb-1">Paciente *</label>
-                    {pacientes.length > 0 ? (
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="font-bold text-slate-600 block">Paciente *</label>
+                      <button 
+                        type="button" 
+                        onClick={() => setModoPacienteManual(!modoPacienteManual)} 
+                        className="text-[10px] text-rose-800 font-bold underline"
+                      >
+                        {modoPacienteManual ? "‹ Escolher da lista" : "+ Digitar novo nome"}
+                      </button>
+                    </div>
+
+                    {!modoPacienteManual && pacientes.length > 0 ? (
                       <select 
                         required 
-                        className="w-full p-3 bg-slate-50 border rounded-2xl"
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-medium"
                         value={formConsulta.paciente_id}
                         onChange={handlePacienteSelect}
                       >
-                        <option value="">-- Selecione o Paciente --</option>
+                        <option value="">-- Selecione a Paciente --</option>
                         {pacientes.map(p => (
                           <option key={p.id} value={p.id}>{p.nome}</option>
                         ))}
@@ -745,10 +771,10 @@
                     ) : (
                       <input 
                         required 
-                        placeholder="Nome do Paciente *" 
+                        placeholder="Digite o nome completo da paciente *" 
                         className="w-full p-3 bg-slate-50 border rounded-2xl" 
                         value={formConsulta.paciente_nome} 
-                        onChange={e => setFormConsulta({...formConsulta, paciente_nome: e.target.value})} 
+                        onChange={e => setFormConsulta({...formConsulta, paciente_nome: e.target.value, paciente_id: ''})} 
                       />
                     )}
                   </div>
@@ -789,12 +815,12 @@
 
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Valor do Procedimento (R$)</label>
-                    <input type="number" placeholder="Valor R$" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.valor} onChange={e => setFormConsulta({...formConsulta, valor: e.target.value})} />
+                    <input type="number" placeholder="Ex: 350" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.valor} onChange={e => setFormConsulta({...formConsulta, valor: e.target.value})} />
                   </div>
 
                   <div className="flex gap-2 pt-2">
                     <button type="button" onClick={() => setShowNovaConsulta(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
-                    <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Agendar</button>
+                    <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Confirmar</button>
                   </div>
                 </form>
               </div>
