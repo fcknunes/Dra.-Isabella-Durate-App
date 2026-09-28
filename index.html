@@ -51,14 +51,43 @@
       { nome: "Outro Procedimento...", valor: "" }
     ];
 
-    const TIPOS_ANAMNESE = [
-      "Anamnese Geral",
-      "Anamnese - Toxina Botulínica (Botox)",
-      "Anamnese - Preenchimento Facial",
-      "Anamnese - Bioestimulador",
-      "Anamnese - Limpeza de Pele",
-      "Anamnese - Auriculoterapia"
-    ];
+    // SCHEMA DE PERGUNTAS ESPECÍFICAS POR TIPO DE FICHA
+    const QUESTOES_POR_FICHA = {
+      "Anamnese Geral": [
+        { id: "alergias_medicamentos", label: "Alergias ou uso contínuo de medicamentos?", placeholder: "Ex: Alergia a Dipirona, toma anticoncepcional..." },
+        { id: "doencas_cronicas", label: "Possui doenças crônicas ou autoimunes?", placeholder: "Ex: Hipertensão, Diabetes, Hashimoto..." },
+        { id: "gestante_lactante", label: "Está gestante ou amamentando?", type: "select", options: ["Não", "Sim - Gestante", "Sim - Lactante"] }
+      ],
+      "Anamnese - Toxina Botulínica (Botox)": [
+        { id: "areas_interesse", label: "Regiões de maior incômodo?", placeholder: "Ex: Testa, glabela, pés de galinha, sorriso gengival..." },
+        { id: "aplicacao_anterior", label: "Já aplicou Botox antes? Quando foi a última vez?", placeholder: "Ex: Sim, há 8 meses" },
+        { id: "doenca_neuromuscular", label: "Possui alguma doença neuromuscular ou miastenia?", type: "select", options: ["Não", "Sim"] },
+        { id: "gestante_lactante", label: "Gestante ou Lactante?", type: "select", options: ["Não", "Sim"] }
+      ],
+      "Anamnese - Preenchimento Facial": [
+        { id: "regiao_preenchimento", label: "Região a ser tratada?", placeholder: "Ex: Lábios, Malar, Olheiras, Queixo, Mandíbula..." },
+        { id: "preenchimento_previo", label: "Já fez preenchimento anterior? Sabe o produto usou?", placeholder: "Ex: Ácido Hialurônico há 1 ano / Nunca fez" },
+        { id: "historico_herpes", label: "Histórico de Herpes labial recorrente?", type: "select", options: ["Não", "Sim"] },
+        { id: "alergia_anestesico", label: "Alergia a anestésicos (Lidocaína)?", type: "select", options: ["Não", "Sim"] }
+      ],
+      "Anamnese - Bioestimulador": [
+        { id: "objetivo_principal", label: "Objetivo principal (Flacidez, Firmeza, Contorno)?", placeholder: "Ex: Tratar flacidez no terço inferior e pescoço..." },
+        { id: "tratamento_colageno_previo", label: "Já realizou Bioestimulador antes (Radiesse, Sculptra, Elleva)?", placeholder: "Ex: Nunca fez / Fez Sculptra há 12 meses" },
+        { id: "doenca_autoimune", label: "Possui doença autoimune ativa?", type: "select", options: ["Não", "Sim"] }
+      ],
+      "Anamnese - Limpeza de Pele": [
+        { id: "uso_acidos", label: "Usa ou usou ácidos / Roacutan recentemente?", placeholder: "Ex: Usa Ácido Glicólico à noite / Não usa" },
+        { id: "exposicao_solar", label: "Exposição solar intensa ou praia nos últimos 15 dias?", type: "select", options: ["Não", "Sim"] },
+        { id: "sensibilidade_pele", label: "Sensibilidade habitual da pele?", type: "select", options: ["Normal", "Sensível", "Muito Sensível / Reativa"] }
+      ],
+      "Anamnese - Auriculoterapia": [
+        { id: "queixa_auriculo", label: "Foco principal do tratamento?", placeholder: "Ex: Ansiedade, Dores na coluna, Insônia, Enxaqueca..." },
+        { id: "marcapasso_metal", label: "Usa marcapasso ou possui prótese metálica?", type: "select", options: ["Não", "Sim"] },
+        { id: "preferencia_material", label: "Material de preferência?", placeholder: "Ex: Sementes de Mostarda, Esferas de Ouro/Prata" }
+      ]
+    };
+
+    const TIPOS_ANAMNESE = Object.keys(QUESTOES_POR_FICHA);
 
     // Ícones SVG
     const IconHome = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 00-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>;
@@ -70,7 +99,6 @@
     const IconEdit = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>;
     const IconTrash = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>;
     const IconCamera = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>;
-    const IconFileText = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>;
 
     function App() {
       const todayStr = new Date().toISOString().split('T')[0];
@@ -116,9 +144,8 @@
         tipo_ficha: TIPOS_ANAMNESE[0],
         data: todayStr,
         queixa_principal: '',
-        historico_saude: '',
-        procedimentos_anteriores: '',
-        avaliacao_medica: ''
+        avaliacao_medica: '',
+        respostas_especificas: {}
       });
 
       useEffect(() => {
@@ -226,7 +253,7 @@
         }
       }
 
-      // --- FICHAS DE ANAMNESE DIGITAL ---
+      // --- FICHAS DE ANAMNESE DIGITAL DYNÂMICA ---
       async function handleSalvarFicha(e) {
         e.preventDefault();
         if (!selectedPaciente) return;
@@ -236,9 +263,8 @@
           tipo_ficha: formFicha.tipo_ficha,
           data: formFicha.data,
           queixa_principal: formFicha.queixa_principal,
-          historico_saude: formFicha.historico_saude,
-          procedimentos_anteriores: formFicha.procedimentos_anteriores,
-          avaliacao_medica: formFicha.avaliacao_medica
+          avaliacao_medica: formFicha.avaliacao_medica,
+          respostas_especificas: formFicha.respostas_especificas
         };
 
         const { data, error } = await supabase.from('fichas_anamnese').insert([payload]).select();
@@ -252,9 +278,8 @@
             tipo_ficha: TIPOS_ANAMNESE[0],
             data: todayStr,
             queixa_principal: '',
-            historico_saude: '',
-            procedimentos_anteriores: '',
-            avaliacao_medica: ''
+            avaliacao_medica: '',
+            respostas_especificas: {}
           });
           alert("Ficha de Anamnese salva com sucesso!");
         }
@@ -469,6 +494,8 @@
       const totalFaturamento = consultas
         .filter(c => c.status !== 'Cancelado')
         .reduce((acc, c) => acc + Number(c.valor || 0), 0);
+
+      const questoesAtuais = QUESTOES_POR_FICHA[formFicha.tipo_ficha] || [];
 
       return (
         <div className="max-w-md mx-auto min-h-screen flex flex-col bg-[#faf7f8]">
@@ -807,7 +834,7 @@
 
           </main>
 
-          {/* MODAL PREENCHER FICHA DE ANAMNESE DIGITAL */}
+          {/* MODAL PREENCHER FICHA DE ANAMNESE DIGITAL (DINÂMICA) */}
           {showNovaFicha && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
               <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-3 max-h-[90vh] overflow-y-auto">
@@ -820,7 +847,14 @@
                     <select 
                       className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-rose-900"
                       value={formFicha.tipo_ficha}
-                      onChange={e => setFormFicha({...formFicha, tipo_ficha: e.target.value})}
+                      onChange={e => {
+                        const novoTipo = e.target.value;
+                        setFormFicha({
+                          ...formFicha,
+                          tipo_ficha: novoTipo,
+                          respostas_especificas: {}
+                        });
+                      }}
                     >
                       {TIPOS_ANAMNESE.map(t => <option key={t} value={t}>{t}</option>)}
                     </select>
@@ -832,23 +866,55 @@
                   </div>
 
                   <div>
-                    <label className="font-bold text-slate-600 block mb-1">Queixa Principal / Objetivo da Paciente</label>
-                    <textarea placeholder="Ex: Linhas de expressão na testa e pés de galinha..." className="w-full p-3 bg-slate-50 border rounded-2xl h-16" value={formFicha.queixa_principal} onChange={e => setFormFicha({...formFicha, queixa_principal: e.target.value})} />
+                    <label className="font-bold text-slate-600 block mb-1">Queixa Principal / Objetivo Geral</label>
+                    <textarea placeholder="Ex: Queixa de marcas de expressão ou flacidez..." className="w-full p-3 bg-slate-50 border rounded-2xl h-16" value={formFicha.queixa_principal} onChange={e => setFormFicha({...formFicha, queixa_principal: e.target.value})} />
                   </div>
 
-                  <div>
-                    <label className="font-bold text-slate-600 block mb-1">Histórico de Saúde / Alergias / Medicamentos</label>
-                    <textarea placeholder="Ex: Alergia a frutos do mar, hipertensão controlada..." className="w-full p-3 bg-slate-50 border rounded-2xl h-16" value={formFicha.historico_saude} onChange={e => setFormFicha({...formFicha, historico_saude: e.target.value})} />
-                  </div>
+                  {/* CAMPOS DINÂMICOS DA FICHA SELECIONADA */}
+                  {questoesAtuais.length > 0 && (
+                    <div className="p-3 bg-rose-50/50 border border-rose-100 rounded-2xl space-y-3">
+                      <p className="text-[10px] font-extrabold uppercase tracking-wider text-rose-900">Perguntas Específicas: {formFicha.tipo_ficha}</p>
+
+                      {questoesAtuais.map(q => (
+                        <div key={q.id}>
+                          <label className="font-bold text-slate-700 block mb-1">{q.label}</label>
+                          {q.type === 'select' ? (
+                            <select 
+                              className="w-full p-2.5 bg-white border rounded-xl text-xs font-medium"
+                              value={formFicha.respostas_especificas[q.id] || q.options[0]}
+                              onChange={e => setFormFicha({
+                                ...formFicha,
+                                respostas_especificas: {
+                                  ...formFicha.respostas_especificas,
+                                  [q.id]: e.target.value
+                                }
+                              })}
+                            >
+                              {q.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                            </select>
+                          ) : (
+                            <input 
+                              type="text"
+                              placeholder={q.placeholder || ''}
+                              className="w-full p-2.5 bg-white border rounded-xl text-xs"
+                              value={formFicha.respostas_especificas[q.id] || ''}
+                              onChange={e => setFormFicha({
+                                ...formFicha,
+                                respostas_especificas: {
+                                  ...formFicha.respostas_especificas,
+                                  [q.id]: e.target.value
+                                }
+                              })}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   <div>
-                    <label className="font-bold text-slate-600 block mb-1">Procedimentos Estéticos Anteriores</label>
-                    <input placeholder="Ex: Botox há 6 meses, preenchimento labial há 1 ano" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formFicha.procedimentos_anteriores} onChange={e => setFormFicha({...formFicha, procedimentos_anteriores: e.target.value})} />
-                  </div>
-
-                  <div>
-                    <label className="font-bold text-slate-600 block mb-1">Avaliação Técnica & Plano da Dra. Isabella</label>
-                    <textarea placeholder="Ex: Aplicadas 30 unidades de toxina na região frontal e glabela..." className="w-full p-3 bg-slate-50 border rounded-2xl h-20" value={formFicha.avaliacao_medica} onChange={e => setFormFicha({...formFicha, avaliacao_medica: e.target.value})} />
+                    <label className="font-bold text-slate-600 block mb-1">Avaliação Técnica & Conduta Médica</label>
+                    <textarea placeholder="Ex: Aplicação realizada, dosagem, condutas pós-procedimento..." className="w-full p-3 bg-slate-50 border rounded-2xl h-20" value={formFicha.avaliacao_medica} onChange={e => setFormFicha({...formFicha, avaliacao_medica: e.target.value})} />
                   </div>
 
                   <div className="flex gap-2 pt-2">
@@ -870,19 +936,25 @@
                 <h3 className="text-sm font-bold text-slate-800">Ficha de {selectedPaciente?.nome}</h3>
                 <p className="text-xs text-slate-400">Data: {new Date(selectedFichaVer.data + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
 
-                <div className="space-y-3 text-xs pt-2">
+                <div className="space-y-2.5 text-xs pt-2">
                   <div className="bg-slate-50 p-3 rounded-2xl border">
-                    <strong className="text-slate-700 block mb-0.5">Queixa Principal:</strong>
+                    <strong className="text-slate-700 block mb-0.5">Queixa Principal / Objetivo:</strong>
                     <p className="text-slate-600">{selectedFichaVer.queixa_principal || 'Não informada'}</p>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-2xl border">
-                    <strong className="text-slate-700 block mb-0.5">Histórico de Saúde / Alergias:</strong>
-                    <p className="text-slate-600">{selectedFichaVer.historico_saude || 'Nenhuma ressalva'}</p>
-                  </div>
-                  <div className="bg-slate-50 p-3 rounded-2xl border">
-                    <strong className="text-slate-700 block mb-0.5">Procedimentos Anteriores:</strong>
-                    <p className="text-slate-600">{selectedFichaVer.procedimentos_anteriores || 'Nenhum'}</p>
-                  </div>
+
+                  {/* EXIBIÇÃO DAS RESPOSTAS ESPECÍFICAS DA FICHA */}
+                  {selectedFichaVer.respostas_especificas && Object.keys(selectedFichaVer.respostas_especificas).length > 0 && (
+                    <div className="bg-rose-50/40 p-3 rounded-2xl border border-rose-100 space-y-2">
+                      <strong className="text-rose-950 block mb-1 font-extrabold uppercase text-[10px]">Perguntas do Procedimento:</strong>
+                      {Object.entries(selectedFichaVer.respostas_especificas).map(([key, val]) => (
+                        <div key={key} className="border-b border-rose-100/60 pb-1.5 last:border-0 last:pb-0">
+                          <span className="text-[11px] font-bold text-slate-700 capitalize block">{key.replace(/_/g, ' ')}:</span>
+                          <span className="text-slate-600 text-xs">{val || 'Não informado'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="bg-rose-50/60 p-3 rounded-2xl border border-rose-100">
                     <strong className="text-rose-950 block mb-0.5">Avaliação Técnica & Conduta Médica:</strong>
                     <p className="text-rose-900">{selectedFichaVer.avaliacao_medica || 'Sem anotações adicionais'}</p>
