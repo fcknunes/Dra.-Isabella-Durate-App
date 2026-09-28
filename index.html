@@ -41,6 +41,16 @@
     const isSupabaseConfigured = SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes("COLE_AQUI");
     const supabase = isSupabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
+    // PROCEDIMENTOS PRÉ-DEFINIDOS
+    const PROCEDIMENTOS_PRESET = [
+      { nome: "Limpeza de Pele", valor: "" },
+      { nome: "Preenchimento Facial", valor: "" },
+      { nome: "Auriculoterapia", valor: "" },
+      { nome: "Botox", valor: "" },
+      { nome: "Bioestimulador", valor: "" },
+      { nome: "Outro Procedimento...", valor: "" }
+    ];
+
     // Ícones SVG Minimalistas
     const IconHome = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 00-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>;
     const IconUsers = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>;
@@ -51,13 +61,16 @@
     const IconEdit = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>;
     const IconTrash = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>;
     const IconCamera = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>;
-    const IconFolder = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>;
+    const IconClock = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>;
 
     function App() {
+      const todayStr = new Date().toISOString().split('T')[0];
+
       const [activeTab, setActiveTab] = useState('dashboard');
       const [pacientes, setPacientes] = useState([]);
       const [consultas, setConsultas] = useState([]);
       const [busca, setBusca] = useState('');
+      const [dataFiltro, setDataFiltro] = useState(todayStr);
       const [selectedPaciente, setSelectedPaciente] = useState(null);
       const [documentos, setDocumentos] = useState([]);
       const [categoriaFiltro, setCategoriaFiltro] = useState('Todas');
@@ -68,21 +81,30 @@
       const [showNovoPaciente, setShowNovoPaciente] = useState(false);
       const [showEditarPaciente, setShowEditarPaciente] = useState(false);
       const [showNovaConsulta, setShowNovaConsulta] = useState(false);
+      const [showEditarConsulta, setShowEditarConsulta] = useState(false);
       const [showNovoDoc, setShowNovoDoc] = useState(false);
 
       // Formulários
       const [formPaciente, setFormPaciente] = useState({ nome: '', telefone: '', cpf: '', tipo_pele: 'Mista', observacoes: '' });
       const [formDoc, setFormDoc] = useState({ titulo: '', categoria: 'Fotos', file: null });
-      const [formConsulta, setFormConsulta] = useState({ paciente_nome: '', procedimento: '', hora: '14:00', valor: '' });
+      const [formConsulta, setFormConsulta] = useState({
+        id: null,
+        paciente_id: '',
+        paciente_nome: '',
+        procedimento: PROCEDIMENTOS_PRESET[0].nome,
+        procedimento_custom: '',
+        data: todayStr,
+        hora: '14:00',
+        valor: '',
+        status: 'Agendado'
+      });
 
-      // Carregar dados ao iniciar
       useEffect(() => {
         if (isSupabaseConfigured) {
           carregarDados();
         }
       }, []);
 
-      // Quando selecionar um paciente, carregar fotos/documentos
       useEffect(() => {
         if (selectedPaciente && isSupabaseConfigured) {
           carregarDocumentos(selectedPaciente.id);
@@ -92,10 +114,10 @@
       async function carregarDados() {
         setLoading(true);
         try {
-          const { data: pData } = await supabase.from('pacientes').select('*').order('created_at', { ascending: false });
+          const { data: pData } = await supabase.from('pacientes').select('*').order('nome', { ascending: true });
           if (pData) setPacientes(pData);
 
-          const { data: cData } = await supabase.from('consultas').select('*').order('created_at', { ascending: false });
+          const { data: cData } = await supabase.from('consultas').select('*').order('data', { ascending: true }).order('hora', { ascending: true });
           if (cData) setConsultas(cData);
         } catch (err) {
           console.error("Erro ao carregar dados:", err);
@@ -113,28 +135,22 @@
         }
       }
 
-      // 1. Cadastrar Paciente
+      // --- PACIENTES ---
       async function handleAddPaciente(e) {
         e.preventDefault();
         if (!formPaciente.nome) return;
-
-        if (!isSupabaseConfigured) {
-          alert("Configure a sua Publishable Key do Supabase no código!");
-          return;
-        }
 
         const { data, error } = await supabase.from('pacientes').insert([formPaciente]).select();
 
         if (error) {
           alert("Erro ao guardar paciente: " + error.message);
         } else if (data) {
-          setPacientes([data[0], ...pacientes]);
+          setPacientes([...pacientes, data[0]].sort((a,b) => a.nome.localeCompare(b.nome)));
           setFormPaciente({ nome: '', telefone: '', cpf: '', tipo_pele: 'Mista', observacoes: '' });
           setShowNovoPaciente(false);
         }
       }
 
-      // 2. Editar Paciente
       function handleAbrirEditar(paciente) {
         setFormPaciente({
           nome: paciente.nome || '',
@@ -166,7 +182,6 @@
         }
       }
 
-      // 3. Excluir Paciente
       async function handleExcluirPaciente(id) {
         if (confirm("Tem certeza que deseja excluir esta paciente? Esta ação não pode ser desfeita.")) {
           const { error } = await supabase.from('pacientes').delete().eq('id', id);
@@ -179,7 +194,7 @@
         }
       }
 
-      // 4. Upload com organização em pastas
+      // --- FOTOS E DOCUMENTOS ---
       async function handleAddDocumento(e) {
         e.preventDefault();
         if (!formDoc.titulo || !formDoc.file || !selectedPaciente) {
@@ -190,8 +205,6 @@
         try {
           const file = formDoc.file;
           const fileExt = file.name.split('.').pop();
-          
-          // Cria a pasta da Categoria dentro da pasta do Paciente
           const fileName = `${selectedPaciente.id}/${formDoc.categoria}/${Date.now()}.${fileExt}`;
 
           const { error: uploadErr } = await supabase.storage
@@ -222,13 +235,12 @@
             alert("Ficheiro salvo com sucesso na pasta " + formDoc.categoria + "!");
           }
         } catch (err) {
-          alert("Erro no envio do ficheiro: " + (err.message || "Verifique se executou o comando SQL no Supabase."));
+          alert("Erro no envio do ficheiro: " + (err.message || "Erro desconhecido."));
         } finally {
           setUploading(false);
         }
       }
 
-      // 5. Excluir Documento
       async function handleExcluirDoc(docId) {
         if (confirm("Deseja remover este documento?")) {
           const { error } = await supabase.from('documentos').delete().eq('id', docId);
@@ -240,22 +252,102 @@
         }
       }
 
-      // 6. Agendar Consulta
+      // --- AGENDA / CONSULTAS ---
+      function handleProcedimentoChange(nomeProcedimento) {
+        const preset = PROCEDIMENTOS_PRESET.find(p => p.nome === nomeProcedimento);
+        setFormConsulta({
+          ...formConsulta,
+          procedimento: nomeProcedimento,
+          valor: preset && preset.valor !== "" ? preset.valor : formConsulta.valor
+        });
+      }
+
+      function handlePacienteSelect(e) {
+        const pacId = e.target.value;
+        const pObj = pacientes.find(p => p.id === pacId);
+        setFormConsulta({
+          ...formConsulta,
+          paciente_id: pacId,
+          paciente_nome: pObj ? pObj.nome : ''
+        });
+      }
+
       async function handleAddConsulta(e) {
         e.preventDefault();
-        if (!formConsulta.procedimento) return;
+        const procFinal = formConsulta.procedimento === "Outro Procedimento..." ? formConsulta.procedimento_custom : formConsulta.procedimento;
+        if (!procFinal || !formConsulta.paciente_nome) return alert("Selecione um paciente e informe o procedimento.");
 
-        const { data, error } = await supabase.from('consultas').insert([formConsulta]).select();
+        const payload = {
+          paciente_id: formConsulta.paciente_id || null,
+          paciente_nome: formConsulta.paciente_nome,
+          procedimento: procFinal,
+          data: formConsulta.data,
+          hora: formConsulta.hora,
+          valor: Number(formConsulta.valor || 0),
+          status: formConsulta.status
+        };
+
+        const { data, error } = await supabase.from('consultas').insert([payload]).select();
 
         if (error) {
           alert("Erro ao agendar consulta: " + error.message);
         } else if (data) {
-          setConsultas([data[0], ...consultas]);
-          setFormConsulta({ paciente_nome: '', procedimento: '', hora: '14:00', valor: '' });
+          setConsultas([...consultas, data[0]]);
           setShowNovaConsulta(false);
         }
       }
 
+      function handleAbrirEditarConsulta(c) {
+        setFormConsulta({
+          id: c.id,
+          paciente_id: c.paciente_id || '',
+          paciente_nome: c.paciente_nome || '',
+          procedimento: c.procedimento,
+          procedimento_custom: '',
+          data: c.data || todayStr,
+          hora: c.hora || '14:00',
+          valor: c.valor || '',
+          status: c.status || 'Agendado'
+        });
+        setShowEditarConsulta(true);
+      }
+
+      async function handleSalvarEdicaoConsulta(e) {
+        e.preventDefault();
+        const procFinal = formConsulta.procedimento === "Outro Procedimento..." ? formConsulta.procedimento_custom : formConsulta.procedimento;
+
+        const payload = {
+          paciente_id: formConsulta.paciente_id || null,
+          paciente_nome: formConsulta.paciente_nome,
+          procedimento: procFinal,
+          data: formConsulta.data,
+          hora: formConsulta.hora,
+          valor: Number(formConsulta.valor || 0),
+          status: formConsulta.status
+        };
+
+        const { data, error } = await supabase.from('consultas').update(payload).eq('id', formConsulta.id).select();
+
+        if (error) {
+          alert("Erro ao atualizar consulta: " + error.message);
+        } else if (data) {
+          setConsultas(consultas.map(c => c.id === formConsulta.id ? data[0] : c));
+          setShowEditarConsulta(false);
+        }
+      }
+
+      async function handleExcluirConsulta(id) {
+        if (confirm("Deseja cancelar/excluir este agendamento?")) {
+          const { error } = await supabase.from('consultas').delete().eq('id', id);
+          if (error) {
+            alert("Erro ao excluir consulta: " + error.message);
+          } else {
+            setConsultas(consultas.filter(c => c.id !== id));
+          }
+        }
+      }
+
+      // Filtros
       const pacientesFiltrados = pacientes.filter(p => 
         (p.nome && p.nome.toLowerCase().includes(busca.toLowerCase())) || 
         (p.telefone && p.telefone.includes(busca))
@@ -265,7 +357,10 @@
         categoriaFiltro === 'Todas' || (d.categoria || 'Fotos') === categoriaFiltro
       );
 
-      const totalFaturamento = consultas.reduce((acc, c) => acc + Number(c.valor || 0), 0);
+      const consultasDoDia = consultas.filter(c => (c.data || todayStr) === dataFiltro);
+      const totalFaturamento = consultas
+        .filter(c => c.status !== 'Cancelado')
+        .reduce((acc, c) => acc + Number(c.valor || 0), 0);
 
       return (
         <div className="max-w-md mx-auto min-h-screen flex flex-col bg-[#faf7f8]">
@@ -280,12 +375,6 @@
             </div>
           </header>
 
-          {!isSupabaseConfigured && (
-            <div className="m-4 p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-xs">
-              <strong>Atenção:</strong> Cole a sua <code>SUPABASE_ANON_KEY</code> na linha 25 do ficheiro.
-            </div>
-          )}
-
           <main className="flex-1 p-4 space-y-4">
 
             {/* DASHBOARD */}
@@ -296,11 +385,11 @@
                   <h2 className="text-2xl font-extrabold mt-0.5 text-white">Hoje</h2>
                   <div className="grid grid-cols-2 gap-3 mt-4">
                     <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10">
-                      <p className="text-[11px] text-rose-200">Consultas</p>
-                      <p className="text-2xl font-black mt-0.5">{consultas.length}</p>
+                      <p className="text-[11px] text-rose-200">Atendimentos Hoje</p>
+                      <p className="text-2xl font-black mt-0.5">{consultas.filter(c => c.data === todayStr).length}</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10">
-                      <p className="text-[11px] text-rose-200">Pacientes</p>
+                      <p className="text-[11px] text-rose-200">Total Pacientes</p>
                       <p className="text-2xl font-black mt-0.5">{pacientes.length}</p>
                     </div>
                   </div>
@@ -315,7 +404,20 @@
                     <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center"><IconUsers /></div>
                   </button>
 
-                  <button onClick={() => setShowNovaConsulta(true)} className="p-4 bg-white border border-rose-100 rounded-2xl shadow-sm text-left flex items-center justify-between active:scale-95 transition-all">
+                  <button onClick={() => {
+                    setFormConsulta({
+                      id: null,
+                      paciente_id: pacientes[0]?.id || '',
+                      paciente_nome: pacientes[0]?.nome || '',
+                      procedimento: PROCEDIMENTOS_PRESET[0].nome,
+                      procedimento_custom: '',
+                      data: todayStr,
+                      hora: '14:00',
+                      valor: '',
+                      status: 'Agendado'
+                    });
+                    setShowNovaConsulta(true);
+                  }} className="p-4 bg-white border border-rose-100 rounded-2xl shadow-sm text-left flex items-center justify-between active:scale-95 transition-all">
                     <div>
                       <p className="text-xs font-bold text-slate-800">+ Agendar</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Nova consulta</p>
@@ -408,7 +510,7 @@
                   )}
                 </div>
 
-                {/* GALERIA ORGANIZADA POR PASTAS */}
+                {/* GALERIA DE FOTOS/DOCUMENTOS DO PACIENTE */}
                 <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-center">
                     <div>
@@ -420,7 +522,6 @@
                     </button>
                   </div>
 
-                  {/* Filtro de Pastas */}
                   <div className="flex gap-1.5 overflow-x-auto pb-1 text-[11px]">
                     {['Todas', 'Fotos', 'Termos', 'Exames', 'Fichas', 'Outros'].map(cat => (
                       <button 
@@ -453,8 +554,7 @@
                             <img src={doc.url} alt={doc.titulo} className="w-full h-28 object-cover rounded-xl" />
                           ) : (
                             <div className="w-full h-28 bg-rose-50 rounded-xl flex items-center justify-center text-rose-800 font-bold text-xs flex-col gap-1">
-                              <IconFolder />
-                              <span>Ficheiro</span>
+                              📄 Ficheiro
                             </div>
                           )}
                           <div className="mt-2 flex justify-between items-center px-1">
@@ -475,21 +575,82 @@
               </div>
             )}
 
-            {/* AGENDA */}
+            {/* AGENDA COMPLETA */}
             {activeTab === 'agenda' && (
-              <div className="space-y-3">
-                <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Agenda de Atendimentos</h2>
-                <div className="space-y-2">
-                  {consultas.map(c => (
-                    <div key={c.id} className="p-3.5 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between text-xs">
-                      <div>
-                        <p className="font-bold text-slate-800">{c.paciente_nome}</p>
-                        <p className="text-slate-500">{c.procedimento}</p>
-                      </div>
-                      <span className="font-bold text-rose-900">R$ {Number(c.valor || 0).toFixed(2)}</span>
-                    </div>
-                  ))}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Agenda de Atendimentos</h2>
+                  <button onClick={() => {
+                    setFormConsulta({
+                      id: null,
+                      paciente_id: pacientes[0]?.id || '',
+                      paciente_nome: pacientes[0]?.nome || '',
+                      procedimento: PROCEDIMENTOS_PRESET[0].nome,
+                      procedimento_custom: '',
+                      data: dataFiltro,
+                      hora: '14:00',
+                      valor: '',
+                      status: 'Agendado'
+                    });
+                    setShowNovaConsulta(true);
+                  }} className="px-3 py-1.5 bg-rose-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95">
+                    <IconPlus /> <span>Agendar</span>
+                  </button>
                 </div>
+
+                {/* Seleção de Data */}
+                <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-600">Filtrar por Data:</span>
+                  <input 
+                    type="date" 
+                    className="p-2 bg-slate-50 border rounded-xl text-xs font-bold text-slate-800"
+                    value={dataFiltro}
+                    onChange={e => setDataFiltro(e.target.value)}
+                  />
+                </div>
+
+                {consultasDoDia.length === 0 ? (
+                  <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white">
+                    <p className="text-xs text-slate-400">Nenhuma consulta agendada para este dia.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {consultasDoDia.map(c => (
+                      <div key={c.id} className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-extrabold text-slate-900">{c.hora || '14:00'}</span>
+                              <span className={`px-2 py-0.5 text-[9px] font-bold rounded-lg ${
+                                c.status === 'Concluído' ? 'bg-emerald-100 text-emerald-800' :
+                                c.status === 'Cancelado' ? 'bg-rose-100 text-rose-800' :
+                                'bg-amber-100 text-amber-800'
+                              }`}>
+                                {c.status || 'Agendado'}
+                              </span>
+                            </div>
+                            <h3 className="font-bold text-slate-800 text-sm mt-1">{c.paciente_nome}</h3>
+                            <p className="text-xs text-rose-900 font-semibold">{c.procedimento}</p>
+                          </div>
+                          
+                          <div className="text-right">
+                            <span className="font-extrabold text-slate-900 text-xs block">
+                              R$ {Number(c.valor || 0).toFixed(2)}
+                            </span>
+                            <div className="flex gap-1 mt-2 justify-end">
+                              <button onClick={() => handleAbrirEditarConsulta(c)} className="p-1.5 bg-slate-100 text-slate-700 rounded-lg">
+                                <IconEdit />
+                              </button>
+                              <button onClick={() => handleExcluirConsulta(c.id)} className="p-1.5 bg-rose-50 text-rose-700 rounded-lg">
+                                <IconTrash />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -498,7 +659,7 @@
               <div className="space-y-3">
                 <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Fluxo Financeiro</h2>
                 <div className="bg-gradient-to-br from-emerald-800 to-emerald-950 text-white p-5 rounded-3xl shadow-md">
-                  <p className="text-[11px] text-emerald-200">Faturamento Total</p>
+                  <p className="text-[11px] text-emerald-200">Faturamento Confirmado / Agendado</p>
                   <p className="text-3xl font-black mt-1">R$ {totalFaturamento.toFixed(2)}</p>
                 </div>
               </div>
@@ -506,7 +667,7 @@
 
           </main>
 
-          {/* MODAIS */}
+          {/* MODAL CADASTRAR PACIENTE */}
           {showNovoPaciente && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
               <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-4">
@@ -524,6 +685,7 @@
             </div>
           )}
 
+          {/* MODAL EDITAR PACIENTE */}
           {showEditarPaciente && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
               <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-4">
@@ -560,7 +722,144 @@
             </div>
           )}
 
-          {/* MODAL ANEXAR COM SELEÇÃO DE PASTA */}
+          {/* MODAL AGENDAR CONSULTA */}
+          {showNovaConsulta && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Agendar Atendimento</h3>
+                <form onSubmit={handleAddConsulta} className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Paciente *</label>
+                    {pacientes.length > 0 ? (
+                      <select 
+                        required 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl"
+                        value={formConsulta.paciente_id}
+                        onChange={handlePacienteSelect}
+                      >
+                        <option value="">-- Selecione o Paciente --</option>
+                        {pacientes.map(p => (
+                          <option key={p.id} value={p.id}>{p.nome}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input 
+                        required 
+                        placeholder="Nome do Paciente *" 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl" 
+                        value={formConsulta.paciente_nome} 
+                        onChange={e => setFormConsulta({...formConsulta, paciente_nome: e.target.value})} 
+                      />
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Procedimento *</label>
+                    <select 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl"
+                      value={formConsulta.procedimento}
+                      onChange={e => handleProcedimentoChange(e.target.value)}
+                    >
+                      {PROCEDIMENTOS_PRESET.map(proc => (
+                        <option key={proc.nome} value={proc.nome}>{proc.nome}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {formConsulta.procedimento === "Outro Procedimento..." && (
+                    <input 
+                      required 
+                      placeholder="Nome do Procedimento Personalizado *" 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl" 
+                      value={formConsulta.procedimento_custom} 
+                      onChange={e => setFormConsulta({...formConsulta, procedimento_custom: e.target.value})} 
+                    />
+                  )}
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Data *</label>
+                      <input type="date" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.data} onChange={e => setFormConsulta({...formConsulta, data: e.target.value})} />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Horário *</label>
+                      <input type="time" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.hora} onChange={e => setFormConsulta({...formConsulta, hora: e.target.value})} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Valor do Procedimento (R$)</label>
+                    <input type="number" placeholder="Valor R$" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.valor} onChange={e => setFormConsulta({...formConsulta, valor: e.target.value})} />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button type="button" onClick={() => setShowNovaConsulta(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
+                    <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Agendar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL EDITAR CONSULTA */}
+          {showEditarConsulta && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Editar Agendamento</h3>
+                <form onSubmit={handleSalvarEdicaoConsulta} className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Paciente</label>
+                    <input required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.paciente_nome} onChange={e => setFormConsulta({...formConsulta, paciente_nome: e.target.value})} />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Procedimento</label>
+                    <select 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl"
+                      value={formConsulta.procedimento}
+                      onChange={e => handleProcedimentoChange(e.target.value)}
+                    >
+                      {PROCEDIMENTOS_PRESET.map(proc => (
+                        <option key={proc.nome} value={proc.nome}>{proc.nome}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Data</label>
+                      <input type="date" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.data} onChange={e => setFormConsulta({...formConsulta, data: e.target.value})} />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Horário</label>
+                      <input type="time" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.hora} onChange={e => setFormConsulta({...formConsulta, hora: e.target.value})} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Status do Atendimento</label>
+                    <select className="w-full p-3 bg-slate-50 border rounded-2xl font-bold" value={formConsulta.status} onChange={e => setFormConsulta({...formConsulta, status: e.target.value})}>
+                      <option value="Agendado">Agendado</option>
+                      <option value="Concluído">Concluído</option>
+                      <option value="Cancelado">Cancelado</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Valor (R$)</label>
+                    <input type="number" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.valor} onChange={e => setFormConsulta({...formConsulta, valor: e.target.value})} />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button type="button" onClick={() => setShowEditarConsulta(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
+                    <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Salvar Alterações</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL ANEXAR DOCUMENTO */}
           {showNovoDoc && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
               <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-4">
@@ -594,23 +893,6 @@
                     <button type="submit" disabled={uploading} className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">
                       {uploading ? 'A enviar...' : 'Adicionar'}
                     </button>
-                  </div>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {showNovaConsulta && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-4">
-                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Agendar Consulta</h3>
-                <form onSubmit={handleAddConsulta} className="space-y-3 text-xs">
-                  <input required placeholder="Nome do Paciente *" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.paciente_nome} onChange={e => setFormConsulta({...formConsulta, paciente_nome: e.target.value})} />
-                  <input required placeholder="Procedimento *" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.procedimento} onChange={e => setFormConsulta({...formConsulta, procedimento: e.target.value})} />
-                  <input type="number" placeholder="Valor (R$)" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.valor} onChange={e => setFormConsulta({...formConsulta, valor: e.target.value})} />
-                  <div className="flex gap-2 pt-2">
-                    <button type="button" onClick={() => setShowNovaConsulta(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
-                    <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Confirmar</button>
                   </div>
                 </form>
               </div>
