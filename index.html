@@ -44,7 +44,7 @@
     const IconTrash = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>;
     const IconCamera = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>;
 
-    // Dados Fictícios de Exemplo com Documentos/Fotos
+    // Dados Iniciais de Exemplo
     const INITIAL_PACIENTES = [
       { 
         id: '1', 
@@ -109,7 +109,7 @@
         setShowNovoPaciente(false);
       }
 
-      // 2. Abrir Modal de Edição
+      // 2. Abrir Edição
       function handleAbrirEditar(paciente) {
         setFormPaciente({
           nome: paciente.nome,
@@ -121,7 +121,7 @@
         setShowEditarPaciente(true);
       }
 
-      // 3. Salvar Edição do Paciente
+      // 3. Salvar Edição
       function handleSalvarEdicao(e) {
         e.preventDefault();
         const atualizados = pacientes.map(p => {
@@ -177,7 +177,7 @@
         setShowNovoDoc(false);
       }
 
-      // 6. Excluir Documento/Foto
+      // 6. Excluir Foto/Documento
       function handleExcluirDoc(docId) {
         if (confirm("Deseja remover este documento?")) {
           const novosDocs = (selectedPaciente.documentos || []).filter(d => d.id !== docId);
@@ -188,6 +188,15 @@
           setPacientes(pacientesAtualizados);
           setSelectedPaciente({ ...selectedPaciente, documentos: novosDocs });
         }
+      }
+
+      // 7. Adicionar Consulta
+      function handleAddConsulta(e) {
+        e.preventDefault();
+        if (!formConsulta.procedimento) return;
+        setConsultas([...consultas, { id: Date.now().toString(), ...formConsulta }]);
+        setFormConsulta({ paciente: '', procedimento: '', hora: '14:00', valor: '' });
+        setShowNovaConsulta(false);
       }
 
       return (
@@ -284,7 +293,7 @@
               </div>
             )}
 
-            {/* PERFIL / DETALHE DO PACIENTE */}
+            {/* PERFIL DO PACIENTE */}
             {selectedPaciente && (
               <div className="space-y-4">
                 
@@ -304,7 +313,7 @@
                   </div>
                 </div>
 
-                {/* Card de Informações Gerais */}
+                {/* Card do Paciente */}
                 <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
@@ -324,12 +333,12 @@
                   )}
                 </div>
 
-                {/* GALERIA DE DOCUMENTOS & FOTOS (ANTES/DEPOIS) */}
+                {/* GALERIA DE FOTOS / DOCUMENTOS */}
                 <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Fotos & Documentos</h3>
-                      <p className="text-[10px] text-slate-400">Fotos de Antes/Depois e arquivos anexados</p>
+                      <p className="text-[10px] text-slate-400">Fotos de Antes/Depois e arquivos</p>
                     </div>
                     <button onClick={() => setShowNovoDoc(true)} className="px-3 py-1.5 bg-rose-900 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-sm">
                       <IconCamera /> <span>Anexar</span>
@@ -343,7 +352,7 @@
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
                       {selectedPaciente.documentos.map(doc => (
-                        <div key={doc.id} className="relative group bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden p-2">
+                        <div key={doc.id} className="relative bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden p-2">
                           {doc.tipo === 'imagem' ? (
                             <img src={doc.url} alt={doc.titulo} className="w-full h-28 object-cover rounded-xl" />
                           ) : (
@@ -356,7 +365,7 @@
                               <p className="text-[10px] font-bold text-slate-800 truncate max-w-[100px]">{doc.titulo}</p>
                               <p className="text-[9px] text-slate-400">{doc.data}</p>
                             </div>
-                            <button onClick={() => handleExcluirDoc(doc.id)} className="text-rose-600 p-1 hover:bg-rose-100 rounded-lg">
+                            <button onClick={() => handleExcluirDoc(doc.id)} className="text-rose-600 p-1">
                               <IconTrash />
                             </button>
                           </div>
@@ -369,7 +378,7 @@
               </div>
             )}
 
-            {/* AGENDA & FINANCEIRO MANTIDOS */}
+            {/* AGENDA */}
             {activeTab === 'agenda' && (
               <div className="space-y-3">
                 <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Agenda de Atendimentos</h2>
@@ -387,6 +396,7 @@
               </div>
             )}
 
+            {/* FINANCEIRO */}
             {activeTab === 'financeiro' && (
               <div className="space-y-3">
                 <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Fluxo Financeiro</h2>
@@ -462,10 +472,10 @@
                 <form onSubmit={handleAddDocumento} className="space-y-3 text-xs">
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Título / Descrição *</label>
-                    <input required placeholder="Ex: Antes - Botox, Termo de Assinatura" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formDoc.titulo} onChange={e => setFormDoc({...formDoc, titulo: e.target.value})} />
+                    <input required placeholder="Ex: Antes - Botox, Termo de Consentimento" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formDoc.titulo} onChange={e => setFormDoc({...formDoc, titulo: e.target.value})} />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-600 block mb-1">Escolher Foto do Telemóvel / PC *</label>
+                    <label className="font-bold text-slate-600 block mb-1">Escolher Foto / Ficheiro *</label>
                     <input type="file" accept="image/*,.pdf" required onChange={handleFileChange} className="w-full p-2 text-xs text-slate-500 bg-slate-50 border rounded-2xl file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rose-900 file:text-white" />
                   </div>
 
@@ -479,6 +489,24 @@
                   <div className="flex gap-2 pt-2">
                     <button type="button" onClick={() => setShowNovoDoc(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
                     <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Adicionar</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL NOVA CONSULTA */}
+          {showNovaConsulta && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-4">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Agendar Consulta</h3>
+                <form onSubmit={handleAddConsulta} className="space-y-3 text-xs">
+                  <input required placeholder="Nome do Paciente *" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.paciente} onChange={e => setFormConsulta({...formConsulta, paciente: e.target.value})} />
+                  <input required placeholder="Procedimento *" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.procedimento} onChange={e => setFormConsulta({...formConsulta, procedimento: e.target.value})} />
+                  <input type="number" placeholder="Valor (R$)" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.valor} onChange={e => setFormConsulta({...formConsulta, valor: e.target.value})} />
+                  <div className="flex gap-2 pt-2">
+                    <button type="button" onClick={() => setShowNovaConsulta(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
+                    <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Confirmar</button>
                   </div>
                 </form>
               </div>
