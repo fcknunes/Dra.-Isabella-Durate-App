@@ -35,8 +35,8 @@
     const { useState, useEffect } = React;
 
     // === CONFIGURAÇÃO DO SUPABASE ===
-    const SUPABASE_URL = "https://supabase.com/dashboard/project/paklhqzhfjxpczdxkxdd";
-    const SUPABASE_ANON_KEY = "sb_publishable_yZQSRMsD2HT88yH7kwYoGA_5tp3sDNn";
+    const SUPABASE_URL = "https://paklhqzhfjxpczdxkxdd.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBha2xocXpoZmp4cGN6ZHhreGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNjI4MTQsImV4cCI6MjEwMjgzODgxNH0.QkXUEil4UjfEQ75r4FzpZQ7y2SnZVSil8CBK2dDo3u8";
 
     const isSupabaseConfigured = SUPABASE_URL && !SUPABASE_URL.includes("COLE_AQUI");
     const supabase = isSupabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
