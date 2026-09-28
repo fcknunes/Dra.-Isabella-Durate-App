@@ -10,6 +10,8 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <!-- Fontes Google -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -30,7 +32,14 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useEffect } = React;
+
+    // === CONFIGURAÇÃO DO SUPABASE ===
+    const SUPABASE_URL = "https://supabase.com/dashboard/project/paklhqzhfjxpczdxkxdd";
+    const SUPABASE_ANON_KEY = "sb_publishable_yZQSRMsD2HT88yH7kwYoGA_5tp3sDNn";
+
+    const isSupabaseConfigured = SUPABASE_URL && !SUPABASE_URL.includes("COLE_AQUI");
+    const supabase = isSupabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
     // Ícones SVG Minimalistas
     const IconHome = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 00-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>;
@@ -39,48 +48,19 @@
     const IconDollar = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>;
     const IconPlus = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>;
     const IconSearch = () => <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>;
-    const IconAlert = () => <svg className="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>;
     const IconEdit = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>;
     const IconTrash = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>;
     const IconCamera = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>;
 
-    // Dados Iniciais de Exemplo
-    const INITIAL_PACIENTES = [
-      { 
-        id: '1', 
-        nome: 'Ana Paula Silva', 
-        telefone: '(11) 98765-4321', 
-        cpf: '123.456.789-00', 
-        alergias: ['Lidocaína', 'Látex'], 
-        tipoPele: 'Sensível / Mista', 
-        observacoes: 'Sensibilidade a ácidos concentrados.',
-        documentos: [
-          { id: 'd1', titulo: 'Antes - Toxina Botulínica', data: '12/09/2026', url: 'https://images.unsplash.com/photo-1512290900673-030999059535?auto=format&fit=crop&w=300&q=80', tipo: 'imagem' }
-        ]
-      },
-      { 
-        id: '2', 
-        nome: 'Mariana Costa', 
-        telefone: '(11) 91234-5678', 
-        cpf: '987.654.321-11', 
-        alergias: ['Ácido Glicólico'], 
-        tipoPele: 'Oleosa', 
-        observacoes: 'Horário preferencial à tarde.',
-        documentos: []
-      }
-    ];
-
-    const INITIAL_CONSULTAS = [
-      { id: '101', paciente: 'Ana Paula Silva', procedimento: 'Botox - Terço Superior', hora: '14:00', valor: 1350 },
-      { id: '102', paciente: 'Mariana Costa', procedimento: 'Preenchimento Labial 1ml', hora: '15:30', valor: 1600 }
-    ];
-
     function App() {
       const [activeTab, setActiveTab] = useState('dashboard');
-      const [pacientes, setPacientes] = useState(INITIAL_PACIENTES);
-      const [consultas, setConsultas] = useState(INITIAL_CONSULTAS);
+      const [pacientes, setPacientes] = useState([]);
+      const [consultas, setConsultas] = useState([]);
       const [busca, setBusca] = useState('');
       const [selectedPaciente, setSelectedPaciente] = useState(null);
+      const [documentos, setDocumentos] = useState([]);
+      const [loading, setLoading] = useState(false);
+      const [uploading, setUploading] = useState(false);
 
       // Modais
       const [showNovoPaciente, setShowNovoPaciente] = useState(false);
@@ -89,120 +69,198 @@
       const [showNovoDoc, setShowNovoDoc] = useState(false);
 
       // Formulários
-      const [formPaciente, setFormPaciente] = useState({ nome: '', telefone: '', cpf: '', tipoPele: 'Mista', observacoes: '' });
-      const [formDoc, setFormDoc] = useState({ titulo: '', arquivo: null, previewUrl: '' });
-      const [formConsulta, setFormConsulta] = useState({ paciente: '', procedimento: '', hora: '14:00', valor: '' });
+      const [formPaciente, setFormPaciente] = useState({ nome: '', telefone: '', cpf: '', tipo_pele: 'Mista', observacoes: '' });
+      const [formDoc, setFormDoc] = useState({ titulo: '', file: null });
+      const [formConsulta, setFormConsulta] = useState({ paciente_nome: '', procedimento: '', hora: '14:00', valor: '' });
 
-      const pacientesFiltrados = pacientes.filter(p => 
-        p.nome.toLowerCase().includes(busca.toLowerCase()) || p.telefone.includes(busca)
-      );
+      // Carregar dados ao iniciar
+      useEffect(() => {
+        if (isSupabaseConfigured) {
+          carregarDados();
+        }
+      }, []);
 
-      const totalFaturamento = consultas.reduce((acc, c) => acc + Number(c.valor || 0), 0);
+      // Quando selecionar um paciente, carregar fotos/documentos
+      useEffect(() => {
+        if (selectedPaciente && isSupabaseConfigured) {
+          carregarDocumentos(selectedPaciente.id);
+        }
+      }, [selectedPaciente]);
 
-      // 1. Cadastrar Paciente
-      function handleAddPaciente(e) {
-        e.preventDefault();
-        if (!formPaciente.nome) return;
-        const novo = { id: Date.now().toString(), ...formPaciente, alergias: [], documentos: [] };
-        setPacientes([...pacientes, novo]);
-        setFormPaciente({ nome: '', telefone: '', cpf: '', tipoPele: 'Mista', observacoes: '' });
-        setShowNovoPaciente(false);
+      async function carregarDados() {
+        setLoading(true);
+        try {
+          const { data: pData } = await supabase.from('pacientes').select('*').order('created_at', { ascending: false });
+          if (pData) setPacientes(pData);
+
+          const { data: cData } = await supabase.from('consultas').select('*').order('created_at', { ascending: false });
+          if (cData) setConsultas(cData);
+        } catch (err) {
+          console.error("Erro ao carregar dados:", err);
+        } finally {
+          setLoading(false);
+        }
       }
 
-      // 2. Abrir Edição
+      async function carregarDocumentos(pacienteId) {
+        try {
+          const { data, error } = await supabase.from('documentos').select('*').eq('paciente_id', pacienteId).order('created_at', { ascending: false });
+          if (!error && data) setDocumentos(data);
+        } catch (err) {
+          console.error("Erro ao carregar documentos:", err);
+        }
+      }
+
+      // 1. Cadastrar Paciente no Supabase
+      async function handleAddPaciente(e) {
+        e.preventDefault();
+        if (!formPaciente.nome) return;
+
+        if (!isSupabaseConfigured) {
+          alert("Configure as suas chaves do Supabase no código primeiro!");
+          return;
+        }
+
+        const { data, error } = await supabase.from('pacientes').insert([formPaciente]).select();
+
+        if (error) {
+          alert("Erro ao guardar paciente: " + error.message);
+        } else if (data) {
+          setPacientes([data[0], ...pacientes]);
+          setFormPaciente({ nome: '', telefone: '', cpf: '', tipo_pele: 'Mista', observacoes: '' });
+          setShowNovoPaciente(false);
+        }
+      }
+
+      // 2. Editar Paciente no Supabase
       function handleAbrirEditar(paciente) {
         setFormPaciente({
-          nome: paciente.nome,
+          nome: paciente.nome || '',
           telefone: paciente.telefone || '',
           cpf: paciente.cpf || '',
-          tipoPele: paciente.tipoPele || 'Mista',
+          tipo_pele: paciente.tipo_pele || 'Mista',
           observacoes: paciente.observacoes || ''
         });
         setShowEditarPaciente(true);
       }
 
-      // 3. Salvar Edição
-      function handleSalvarEdicao(e) {
+      async function handleSalvarEdicao(e) {
         e.preventDefault();
-        const atualizados = pacientes.map(p => {
-          if (p.id === selectedPaciente.id) {
-            return { ...p, ...formPaciente };
-          }
-          return p;
-        });
-        setPacientes(atualizados);
-        setSelectedPaciente({ ...selectedPaciente, ...formPaciente });
-        setShowEditarPaciente(false);
+        if (!selectedPaciente) return;
+
+        const { data, error } = await supabase
+          .from('pacientes')
+          .update(formPaciente)
+          .eq('id', selectedPaciente.id)
+          .select();
+
+        if (error) {
+          alert("Erro ao atualizar: " + error.message);
+        } else if (data) {
+          const atualizados = pacientes.map(p => p.id === selectedPaciente.id ? data[0] : p);
+          setPacientes(atualizados);
+          setSelectedPaciente(data[0]);
+          setShowEditarPaciente(false);
+        }
       }
 
-      // 4. Excluir Paciente
-      function handleExcluirPaciente(id) {
+      // 3. Excluir Paciente
+      async function handleExcluirPaciente(id) {
         if (confirm("Tem certeza que deseja excluir esta paciente? Esta ação não pode ser desfeita.")) {
-          setPacientes(pacientes.filter(p => p.id !== id));
-          setSelectedPaciente(null);
-        }
-      }
-
-      // 5. Upload/Adicionar Documento ou Foto
-      function handleFileChange(e) {
-        const file = e.target.files[0];
-        if (file) {
-          const url = URL.createObjectURL(file);
-          setFormDoc({ ...formDoc, arquivo: file, previewUrl: url });
-        }
-      }
-
-      function handleAddDocumento(e) {
-        e.preventDefault();
-        if (!formDoc.titulo || !formDoc.previewUrl) return alert("Selecione um arquivo e informe o título.");
-
-        const novoDoc = {
-          id: Date.now().toString(),
-          titulo: formDoc.titulo,
-          data: new Date().toLocaleDateString('pt-BR'),
-          url: formDoc.previewUrl,
-          tipo: formDoc.arquivo?.type.includes('image') ? 'imagem' : 'documento'
-        };
-
-        const pacientesAtualizados = pacientes.map(p => {
-          if (p.id === selectedPaciente.id) {
-            return { ...p, documentos: [...(p.documentos || []), novoDoc] };
+          const { error } = await supabase.from('pacientes').delete().eq('id', id);
+          if (error) {
+            alert("Erro ao eliminar paciente: " + error.message);
+          } else {
+            setPacientes(pacientes.filter(p => p.id !== id));
+            setSelectedPaciente(null);
           }
-          return p;
-        });
-
-        setPacientes(pacientesAtualizados);
-        setSelectedPaciente({ ...selectedPaciente, documentos: [...(selectedPaciente.documentos || []), novoDoc] });
-        setFormDoc({ titulo: '', arquivo: null, previewUrl: '' });
-        setShowNovoDoc(false);
-      }
-
-      // 6. Excluir Foto/Documento
-      function handleExcluirDoc(docId) {
-        if (confirm("Deseja remover este documento?")) {
-          const novosDocs = (selectedPaciente.documentos || []).filter(d => d.id !== docId);
-          const pacientesAtualizados = pacientes.map(p => {
-            if (p.id === selectedPaciente.id) return { ...p, documentos: novosDocs };
-            return p;
-          });
-          setPacientes(pacientesAtualizados);
-          setSelectedPaciente({ ...selectedPaciente, documentos: novosDocs });
         }
       }
 
-      // 7. Adicionar Consulta
-      function handleAddConsulta(e) {
+      // 4. Upload de Foto / Documento para o Supabase Storage
+      async function handleAddDocumento(e) {
+        e.preventDefault();
+        if (!formDoc.titulo || !formDoc.file || !selectedPaciente) {
+          return alert("Preencha o título e selecione um ficheiro.");
+        }
+
+        setUploading(true);
+        try {
+          const file = formDoc.file;
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${selectedPaciente.id}/${Date.now()}.${fileExt}`;
+
+          const { error: uploadErr } = await supabase.storage
+            .from('prontuarios')
+            .upload(fileName, file);
+
+          if (uploadErr) throw uploadErr;
+
+          const { data: urlData } = supabase.storage.from('prontuarios').getPublicUrl(fileName);
+          const publicUrl = urlData.publicUrl;
+
+          const novoDoc = {
+            paciente_id: selectedPaciente.id,
+            titulo: formDoc.titulo,
+            url: publicUrl,
+            tipo: file.type.includes('image') ? 'imagem' : 'documento'
+          };
+
+          const { data: docData, error: docErr } = await supabase.from('documentos').insert([novoDoc]).select();
+
+          if (docErr) throw docErr;
+
+          if (docData) {
+            setDocumentos([docData[0], ...documentos]);
+            setFormDoc({ titulo: '', file: null });
+            setShowNovoDoc(false);
+            alert("Ficheiro guardado com sucesso!");
+          }
+        } catch (err) {
+          alert("Erro no envio do ficheiro: " + (err.message || "Verifique se o bucket 'prontuarios' existe no Supabase."));
+        } finally {
+          setUploading(false);
+        }
+      }
+
+      // 5. Excluir Documento
+      async function handleExcluirDoc(docId) {
+        if (confirm("Deseja remover este documento?")) {
+          const { error } = await supabase.from('documentos').delete().eq('id', docId);
+          if (error) {
+            alert("Erro ao eliminar documento: " + error.message);
+          } else {
+            setDocumentos(documentos.filter(d => d.id !== docId));
+          }
+        }
+      }
+
+      // 6. Agendar Consulta
+      async function handleAddConsulta(e) {
         e.preventDefault();
         if (!formConsulta.procedimento) return;
-        setConsultas([...consultas, { id: Date.now().toString(), ...formConsulta }]);
-        setFormConsulta({ paciente: '', procedimento: '', hora: '14:00', valor: '' });
-        setShowNovaConsulta(false);
+
+        const { data, error } = await supabase.from('consultas').insert([formConsulta]).select();
+
+        if (error) {
+          alert("Erro ao agendar consulta: " + error.message);
+        } else if (data) {
+          setConsultas([data[0], ...consultas]);
+          setFormConsulta({ paciente_nome: '', procedimento: '', hora: '14:00', valor: '' });
+          setShowNovaConsulta(false);
+        }
       }
+
+      const pacientesFiltrados = pacientes.filter(p => 
+        (p.nome && p.nome.toLowerCase().includes(busca.toLowerCase())) || 
+        (p.telefone && p.telefone.includes(busca))
+      );
+
+      const totalFaturamento = consultas.reduce((acc, c) => acc + Number(c.valor || 0), 0);
 
       return (
         <div className="max-w-md mx-auto min-h-screen flex flex-col bg-[#faf7f8]">
           
-          {/* Top Header Luxo */}
           <header className="bg-gradient-to-r from-rose-950 via-rose-900 to-rose-950 text-white p-5 rounded-b-3xl shadow-lg flex justify-between items-center sticky top-0 z-20 border-b border-rose-800/40">
             <div>
               <span className="text-[10px] uppercase tracking-widest text-rose-300 font-bold block">Clínica Médica</span>
@@ -213,14 +271,19 @@
             </div>
           </header>
 
-          {/* Conteúdo Principal */}
+          {!isSupabaseConfigured && (
+            <div className="m-4 p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-xs">
+              <strong>Atenção:</strong> Cole o seu <code>SUPABASE_URL</code> e a <code>SUPABASE_ANON_KEY</code> nas linhas 24 e 25 do ficheiro.
+            </div>
+          )}
+
           <main className="flex-1 p-4 space-y-4">
 
             {/* DASHBOARD */}
             {activeTab === 'dashboard' && (
               <div className="space-y-4">
                 <div className="bg-gradient-to-br from-rose-900 via-rose-800 to-rose-950 text-white p-5 rounded-3xl shadow-md">
-                  <p className="text-[11px] text-rose-200 uppercase tracking-widest font-semibold">Resumo do Dia</p>
+                  <p className="text-[11px] text-rose-200 uppercase tracking-widest font-semibold">Resumo Geral</p>
                   <h2 className="text-2xl font-extrabold mt-0.5 text-white">Hoje</h2>
                   <div className="grid grid-cols-2 gap-3 mt-4">
                     <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10">
@@ -275,29 +338,33 @@
                   />
                 </div>
 
-                <div className="space-y-2">
-                  {pacientesFiltrados.map(p => (
-                    <div 
-                      key={p.id} 
-                      onClick={() => setSelectedPaciente(p)}
-                      className="p-3.5 bg-white border border-slate-100 rounded-2xl shadow-sm flex items-center justify-between active:bg-rose-50/50 transition-colors cursor-pointer"
-                    >
-                      <div className="space-y-1">
-                        <p className="font-bold text-slate-800 text-xs">{p.nome}</p>
-                        <p className="text-[11px] text-slate-400">{p.telefone}</p>
+                {loading ? (
+                  <div className="text-center py-8 text-xs text-slate-400">A carregar pacientes...</div>
+                ) : pacientesFiltrados.length === 0 ? (
+                  <div className="text-center py-8 text-xs text-slate-400">Nenhum paciente cadastrado.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {pacientesFiltrados.map(p => (
+                      <div 
+                        key={p.id} 
+                        onClick={() => setSelectedPaciente(p)}
+                        className="p-3.5 bg-white border border-slate-100 rounded-2xl shadow-sm flex items-center justify-between active:bg-rose-50/50 transition-colors cursor-pointer"
+                      >
+                        <div className="space-y-1">
+                          <p className="font-bold text-slate-800 text-xs">{p.nome}</p>
+                          <p className="text-[11px] text-slate-400">{p.telefone || 'Sem telefone'}</p>
+                        </div>
+                        <span className="text-slate-300 text-base font-bold">›</span>
                       </div>
-                      <span className="text-slate-300 text-base font-bold">›</span>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {/* PERFIL DO PACIENTE */}
             {selectedPaciente && (
               <div className="space-y-4">
-                
-                {/* Botão Voltar & Ações Rápidas */}
                 <div className="flex justify-between items-center">
                   <button onClick={() => setSelectedPaciente(null)} className="text-xs text-rose-800 font-bold flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
                     ‹ Voltar para Lista
@@ -313,7 +380,6 @@
                   </div>
                 </div>
 
-                {/* Card do Paciente */}
                 <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
@@ -322,7 +388,7 @@
                       <p className="text-xs text-slate-400">CPF: {selectedPaciente.cpf || 'Não informado'}</p>
                     </div>
                     <span className="px-2.5 py-1 bg-rose-50 text-rose-800 text-[10px] font-bold rounded-xl border border-rose-100">
-                      Pele {selectedPaciente.tipoPele}
+                      Pele {selectedPaciente.tipo_pele || 'Mista'}
                     </span>
                   </div>
 
@@ -333,25 +399,24 @@
                   )}
                 </div>
 
-                {/* GALERIA DE FOTOS / DOCUMENTOS */}
                 <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Fotos & Documentos</h3>
-                      <p className="text-[10px] text-slate-400">Fotos de Antes/Depois e arquivos</p>
+                      <p className="text-[10px] text-slate-400">Fotos de Antes/Depois e ficheiros</p>
                     </div>
                     <button onClick={() => setShowNovoDoc(true)} className="px-3 py-1.5 bg-rose-900 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-sm">
                       <IconCamera /> <span>Anexar</span>
                     </button>
                   </div>
 
-                  {(!selectedPaciente.documentos || selectedPaciente.documentos.length === 0) ? (
+                  {documentos.length === 0 ? (
                     <div className="text-center py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
                       <p className="text-xs text-slate-400">Nenhuma foto ou documento anexado.</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
-                      {selectedPaciente.documentos.map(doc => (
+                      {documentos.map(doc => (
                         <div key={doc.id} className="relative bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden p-2">
                           {doc.tipo === 'imagem' ? (
                             <img src={doc.url} alt={doc.titulo} className="w-full h-28 object-cover rounded-xl" />
@@ -363,7 +428,7 @@
                           <div className="mt-2 flex justify-between items-center px-1">
                             <div>
                               <p className="text-[10px] font-bold text-slate-800 truncate max-w-[100px]">{doc.titulo}</p>
-                              <p className="text-[9px] text-slate-400">{doc.data}</p>
+                              <p className="text-[9px] text-slate-400">{new Date(doc.created_at).toLocaleDateString('pt-BR')}</p>
                             </div>
                             <button onClick={() => handleExcluirDoc(doc.id)} className="text-rose-600 p-1">
                               <IconTrash />
@@ -386,10 +451,10 @@
                   {consultas.map(c => (
                     <div key={c.id} className="p-3.5 bg-white rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between text-xs">
                       <div>
-                        <p className="font-bold text-slate-800">{c.paciente}</p>
+                        <p className="font-bold text-slate-800">{c.paciente_nome}</p>
                         <p className="text-slate-500">{c.procedimento}</p>
                       </div>
-                      <span className="font-bold text-rose-900">R$ {Number(c.valor).toFixed(2)}</span>
+                      <span className="font-bold text-rose-900">R$ {Number(c.valor || 0).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
@@ -409,7 +474,7 @@
 
           </main>
 
-          {/* MODAL CADASTRAR PACIENTE */}
+          {/* MODAIS */}
           {showNovoPaciente && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
               <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-4">
@@ -427,7 +492,6 @@
             </div>
           )}
 
-          {/* MODAL EDITAR PACIENTE */}
           {showEditarPaciente && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
               <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-4">
@@ -443,7 +507,7 @@
                   </div>
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Tipo de Pele</label>
-                    <select className="w-full p-3 bg-slate-50 border rounded-2xl" value={formPaciente.tipoPele} onChange={e => setFormPaciente({...formPaciente, tipoPele: e.target.value})}>
+                    <select className="w-full p-3 bg-slate-50 border rounded-2xl" value={formPaciente.tipo_pele} onChange={e => setFormPaciente({...formPaciente, tipo_pele: e.target.value})}>
                       <option>Normal</option>
                       <option>Seca</option>
                       <option>Oleosa</option>
@@ -464,7 +528,6 @@
             </div>
           )}
 
-          {/* MODAL ANEXAR FOTO / DOCUMENTO */}
           {showNovoDoc && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
               <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-4">
@@ -476,32 +539,26 @@
                   </div>
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Escolher Foto / Ficheiro *</label>
-                    <input type="file" accept="image/*,.pdf" required onChange={handleFileChange} className="w-full p-2 text-xs text-slate-500 bg-slate-50 border rounded-2xl file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rose-900 file:text-white" />
+                    <input type="file" accept="image/*,.pdf" required onChange={e => setFormDoc({ ...formDoc, file: e.target.files[0] })} className="w-full p-2 text-xs text-slate-500 bg-slate-50 border rounded-2xl file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rose-900 file:text-white" />
                   </div>
-
-                  {formDoc.previewUrl && (
-                    <div className="mt-2">
-                      <p className="text-[10px] font-bold text-slate-500 mb-1">Pré-visualização:</p>
-                      <img src={formDoc.previewUrl} className="w-full h-32 object-cover rounded-2xl border" />
-                    </div>
-                  )}
 
                   <div className="flex gap-2 pt-2">
                     <button type="button" onClick={() => setShowNovoDoc(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
-                    <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Adicionar</button>
+                    <button type="submit" disabled={uploading} className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">
+                      {uploading ? 'A enviar...' : 'Adicionar'}
+                    </button>
                   </div>
                 </form>
               </div>
             </div>
           )}
 
-          {/* MODAL NOVA CONSULTA */}
           {showNovaConsulta && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
               <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-4">
                 <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Agendar Consulta</h3>
                 <form onSubmit={handleAddConsulta} className="space-y-3 text-xs">
-                  <input required placeholder="Nome do Paciente *" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.paciente} onChange={e => setFormConsulta({...formConsulta, paciente: e.target.value})} />
+                  <input required placeholder="Nome do Paciente *" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.paciente_nome} onChange={e => setFormConsulta({...formConsulta, paciente_nome: e.target.value})} />
                   <input required placeholder="Procedimento *" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.procedimento} onChange={e => setFormConsulta({...formConsulta, procedimento: e.target.value})} />
                   <input type="number" placeholder="Valor (R$)" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.valor} onChange={e => setFormConsulta({...formConsulta, valor: e.target.value})} />
                   <div className="flex gap-2 pt-2">
@@ -537,4 +594,3 @@
   </script>
 </body>
 </html>
-
