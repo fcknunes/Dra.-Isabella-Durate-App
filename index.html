@@ -38,7 +38,7 @@
     const SUPABASE_URL = "https://paklhqzhfjxpczdxkxdd.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBha2xocXpoZmp4cGN6ZHhreGRkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcyNjI4MTQsImV4cCI6MjEwMjgzODgxNH0.QkXUEil4UjfEQ75r4FzpZQ7y2SnZVSil8CBK2dDo3u8";
 
-    const isSupabaseConfigured = SUPABASE_URL && !SUPABASE_URL.includes("COLE_AQUI");
+    const isSupabaseConfigured = SUPABASE_URL && SUPABASE_ANON_KEY && !SUPABASE_ANON_KEY.includes("COLE_AQUI");
     const supabase = isSupabaseConfigured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
     // Ícones SVG Minimalistas
@@ -51,6 +51,7 @@
     const IconEdit = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>;
     const IconTrash = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>;
     const IconCamera = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>;
+    const IconFolder = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>;
 
     function App() {
       const [activeTab, setActiveTab] = useState('dashboard');
@@ -59,6 +60,7 @@
       const [busca, setBusca] = useState('');
       const [selectedPaciente, setSelectedPaciente] = useState(null);
       const [documentos, setDocumentos] = useState([]);
+      const [categoriaFiltro, setCategoriaFiltro] = useState('Todas');
       const [loading, setLoading] = useState(false);
       const [uploading, setUploading] = useState(false);
 
@@ -70,7 +72,7 @@
 
       // Formulários
       const [formPaciente, setFormPaciente] = useState({ nome: '', telefone: '', cpf: '', tipo_pele: 'Mista', observacoes: '' });
-      const [formDoc, setFormDoc] = useState({ titulo: '', file: null });
+      const [formDoc, setFormDoc] = useState({ titulo: '', categoria: 'Fotos', file: null });
       const [formConsulta, setFormConsulta] = useState({ paciente_nome: '', procedimento: '', hora: '14:00', valor: '' });
 
       // Carregar dados ao iniciar
@@ -111,13 +113,13 @@
         }
       }
 
-      // 1. Cadastrar Paciente no Supabase
+      // 1. Cadastrar Paciente
       async function handleAddPaciente(e) {
         e.preventDefault();
         if (!formPaciente.nome) return;
 
         if (!isSupabaseConfigured) {
-          alert("Configure as suas chaves do Supabase no código primeiro!");
+          alert("Configure a sua Publishable Key do Supabase no código!");
           return;
         }
 
@@ -132,7 +134,7 @@
         }
       }
 
-      // 2. Editar Paciente no Supabase
+      // 2. Editar Paciente
       function handleAbrirEditar(paciente) {
         setFormPaciente({
           nome: paciente.nome || '',
@@ -177,7 +179,7 @@
         }
       }
 
-      // 4. Upload de Foto / Documento para o Supabase Storage
+      // 4. Upload com organização em pastas
       async function handleAddDocumento(e) {
         e.preventDefault();
         if (!formDoc.titulo || !formDoc.file || !selectedPaciente) {
@@ -188,7 +190,9 @@
         try {
           const file = formDoc.file;
           const fileExt = file.name.split('.').pop();
-          const fileName = `${selectedPaciente.id}/${Date.now()}.${fileExt}`;
+          
+          // Cria a pasta da Categoria dentro da pasta do Paciente
+          const fileName = `${selectedPaciente.id}/${formDoc.categoria}/${Date.now()}.${fileExt}`;
 
           const { error: uploadErr } = await supabase.storage
             .from('prontuarios')
@@ -202,6 +206,7 @@
           const novoDoc = {
             paciente_id: selectedPaciente.id,
             titulo: formDoc.titulo,
+            categoria: formDoc.categoria,
             url: publicUrl,
             tipo: file.type.includes('image') ? 'imagem' : 'documento'
           };
@@ -212,12 +217,12 @@
 
           if (docData) {
             setDocumentos([docData[0], ...documentos]);
-            setFormDoc({ titulo: '', file: null });
+            setFormDoc({ titulo: '', categoria: 'Fotos', file: null });
             setShowNovoDoc(false);
-            alert("Ficheiro guardado com sucesso!");
+            alert("Ficheiro salvo com sucesso na pasta " + formDoc.categoria + "!");
           }
         } catch (err) {
-          alert("Erro no envio do ficheiro: " + (err.message || "Verifique se o bucket 'prontuarios' existe no Supabase."));
+          alert("Erro no envio do ficheiro: " + (err.message || "Verifique se executou o comando SQL no Supabase."));
         } finally {
           setUploading(false);
         }
@@ -256,6 +261,10 @@
         (p.telefone && p.telefone.includes(busca))
       );
 
+      const documentosFiltrados = documentos.filter(d => 
+        categoriaFiltro === 'Todas' || (d.categoria || 'Fotos') === categoriaFiltro
+      );
+
       const totalFaturamento = consultas.reduce((acc, c) => acc + Number(c.valor || 0), 0);
 
       return (
@@ -273,7 +282,7 @@
 
           {!isSupabaseConfigured && (
             <div className="m-4 p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl text-xs">
-              <strong>Atenção:</strong> Cole o seu <code>SUPABASE_URL</code> e a <code>SUPABASE_ANON_KEY</code> nas linhas 24 e 25 do ficheiro.
+              <strong>Atenção:</strong> Cole a sua <code>SUPABASE_ANON_KEY</code> na linha 25 do ficheiro.
             </div>
           )}
 
@@ -399,30 +408,53 @@
                   )}
                 </div>
 
+                {/* GALERIA ORGANIZADA POR PASTAS */}
                 <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-center">
                     <div>
-                      <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Fotos & Documentos</h3>
-                      <p className="text-[10px] text-slate-400">Fotos de Antes/Depois e ficheiros</p>
+                      <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Documentos do Paciente</h3>
+                      <p className="text-[10px] text-slate-400">Arquivos divididos por categoria</p>
                     </div>
                     <button onClick={() => setShowNovoDoc(true)} className="px-3 py-1.5 bg-rose-900 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-sm">
                       <IconCamera /> <span>Anexar</span>
                     </button>
                   </div>
 
-                  {documentos.length === 0 ? (
+                  {/* Filtro de Pastas */}
+                  <div className="flex gap-1.5 overflow-x-auto pb-1 text-[11px]">
+                    {['Todas', 'Fotos', 'Termos', 'Exames', 'Fichas', 'Outros'].map(cat => (
+                      <button 
+                        key={cat} 
+                        onClick={() => setCategoriaFiltro(cat)}
+                        className={`px-3 py-1 rounded-xl font-bold whitespace-nowrap transition-all ${
+                          categoriaFiltro === cat 
+                            ? 'bg-rose-900 text-white shadow-sm' 
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+
+                  {documentosFiltrados.length === 0 ? (
                     <div className="text-center py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-                      <p className="text-xs text-slate-400">Nenhuma foto ou documento anexado.</p>
+                      <p className="text-xs text-slate-400">Nenhum documento na categoria "{categoriaFiltro}".</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
-                      {documentos.map(doc => (
+                      {documentosFiltrados.map(doc => (
                         <div key={doc.id} className="relative bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden p-2">
+                          <span className="absolute top-3 left-3 z-10 px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-[9px] font-bold rounded-lg">
+                            {doc.categoria || 'Fotos'}
+                          </span>
+                          
                           {doc.tipo === 'imagem' ? (
                             <img src={doc.url} alt={doc.titulo} className="w-full h-28 object-cover rounded-xl" />
                           ) : (
-                            <div className="w-full h-28 bg-rose-50 rounded-xl flex items-center justify-center text-rose-800 font-bold text-xs">
-                              📄 Ficheiro
+                            <div className="w-full h-28 bg-rose-50 rounded-xl flex items-center justify-center text-rose-800 font-bold text-xs flex-col gap-1">
+                              <IconFolder />
+                              <span>Ficheiro</span>
                             </div>
                           )}
                           <div className="mt-2 flex justify-between items-center px-1">
@@ -528,14 +560,29 @@
             </div>
           )}
 
+          {/* MODAL ANEXAR COM SELEÇÃO DE PASTA */}
           {showNovoDoc && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
               <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-4">
-                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Anexar Foto ou Documento</h3>
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Anexar Documento / Foto</h3>
                 <form onSubmit={handleAddDocumento} className="space-y-3 text-xs">
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Título / Descrição *</label>
                     <input required placeholder="Ex: Antes - Botox, Termo de Consentimento" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formDoc.titulo} onChange={e => setFormDoc({...formDoc, titulo: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Selecione a Pasta / Categoria *</label>
+                    <select 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl" 
+                      value={formDoc.categoria} 
+                      onChange={e => setFormDoc({...formDoc, categoria: e.target.value})}
+                    >
+                      <option value="Fotos">📸 Fotos (Antes / Depois)</option>
+                      <option value="Termos">📄 Termos & Contratos</option>
+                      <option value="Exames">📑 Exames & Laudos</option>
+                      <option value="Fichas">📝 Fichas & Prontuários</option>
+                      <option value="Outros">📌 Outros Documentos</option>
+                    </select>
                   </div>
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Escolher Foto / Ficheiro *</label>
