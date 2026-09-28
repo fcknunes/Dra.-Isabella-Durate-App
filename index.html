@@ -53,37 +53,10 @@
 
     // SCHEMA DE PERGUNTAS ESPECÍFICAS POR TIPO DE FICHA
     const QUESTOES_POR_FICHA = {
-      "Anamnese Geral": [
+      "Avaliação Facial": [
         { id: "alergias_medicamentos", label: "Alergias ou uso contínuo de medicamentos?", placeholder: "Ex: Alergia a Dipirona, toma anticoncepcional..." },
         { id: "doencas_cronicas", label: "Possui doenças crônicas ou autoimunes?", placeholder: "Ex: Hipertensão, Diabetes, Hashimoto..." },
         { id: "gestante_lactante", label: "Está gestante ou amamentando?", type: "select", options: ["Não", "Sim - Gestante", "Sim - Lactante"] }
-      ],
-      "Anamnese - Toxina Botulínica (Botox)": [
-        { id: "areas_interesse", label: "Regiões de maior incômodo?", placeholder: "Ex: Testa, glabela, pés de galinha, sorriso gengival..." },
-        { id: "aplicacao_anterior", label: "Já aplicou Botox antes? Quando foi a última vez?", placeholder: "Ex: Sim, há 8 meses" },
-        { id: "doenca_neuromuscular", label: "Possui alguma doença neuromuscular ou miastenia?", type: "select", options: ["Não", "Sim"] },
-        { id: "gestante_lactante", label: "Gestante ou Lactante?", type: "select", options: ["Não", "Sim"] }
-      ],
-      "Anamnese - Preenchimento Facial": [
-        { id: "regiao_preenchimento", label: "Região a ser tratada?", placeholder: "Ex: Lábios, Malar, Olheiras, Queixo, Mandíbula..." },
-        { id: "preenchimento_previo", label: "Já fez preenchimento anterior? Sabe o produto usou?", placeholder: "Ex: Ácido Hialurônico há 1 ano / Nunca fez" },
-        { id: "historico_herpes", label: "Histórico de Herpes labial recorrente?", type: "select", options: ["Não", "Sim"] },
-        { id: "alergia_anestesico", label: "Alergia a anestésicos (Lidocaína)?", type: "select", options: ["Não", "Sim"] }
-      ],
-      "Anamnese - Bioestimulador": [
-        { id: "objetivo_principal", label: "Objetivo principal (Flacidez, Firmeza, Contorno)?", placeholder: "Ex: Tratar flacidez no terço inferior e pescoço..." },
-        { id: "tratamento_colageno_previo", label: "Já realizou Bioestimulador antes (Radiesse, Sculptra, Elleva)?", placeholder: "Ex: Nunca fez / Fez Sculptra há 12 meses" },
-        { id: "doenca_autoimune", label: "Possui doença autoimune ativa?", type: "select", options: ["Não", "Sim"] }
-      ],
-      "Anamnese - Limpeza de Pele": [
-        { id: "uso_acidos", label: "Usa ou usou ácidos / Roacutan recentemente?", placeholder: "Ex: Usa Ácido Glicólico à noite / Não usa" },
-        { id: "exposicao_solar", label: "Exposição solar intensa ou praia nos últimos 15 dias?", type: "select", options: ["Não", "Sim"] },
-        { id: "sensibilidade_pele", label: "Sensibilidade habitual da pele?", type: "select", options: ["Normal", "Sensível", "Muito Sensível / Reativa"] }
-      ],
-      "Anamnese - Auriculoterapia": [
-        { id: "queixa_auriculo", label: "Foco principal do tratamento?", placeholder: "Ex: Ansiedade, Dores na coluna, Insônia, Enxaqueca..." },
-        { id: "marcapasso_metal", label: "Usa marcapasso ou possui prótese metálica?", type: "select", options: ["Não", "Sim"] },
-        { id: "preferencia_material", label: "Material de preferência?", placeholder: "Ex: Sementes de Mostarda, Esferas de Ouro/Prata" }
       ]
     };
 
