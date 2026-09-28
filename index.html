@@ -102,7 +102,7 @@
 
       // Formulários
       const [formPaciente, setFormPaciente] = useState({ nome: '', telefone: '', data_nascimento: '', observacoes: '' });
-      const [formDoc, setFormDoc] = useState({ titulo: '', categoria: 'Fotos', file: null });
+      const [formDoc, setFormDoc] = useState({ titulo: '', descricao: '', categoria: 'Fotos', file: null });
       const [formConsulta, setFormConsulta] = useState({
         id: null,
         paciente_id: '',
@@ -297,6 +297,7 @@
           const novoDoc = {
             paciente_id: selectedPaciente.id,
             titulo: formDoc.titulo,
+            descricao: formDoc.descricao || '',
             categoria: formDoc.categoria,
             url: publicUrl,
             tipo: file.type.includes('image') ? 'imagem' : 'documento'
@@ -308,7 +309,7 @@
 
           if (docData) {
             setDocumentos([docData[0], ...documentos]);
-            setFormDoc({ titulo: '', categoria: 'Fotos', file: null });
+            setFormDoc({ titulo: '', descricao: '', categoria: 'Fotos', file: null });
             setShowNovoDoc(false);
             alert("Ficheiro salvo com sucesso na pasta " + formDoc.categoria + "!");
           }
@@ -738,6 +739,7 @@
                           <div className="mt-2 flex justify-between items-center px-1">
                             <div>
                               <p className="text-[10px] font-bold text-slate-800 truncate max-w-[100px]">{doc.titulo}</p>
+                              {doc.descricao && <p className="text-[9px] text-slate-500 truncate max-w-[100px]">{doc.descricao}</p>}
                               <p className="text-[9px] text-slate-400">{new Date(doc.created_at).toLocaleDateString('pt-BR')}</p>
                             </div>
                             <button onClick={() => handleExcluirDoc(doc.id)} className="text-rose-600 p-1">
@@ -1329,15 +1331,19 @@
             </div>
           )}
 
-          {/* MODAL ANEXAR DOCUMENTO */}
+          {/* MODAL ANEXAR DOCUMENTO / FOTO */}
           {showNovoDoc && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
               <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-4">
                 <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Anexar Documento / Foto</h3>
                 <form onSubmit={handleAddDocumento} className="space-y-3 text-xs">
                   <div>
-                    <label className="font-bold text-slate-600 block mb-1">Título / Descrição *</label>
-                    <input required placeholder="Ex: Ficha Anamnese Impressa, Fotos Antes/Depois" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formDoc.titulo} onChange={e => setFormDoc({...formDoc, titulo: e.target.value})} />
+                    <label className="font-bold text-slate-600 block mb-1">Título *</label>
+                    <input required placeholder="Ex: Foto Antes / Depois, Exame de Sangue" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formDoc.titulo} onChange={e => setFormDoc({...formDoc, titulo: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Descrição (Opcional)</label>
+                    <textarea placeholder="Detalhes adicionais sobre o documento..." className="w-full p-3 bg-slate-50 border rounded-2xl h-16" value={formDoc.descricao} onChange={e => setFormDoc({...formDoc, descricao: e.target.value})} />
                   </div>
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Selecione a Pasta / Categoria *</label>
