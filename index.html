@@ -393,6 +393,7 @@
           procedimento: procFinal,
           data: formConsulta.data,
           hora: formConsulta.hora,
+          data_hora: formConsulta.data && formConsulta.hora ? `${formConsulta.data}T${formConsulta.hora}:00` : null,
           valor: Number(formConsulta.valor || 0),
           status: formConsulta.status || 'Agendado',
           status_pagamento: formConsulta.status_pagamento || 'Pendente'
@@ -435,6 +436,7 @@
           procedimento: procFinal,
           data: formConsulta.data,
           hora: formConsulta.hora,
+          data_hora: formConsulta.data && formConsulta.hora ? `${formConsulta.data}T${formConsulta.hora}:00` : null,
           valor: Number(formConsulta.valor || 0),
           status: formConsulta.status,
           status_pagamento: formConsulta.status_pagamento || 'Pendente'
@@ -485,7 +487,10 @@
         categoriaFiltro === 'Todas' || (d.categoria || 'Fotos') === categoriaFiltro
       );
 
-      const consultasDoDia = consultas.filter(c => (c.data || todayStr) === dataFiltro);
+      const consultasDoDia = consultas.filter(c => {
+        const dataConsulta = c.data || (c.data_hora ? c.data_hora.split('T')[0] : '');
+        return dataConsulta === dataFiltro;
+      });
 
       // CÁLCULOS FINANCEIROS
       const consultasValidas = consultas.filter(c => c.status !== 'Cancelado');
@@ -532,7 +537,7 @@
                   <div className="grid grid-cols-2 gap-3 mt-4">
                     <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10">
                       <p className="text-[11px] text-rose-200">Atendimentos Hoje</p>
-                      <p className="text-2xl font-black mt-0.5">{consultas.filter(c => c.data === todayStr).length}</p>
+                      <p className="text-2xl font-black mt-0.5">{consultas.filter(c => (c.data || (c.data_hora ? c.data_hora.split('T')[0] : '')) === todayStr).length}</p>
                     </div>
                     <div className="bg-white/10 backdrop-blur-md p-3.5 rounded-2xl border border-white/10">
                       <p className="text-[11px] text-rose-200">Total Pacientes</p>
@@ -915,12 +920,13 @@
                   <div className="space-y-2.5">
                     {consultasFinanceiro.map(c => {
                       const foiPago = c.status_pagamento === 'Recebido';
+                      const dataExibicao = c.data || (c.data_hora ? c.data_hora.split('T')[0] : '');
                       return (
                         <div key={c.id} className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm space-y-2">
                           <div className="flex justify-between items-start">
                             <div>
                               <p className="text-[10px] text-slate-400 font-bold">
-                                📅 {new Date(c.data + 'T00:00:00').toLocaleDateString('pt-BR')} às {c.hora || '14:00'}
+                                📅 {dataExibicao ? new Date(dataExibicao + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data não definida'} às {c.hora || '14:00'}
                               </p>
                               <h3 className="font-bold text-slate-800 text-sm mt-0.5">{c.paciente_nome}</h3>
                               <p className="text-xs text-rose-900 font-semibold">{c.procedimento}</p>
