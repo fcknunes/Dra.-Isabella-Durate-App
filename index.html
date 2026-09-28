@@ -51,6 +51,31 @@
       { nome: "Outro Procedimento...", valor: "" }
     ];
 
+    // OPÇÕES DE SESSÃO
+    const OPCOES_SESSAO = [
+      "1ª Sessão (Primeira)",
+      "2ª Sessão (Segunda)",
+      "3ª Sessão (Terceira)",
+      "4ª Sessão (Quarta)",
+      "5ª Sessão (Quinta)",
+      "6ª Sessão (Sexta)",
+      "7ª Sessão (Sétima)",
+      "8ª Sessão (Oitava)",
+      "9ª Sessão (Nona)",
+      "10ª Sessão (Décima)",
+      "11ª Sessão (Décima Primeira)",
+      "12ª Sessão (Décima Segunda)",
+      "13ª Sessão (Décima Terceira)",
+      "14ª Sessão (Décima Quarta)",
+      "15ª Sessão (Décima Quinta)",
+      "16ª Sessão (Décima Sexta)",
+      "17ª Sessão (Décima Sétima)",
+      "18ª Sessão (Décima Oitava)",
+      "19ª Sessão (Décima Nona)",
+      "20ª Sessão (Vigésima)",
+      "Sessão Única"
+    ];
+
     // SCHEMA DE PERGUNTAS ESPECÍFICAS POR TIPO DE FICHA
     const QUESTOES_POR_FICHA = {
       "Avaliação Facial": [
@@ -109,11 +134,13 @@
         paciente_nome: '',
         procedimento: PROCEDIMENTOS_PRESET[0].nome,
         procedimento_custom: '',
+        sessao: OPCOES_SESSAO[0],
         data: todayStr,
         hora: '14:00',
         valor: '',
         status: 'Agendado',
-        status_pagamento: 'Pendente'
+        status_pagamento: 'Pendente',
+        observacoes: ''
       });
 
       const [formFicha, setFormFicha] = useState({
@@ -341,11 +368,13 @@
             paciente_nome: pacientePreSelecionado.nome,
             procedimento: PROCEDIMENTOS_PRESET[0].nome,
             procedimento_custom: '',
+            sessao: OPCOES_SESSAO[0],
             data: todayStr,
             hora: '14:00',
             valor: '',
             status: 'Agendado',
-            status_pagamento: 'Pendente'
+            status_pagamento: 'Pendente',
+            observacoes: ''
           });
         } else {
           setModoPacienteManual(pacientes.length === 0);
@@ -355,11 +384,13 @@
             paciente_nome: pacientes[0]?.nome || '',
             procedimento: PROCEDIMENTOS_PRESET[0].nome,
             procedimento_custom: '',
+            sessao: OPCOES_SESSAO[0],
             data: todayStr,
             hora: '14:00',
             valor: '',
             status: 'Agendado',
-            status_pagamento: 'Pendente'
+            status_pagamento: 'Pendente',
+            observacoes: ''
           });
         }
         setShowNovaConsulta(true);
@@ -391,12 +422,14 @@
           paciente_id: formConsulta.paciente_id || null,
           paciente_nome: formConsulta.paciente_nome,
           procedimento: procFinal,
+          sessao: formConsulta.sessao || OPCOES_SESSAO[0],
           data: formConsulta.data,
           hora: formConsulta.hora,
           data_hora: formConsulta.data && formConsulta.hora ? `${formConsulta.data}T${formConsulta.hora}:00` : null,
           valor: Number(formConsulta.valor || 0),
           status: formConsulta.status || 'Agendado',
-          status_pagamento: formConsulta.status_pagamento || 'Pendente'
+          status_pagamento: formConsulta.status_pagamento || 'Pendente',
+          observacoes: formConsulta.observacoes || ''
         };
 
         const { data, error } = await supabase.from('consultas').insert([payload]).select();
@@ -417,11 +450,13 @@
           paciente_nome: c.paciente_nome || '',
           procedimento: c.procedimento,
           procedimento_custom: '',
+          sessao: c.sessao || OPCOES_SESSAO[0],
           data: c.data || todayStr,
           hora: c.hora || '14:00',
           valor: c.valor || '',
           status: c.status || 'Agendado',
-          status_pagamento: c.status_pagamento || 'Pendente'
+          status_pagamento: c.status_pagamento || 'Pendente',
+          observacoes: c.observacoes || ''
         });
         setShowEditarConsulta(true);
       }
@@ -434,12 +469,14 @@
           paciente_id: formConsulta.paciente_id || null,
           paciente_nome: formConsulta.paciente_nome,
           procedimento: procFinal,
+          sessao: formConsulta.sessao || OPCOES_SESSAO[0],
           data: formConsulta.data,
           hora: formConsulta.hora,
           data_hora: formConsulta.data && formConsulta.hora ? `${formConsulta.data}T${formConsulta.hora}:00` : null,
           valor: Number(formConsulta.valor || 0),
           status: formConsulta.status,
-          status_pagamento: formConsulta.status_pagamento || 'Pendente'
+          status_pagamento: formConsulta.status_pagamento || 'Pendente',
+          observacoes: formConsulta.observacoes || ''
         };
 
         const { data, error } = await supabase.from('consultas').update(payload).eq('id', formConsulta.id).select();
@@ -802,7 +839,7 @@
                         <div key={c.id} className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-2.5">
                           <div className="flex justify-between items-start">
                             <div>
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-xs font-extrabold text-slate-900">{c.hora || '14:00'}</span>
                                 <span className={`px-2 py-0.5 text-[9px] font-bold rounded-lg ${
                                   c.status === 'Concluído' ? 'bg-emerald-100 text-emerald-800' :
@@ -811,9 +848,20 @@
                                 }`}>
                                   {c.status || 'Agendado'}
                                 </span>
+                                {c.sessao && (
+                                  <span className="px-2 py-0.5 text-[9px] font-extrabold rounded-lg bg-rose-100 text-rose-900">
+                                    {c.sessao}
+                                  </span>
+                                )}
                               </div>
                               <h3 className="font-bold text-slate-800 text-sm mt-1">{c.paciente_nome}</h3>
                               <p className="text-xs text-rose-900 font-semibold">{c.procedimento}</p>
+
+                              {c.observacoes && (
+                                <p className="text-[11px] text-slate-600 mt-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                  📝 <strong>Obs:</strong> {c.observacoes}
+                                </p>
+                              )}
                             </div>
                             
                             <div className="text-right">
@@ -929,7 +977,7 @@
                                 📅 {dataExibicao ? new Date(dataExibicao + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data não definida'} às {c.hora || '14:00'}
                               </p>
                               <h3 className="font-bold text-slate-800 text-sm mt-0.5">{c.paciente_nome}</h3>
-                              <p className="text-xs text-rose-900 font-semibold">{c.procedimento}</p>
+                              <p className="text-xs text-rose-900 font-semibold">{c.procedimento} {c.sessao ? `(${c.sessao})` : ''}</p>
                             </div>
 
                             <div className="text-right">
@@ -1228,6 +1276,17 @@
                     />
                   )}
 
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Sessão</label>
+                    <select 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                      value={formConsulta.sessao}
+                      onChange={e => setFormConsulta({...formConsulta, sessao: e.target.value})}
+                    >
+                      {OPCOES_SESSAO.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="font-bold text-slate-600 block mb-1">Data *</label>
@@ -1255,6 +1314,16 @@
                         <option value="Recebido">✅ Recebido</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Observação (Opcional)</label>
+                    <textarea 
+                      placeholder="Notas ou detalhes adicionais sobre o agendamento..." 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl h-16" 
+                      value={formConsulta.observacoes} 
+                      onChange={e => setFormConsulta({...formConsulta, observacoes: e.target.value})} 
+                    />
                   </div>
 
                   <div className="flex gap-2 pt-2">
@@ -1287,6 +1356,17 @@
                       {PROCEDIMENTOS_PRESET.map(proc => (
                         <option key={proc.nome} value={proc.nome}>{proc.nome}</option>
                       ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Sessão</label>
+                    <select 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                      value={formConsulta.sessao}
+                      onChange={e => setFormConsulta({...formConsulta, sessao: e.target.value})}
+                    >
+                      {OPCOES_SESSAO.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                   </div>
 
@@ -1326,6 +1406,16 @@
                         <option value="Recebido">✅ Recebido</option>
                       </select>
                     </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Observação (Opcional)</label>
+                    <textarea 
+                      placeholder="Notas ou detalhes adicionais sobre o agendamento..." 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl h-16" 
+                      value={formConsulta.observacoes} 
+                      onChange={e => setFormConsulta({...formConsulta, observacoes: e.target.value})} 
+                    />
                   </div>
 
                   <div className="flex gap-2 pt-2">
