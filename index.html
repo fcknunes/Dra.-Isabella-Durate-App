@@ -51,7 +51,16 @@
       { nome: "Outro Procedimento...", valor: "" }
     ];
 
-    // Ícones SVG Minimalistas
+    const TIPOS_ANAMNESE = [
+      "Anamnese Geral",
+      "Anamnese - Toxina Botulínica (Botox)",
+      "Anamnese - Preenchimento Facial",
+      "Anamnese - Bioestimulador",
+      "Anamnese - Limpeza de Pele",
+      "Anamnese - Auriculoterapia"
+    ];
+
+    // Ícones SVG
     const IconHome = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 00-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>;
     const IconUsers = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>;
     const IconCalendar = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>;
@@ -61,6 +70,7 @@
     const IconEdit = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>;
     const IconTrash = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>;
     const IconCamera = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>;
+    const IconFileText = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>;
 
     function App() {
       const todayStr = new Date().toISOString().split('T')[0];
@@ -68,6 +78,7 @@
       const [activeTab, setActiveTab] = useState('dashboard');
       const [pacientes, setPacientes] = useState([]);
       const [consultas, setConsultas] = useState([]);
+      const [fichasAnamnese, setFichasAnamnese] = useState([]);
       const [busca, setBusca] = useState('');
       const [dataFiltro, setDataFiltro] = useState(todayStr);
       const [selectedPaciente, setSelectedPaciente] = useState(null);
@@ -83,6 +94,8 @@
       const [showNovaConsulta, setShowNovaConsulta] = useState(false);
       const [showEditarConsulta, setShowEditarConsulta] = useState(false);
       const [showNovoDoc, setShowNovoDoc] = useState(false);
+      const [showNovaFicha, setShowNovaFicha] = useState(false);
+      const [selectedFichaVer, setSelectedFichaVer] = useState(null);
 
       // Formulários
       const [formPaciente, setFormPaciente] = useState({ nome: '', telefone: '', cpf: '', tipo_pele: 'Mista', observacoes: '' });
@@ -99,6 +112,15 @@
         status: 'Agendado'
       });
 
+      const [formFicha, setFormFicha] = useState({
+        tipo_ficha: TIPOS_ANAMNESE[0],
+        data: todayStr,
+        queixa_principal: '',
+        historico_saude: '',
+        procedimentos_anteriores: '',
+        avaliacao_medica: ''
+      });
+
       useEffect(() => {
         if (isSupabaseConfigured) {
           carregarDados();
@@ -108,6 +130,7 @@
       useEffect(() => {
         if (selectedPaciente && isSupabaseConfigured) {
           carregarDocumentos(selectedPaciente.id);
+          carregarFichas(selectedPaciente.id);
         }
       }, [selectedPaciente]);
 
@@ -132,6 +155,15 @@
           if (!error && data) setDocumentos(data);
         } catch (err) {
           console.error("Erro ao carregar documentos:", err);
+        }
+      }
+
+      async function carregarFichas(pacienteId) {
+        try {
+          const { data, error } = await supabase.from('fichas_anamnese').select('*').eq('paciente_id', pacienteId).order('data', { ascending: false });
+          if (!error && data) setFichasAnamnese(data);
+        } catch (err) {
+          console.error("Erro ao carregar fichas de anamnese:", err);
         }
       }
 
@@ -190,6 +222,52 @@
           } else {
             setPacientes(pacientes.filter(p => p.id !== id));
             setSelectedPaciente(null);
+          }
+        }
+      }
+
+      // --- FICHAS DE ANAMNESE DIGITAL ---
+      async function handleSalvarFicha(e) {
+        e.preventDefault();
+        if (!selectedPaciente) return;
+
+        const payload = {
+          paciente_id: selectedPaciente.id,
+          tipo_ficha: formFicha.tipo_ficha,
+          data: formFicha.data,
+          queixa_principal: formFicha.queixa_principal,
+          historico_saude: formFicha.historico_saude,
+          procedimentos_anteriores: formFicha.procedimentos_anteriores,
+          avaliacao_medica: formFicha.avaliacao_medica
+        };
+
+        const { data, error } = await supabase.from('fichas_anamnese').insert([payload]).select();
+
+        if (error) {
+          alert("Erro ao salvar ficha: " + error.message);
+        } else if (data) {
+          setFichasAnamnese([data[0], ...fichasAnamnese]);
+          setShowNovaFicha(false);
+          setFormFicha({
+            tipo_ficha: TIPOS_ANAMNESE[0],
+            data: todayStr,
+            queixa_principal: '',
+            historico_saude: '',
+            procedimentos_anteriores: '',
+            avaliacao_medica: ''
+          });
+          alert("Ficha de Anamnese salva com sucesso!");
+        }
+      }
+
+      async function handleExcluirFicha(fichaId) {
+        if (confirm("Deseja excluir esta ficha de anamnese?")) {
+          const { error } = await supabase.from('fichas_anamnese').delete().eq('id', fichaId);
+          if (error) {
+            alert("Erro ao excluir ficha: " + error.message);
+          } else {
+            setFichasAnamnese(fichasAnamnese.filter(f => f.id !== fichaId));
+            if (selectedFichaVer && selectedFichaVer.id === fichaId) setSelectedFichaVer(null);
           }
         }
       }
@@ -511,6 +589,7 @@
                   </div>
                 </div>
 
+                {/* DADOS BÁSICOS */}
                 <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
@@ -530,12 +609,57 @@
                   )}
                 </div>
 
+                {/* FICHAS DE ANAMNESE DIGITAL */}
+                <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Fichas de Anamnese Digital</h3>
+                      <p className="text-[10px] text-slate-400">Preenchidas na consulta pela Dra. Isabella</p>
+                    </div>
+                    <button onClick={() => setShowNovaFicha(true)} className="px-3 py-1.5 bg-rose-900 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-sm">
+                      <IconPlus /> <span>Preencher</span>
+                    </button>
+                  </div>
+
+                  {fichasAnamnese.length === 0 ? (
+                    <div className="text-center py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                      <p className="text-xs text-slate-400">Nenhuma ficha digital preenchida ainda.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {fichasAnamnese.map(f => (
+                        <div key={f.id} className="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex justify-between items-center">
+                          <div>
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-rose-100 text-rose-900 rounded-lg block w-fit mb-1">
+                              {f.tipo_ficha}
+                            </span>
+                            <p className="text-xs font-bold text-slate-800">
+                              Data: {new Date(f.data + 'T00:00:00').toLocaleDateString('pt-BR')}
+                            </p>
+                            {f.queixa_principal && (
+                              <p className="text-[11px] text-slate-500 truncate max-w-[200px]">Queixa: {f.queixa_principal}</p>
+                            )}
+                          </div>
+                          <div className="flex gap-1">
+                            <button onClick={() => setSelectedFichaVer(f)} className="px-2.5 py-1 bg-white border rounded-xl text-xs font-bold text-slate-700 shadow-sm">
+                              Ver
+                            </button>
+                            <button onClick={() => handleExcluirFicha(f.id)} className="p-1.5 text-rose-600">
+                              <IconTrash />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 {/* GALERIA DE FOTOS/DOCUMENTOS DO PACIENTE */}
                 <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-center">
                     <div>
-                      <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Documentos do Paciente</h3>
-                      <p className="text-[10px] text-slate-400">Arquivos divididos por categoria</p>
+                      <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Fotos & Anexos do Paciente</h3>
+                      <p className="text-[10px] text-slate-400">Fotos da ficha impressa, exames e termos</p>
                     </div>
                     <button onClick={() => setShowNovoDoc(true)} className="px-3 py-1.5 bg-rose-900 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-sm">
                       <IconCamera /> <span>Anexar</span>
@@ -682,6 +806,97 @@
             )}
 
           </main>
+
+          {/* MODAL PREENCHER FICHA DE ANAMNESE DIGITAL */}
+          {showNovaFicha && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Ficha de Anamnese Digital</h3>
+                <p className="text-[10px] text-slate-400">Preenchimento pela Dra. Isabella para {selectedPaciente?.nome}</p>
+
+                <form onSubmit={handleSalvarFicha} className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Tipo de Ficha / Procedimento *</label>
+                    <select 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-rose-900"
+                      value={formFicha.tipo_ficha}
+                      onChange={e => setFormFicha({...formFicha, tipo_ficha: e.target.value})}
+                    >
+                      {TIPOS_ANAMNESE.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Data da Avaliação *</label>
+                    <input type="date" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formFicha.data} onChange={e => setFormFicha({...formFicha, data: e.target.value})} />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Queixa Principal / Objetivo da Paciente</label>
+                    <textarea placeholder="Ex: Linhas de expressão na testa e pés de galinha..." className="w-full p-3 bg-slate-50 border rounded-2xl h-16" value={formFicha.queixa_principal} onChange={e => setFormFicha({...formFicha, queixa_principal: e.target.value})} />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Histórico de Saúde / Alergias / Medicamentos</label>
+                    <textarea placeholder="Ex: Alergia a frutos do mar, hipertensão controlada..." className="w-full p-3 bg-slate-50 border rounded-2xl h-16" value={formFicha.historico_saude} onChange={e => setFormFicha({...formFicha, historico_saude: e.target.value})} />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Procedimentos Estéticos Anteriores</label>
+                    <input placeholder="Ex: Botox há 6 meses, preenchimento labial há 1 ano" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formFicha.procedimentos_anteriores} onChange={e => setFormFicha({...formFicha, procedimentos_anteriores: e.target.value})} />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Avaliação Técnica & Plano da Dra. Isabella</label>
+                    <textarea placeholder="Ex: Aplicadas 30 unidades de toxina na região frontal e glabela..." className="w-full p-3 bg-slate-50 border rounded-2xl h-20" value={formFicha.avaliacao_medica} onChange={e => setFormFicha({...formFicha, avaliacao_medica: e.target.value})} />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button type="button" onClick={() => setShowNovaFicha(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
+                    <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Salvar Ficha</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL VER FICHA PREENCHIDA */}
+          {selectedFichaVer && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+                <span className="text-[10px] font-bold px-2.5 py-1 bg-rose-100 text-rose-900 rounded-xl block w-fit">
+                  {selectedFichaVer.tipo_ficha}
+                </span>
+                <h3 className="text-sm font-bold text-slate-800">Ficha de {selectedPaciente?.nome}</h3>
+                <p className="text-xs text-slate-400">Data: {new Date(selectedFichaVer.data + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+
+                <div className="space-y-3 text-xs pt-2">
+                  <div className="bg-slate-50 p-3 rounded-2xl border">
+                    <strong className="text-slate-700 block mb-0.5">Queixa Principal:</strong>
+                    <p className="text-slate-600">{selectedFichaVer.queixa_principal || 'Não informada'}</p>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-2xl border">
+                    <strong className="text-slate-700 block mb-0.5">Histórico de Saúde / Alergias:</strong>
+                    <p className="text-slate-600">{selectedFichaVer.historico_saude || 'Nenhuma ressalva'}</p>
+                  </div>
+                  <div className="bg-slate-50 p-3 rounded-2xl border">
+                    <strong className="text-slate-700 block mb-0.5">Procedimentos Anteriores:</strong>
+                    <p className="text-slate-600">{selectedFichaVer.procedimentos_anteriores || 'Nenhum'}</p>
+                  </div>
+                  <div className="bg-rose-50/60 p-3 rounded-2xl border border-rose-100">
+                    <strong className="text-rose-950 block mb-0.5">Avaliação Técnica & Conduta Médica:</strong>
+                    <p className="text-rose-900">{selectedFichaVer.avaliacao_medica || 'Sem anotações adicionais'}</p>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button type="button" onClick={() => setSelectedFichaVer(null)} className="w-full p-3 bg-slate-900 text-white font-bold rounded-2xl text-xs">
+                    Fechar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* MODAL CADASTRAR PACIENTE */}
           {showNovoPaciente && (
@@ -893,7 +1108,7 @@
                 <form onSubmit={handleAddDocumento} className="space-y-3 text-xs">
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Título / Descrição *</label>
-                    <input required placeholder="Ex: Antes - Botox, Termo de Consentimento" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formDoc.titulo} onChange={e => setFormDoc({...formDoc, titulo: e.target.value})} />
+                    <input required placeholder="Ex: Ficha Anamnese Impressa, Fotos Antes/Depois" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formDoc.titulo} onChange={e => setFormDoc({...formDoc, titulo: e.target.value})} />
                   </div>
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Selecione a Pasta / Categoria *</label>
@@ -903,9 +1118,9 @@
                       onChange={e => setFormDoc({...formDoc, categoria: e.target.value})}
                     >
                       <option value="Fotos">📸 Fotos (Antes / Depois)</option>
+                      <option value="Fichas">📝 Fichas & Prontuários (Impressos)</option>
                       <option value="Termos">📄 Termos & Contratos</option>
                       <option value="Exames">📑 Exames & Laudos</option>
-                      <option value="Fichas">📝 Fichas & Prontuários</option>
                       <option value="Outros">📌 Outros Documentos</option>
                     </select>
                   </div>
