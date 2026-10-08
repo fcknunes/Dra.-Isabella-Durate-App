@@ -18,6 +18,11 @@
     body { 
       font-family: 'Plus Jakarta Sans', sans-serif; 
       -webkit-tap-highlight-color: transparent;
+      background-image: url('fundo.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
       background-color: #faf7f8;
     }
     .glass-nav {
@@ -589,9 +594,9 @@
       const questoesAtuais = QUESTOES_POR_FICHA[formFicha.tipo_ficha] || [];
 
       return (
-        <div className="max-w-md mx-auto min-h-screen flex flex-col bg-[#faf7f8]">
+        <div className="max-w-md mx-auto min-h-screen flex flex-col bg-[#faf7f8]/90 backdrop-blur-sm shadow-2xl">
           
-          <header className="bg-gradient-to-r from-rose-950 via-rose-900 to-rose-950 text-white p-5 rounded-b-3xl shadow-lg flex justify-between items-center sticky top-0 z-20 border-b border-rose-800/40">
+          <header className="bg-gradient-to-r from-rose-950/95 via-rose-900/95 to-rose-950/95 text-white p-5 rounded-b-3xl shadow-lg flex justify-between items-center sticky top-0 z-20 border-b border-rose-800/40 backdrop-blur-md">
             <div>
               <span className="text-[10px] uppercase tracking-widest text-rose-300 font-bold block">Clínica Médica</span>
               <h1 className="text-lg font-bold tracking-tight text-rose-50">Dra. Isabella Duarte</h1>
@@ -644,7 +649,7 @@
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => setShowNovoPaciente(true)} className="p-4 bg-white border border-rose-100 rounded-2xl shadow-sm text-left flex items-center justify-between active:scale-95 transition-all">
+                  <button onClick={() => setShowNovoPaciente(true)} className="p-4 bg-white/90 backdrop-blur-md border border-rose-100/80 rounded-2xl shadow-sm text-left flex items-center justify-between active:scale-95 transition-all">
                     <div>
                       <p className="text-xs font-bold text-slate-800">+ Paciente</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Novo cadastro</p>
@@ -652,7 +657,7 @@
                     <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center"><IconUsers /></div>
                   </button>
 
-                  <button onClick={() => handleAbrirNovoAgendamento()} className="p-4 bg-white border border-rose-100 rounded-2xl shadow-sm text-left flex items-center justify-between active:scale-95 transition-all">
+                  <button onClick={() => handleAbrirNovoAgendamento()} className="p-4 bg-white/90 backdrop-blur-md border border-rose-100/80 rounded-2xl shadow-sm text-left flex items-center justify-between active:scale-95 transition-all">
                     <div>
                       <p className="text-xs font-bold text-slate-800">+ Agendar</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Nova consulta</p>
@@ -678,7 +683,7 @@
                   <input 
                     type="text" 
                     placeholder="Buscar por nome ou telefone..." 
-                    className="w-full pl-9 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+                    className="w-full pl-9 pr-4 py-2.5 bg-white/90 backdrop-blur-sm border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/20"
                     value={busca}
                     onChange={e => setBusca(e.target.value)}
                   />
@@ -694,7 +699,7 @@
                       <div 
                         key={p.id} 
                         onClick={() => setSelectedPaciente(p)}
-                        className="p-3.5 bg-white border border-slate-100 rounded-2xl shadow-sm flex items-center justify-between active:bg-rose-50/50 transition-colors cursor-pointer"
+                        className="p-3.5 bg-white/90 backdrop-blur-md border border-slate-100 rounded-2xl shadow-sm flex items-center justify-between active:bg-rose-50/50 transition-colors cursor-pointer"
                       >
                         <div className="space-y-1">
                           <p className="font-bold text-slate-800 text-xs">{p.nome}</p>
@@ -712,7 +717,7 @@
             {selectedPaciente && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <button onClick={() => setSelectedPaciente(null)} className="text-xs text-rose-800 font-bold flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                  <button onClick={() => setSelectedPaciente(null)} className="text-xs text-rose-800 font-bold flex items-center gap-1 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
                     ‹ Voltar para Lista
                   </button>
 
@@ -730,7 +735,7 @@
                 </div>
 
                 {/* DADOS BÁSICOS */}
-                <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+                <div className="bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
                       <h2 className="text-base font-extrabold text-slate-800">{selectedPaciente.nome}</h2>
@@ -740,14 +745,14 @@
                   </div>
 
                   {selectedPaciente.observacoes && (
-                    <p className="text-xs text-slate-600 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                    <p className="text-xs text-slate-600 bg-slate-50/80 p-3 rounded-2xl border border-slate-100">
                       <strong>Observações:</strong> {selectedPaciente.observacoes}
                     </p>
                   )}
                 </div>
 
                 {/* FICHAS DE ANAMNESE DIGITAL */}
-                <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+                <div className="bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Fichas de Anamnese Digital</h3>
@@ -765,7 +770,7 @@
                   ) : (
                     <div className="space-y-2">
                       {fichasAnamnese.map(f => (
-                        <div key={f.id} className="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex justify-between items-center">
+                        <div key={f.id} className="p-3 bg-slate-50/80 border border-slate-200 rounded-2xl flex justify-between items-center">
                           <div>
                             <span className="text-[10px] font-bold px-2 py-0.5 bg-rose-100 text-rose-900 rounded-lg block w-fit mb-1">
                               {f.tipo_ficha}
@@ -792,7 +797,7 @@
                 </div>
 
                 {/* GALERIA DE FOTOS/DOCUMENTOS DO PACIENTE */}
-                <div className="bg-white p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+                <div className="bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-center">
                     <div>
                       <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Fotos & Anexos do Paciente</h3>
@@ -871,7 +876,7 @@
                 </div>
 
                 {/* Seleção de Data */}
-                <div className="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+                <div className="bg-white/90 backdrop-blur-md p-3 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-600">Filtrar por Data:</span>
                   <input 
                     type="date" 
@@ -882,7 +887,7 @@
                 </div>
 
                 {consultasDoDia.length === 0 ? (
-                  <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white space-y-3">
+                  <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white/90 backdrop-blur-md space-y-3">
                     <p className="text-xs text-slate-400">Nenhuma consulta agendada para este dia.</p>
                     <button 
                       onClick={() => handleAbrirNovoAgendamento()} 
@@ -896,7 +901,7 @@
                     {consultasDoDia.map(c => {
                       const foiPago = c.status_pagamento === 'Recebido';
                       return (
-                        <div key={c.id} className="p-4 bg-white rounded-2xl border border-slate-100 shadow-sm space-y-2.5">
+                        <div key={c.id} className="p-4 bg-white/90 backdrop-blur-md rounded-2xl border border-slate-100 shadow-sm space-y-2.5">
                           <div className="flex justify-between items-start">
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
@@ -918,7 +923,7 @@
                               <p className="text-xs text-rose-900 font-semibold">{c.procedimento}</p>
 
                               {c.observacoes && (
-                                <p className="text-[11px] text-slate-600 mt-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                                <p className="text-[11px] text-slate-600 mt-2 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
                                   📝 <strong>Obs:</strong> {c.observacoes}
                                 </p>
                               )}
@@ -970,20 +975,20 @@
 
                 {/* MÉTRICAS PRINCIPAIS */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-amber-500 text-white p-4 rounded-3xl shadow-sm border border-amber-400">
+                  <div className="bg-amber-500/90 backdrop-blur-md text-white p-4 rounded-3xl shadow-sm border border-amber-400">
                     <p className="text-[10px] uppercase font-bold text-amber-100 tracking-wider">⏳ Lançamentos Futuros</p>
                     <p className="text-xl font-black mt-1">R$ {valorAReceber.toFixed(2)}</p>
                     <p className="text-[9px] text-amber-100 mt-1">A receber</p>
                   </div>
 
-                  <div className="bg-emerald-700 text-white p-4 rounded-3xl shadow-sm border border-emerald-600">
+                  <div className="bg-emerald-700/90 backdrop-blur-md text-white p-4 rounded-3xl shadow-sm border border-emerald-600">
                     <p className="text-[10px] uppercase font-bold text-emerald-100 tracking-wider">✅ Entrou em Caixa</p>
                     <p className="text-xl font-black mt-1">R$ {valorRecebido.toFixed(2)}</p>
                     <p className="text-[9px] text-emerald-100 mt-1">Confirmado</p>
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-4 rounded-2xl shadow-sm flex justify-between items-center">
+                <div className="bg-gradient-to-r from-slate-900/95 to-slate-800/95 text-white p-4 rounded-2xl shadow-sm flex justify-between items-center backdrop-blur-md">
                   <div>
                     <p className="text-[10px] uppercase font-bold text-slate-400">Previsão Total (Em Caixa + Futuro)</p>
                     <p className="text-lg font-black mt-0.5">R$ {previsaoTotal.toFixed(2)}</p>
@@ -992,7 +997,7 @@
                 </div>
 
                 {/* ABAS DE FILTRO DO FINANCEIRO */}
-                <div className="flex bg-slate-200/70 p-1 rounded-2xl text-xs font-bold text-slate-600 gap-1">
+                <div className="flex bg-slate-200/70 p-1 rounded-2xl text-xs font-bold text-slate-600 gap-1 backdrop-blur-sm">
                   <button 
                     onClick={() => setFiltroFinanceiro('Futuros')}
                     className={`flex-1 py-2 rounded-xl text-center transition-all ${
@@ -1021,7 +1026,7 @@
 
                 {/* LISTAGEM DOS LANÇAMENTOS */}
                 {consultasFinanceiro.length === 0 ? (
-                  <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white">
+                  <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white/90 backdrop-blur-md">
                     <p className="text-xs text-slate-400">Nenhum lançamento nesta categoria.</p>
                   </div>
                 ) : (
@@ -1030,7 +1035,7 @@
                       const foiPago = c.status_pagamento === 'Recebido';
                       const dataExibicao = c.data || (c.data_hora ? c.data_hora.split('T')[0] : '');
                       return (
-                        <div key={c.id} className="p-4 bg-white border border-slate-100 rounded-2xl shadow-sm space-y-2">
+                        <div key={c.id} className="p-4 bg-white/90 backdrop-blur-md border border-slate-100 rounded-2xl shadow-sm space-y-2">
                           <div className="flex justify-between items-start">
                             <div>
                               <p className="text-[10px] text-slate-400 font-bold">
@@ -1071,7 +1076,7 @@
 
           </main>
 
-          {/* POPUP POPUP ANIVERSARIANTES DO DIA */}
+          {/* POPUP ANIVERSARIANTES DO DIA */}
           {showPopupAniversario && aniversariantesHoje.length > 0 && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
               <div className="bg-white w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl border border-rose-100 text-center">
