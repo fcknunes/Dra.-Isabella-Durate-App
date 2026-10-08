@@ -18,7 +18,7 @@
     body { 
       font-family: 'Plus Jakarta Sans', sans-serif; 
       -webkit-tap-highlight-color: transparent;
-      background-image: url('fundo.jpg');
+      background-image: url('Background.png');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -56,7 +56,7 @@
       { nome: "Outro Procedimento...", valor: "" }
     ];
 
-    // OPÇÕES DE SESSÃO (Sessão Única no topo)
+    // OPÇÕES DE SESSÃO
     const OPCOES_SESSAO = [
       "Sessão Única",
       "1ª Sessão (Primeira)",
@@ -665,6 +665,21 @@
                     <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center"><IconCalendar /></div>
                   </button>
                 </div>
+
+                {/* LOGO CENTRALIZADO COM 50% DE OPACIDADE */}
+                <div className="flex justify-center items-center py-10 my-auto min-h-[220px]">
+                  <img 
+                    src="logo.png" 
+                    alt="Logo Dra. Isabella Duarte" 
+                    className="max-w-[220px] w-full object-contain opacity-50 select-none pointer-events-none"
+                    onError={(e) => {
+                      if (!e.target.src.endsWith('logo.jpg')) {
+                        e.target.src = 'logo.jpg';
+                      }
+                    }}
+                  />
+                </div>
+
               </div>
             )}
 
@@ -968,7 +983,7 @@
               </div>
             )}
 
-            {/* FINANCEIRO REFORMULADO */}
+            {/* FINANCEIRO */}
             {activeTab === 'financeiro' && (
               <div className="space-y-4">
                 <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Controle Financeiro</h2>
@@ -1057,7 +1072,6 @@
                             </div>
                           </div>
 
-                          {/* BOTÃO DE 1 CLIQUE PARA CONFIRMAR PAGAMENTO */}
                           {!foiPago && (
                             <button 
                               onClick={() => handleConfirmarPagamento(c.id)}
