@@ -677,14 +677,23 @@
       return (
         <div className="max-w-md mx-auto min-h-screen flex flex-col bg-[#faf7f8]/90 backdrop-blur-sm shadow-2xl">
           
+          {/* CABEÇALHO ATUALIZADO */}
           <header className="bg-gradient-to-r from-rose-950/95 via-rose-900/95 to-rose-950/95 text-white p-5 rounded-b-3xl shadow-lg flex justify-between items-center sticky top-0 z-20 border-b border-rose-800/40 backdrop-blur-md">
             <div>
-              <span className="text-[10px] uppercase tracking-widest text-rose-300 font-bold block">Clínica Médica</span>
+              <span className="text-[10px] uppercase tracking-widest text-rose-300 font-bold block">Estética Avançada</span>
               <h1 className="text-lg font-bold tracking-tight text-rose-50">Dra. Isabella Duarte</h1>
             </div>
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-700 to-rose-900 border border-rose-500/30 flex items-center justify-center font-extrabold text-xs text-rose-100 shadow-inner">
-              ID
-            </div>
+            <img 
+              src="Ícone.png" 
+              alt="Ícone Dra. Isabella Duarte" 
+              className="w-10 h-10 rounded-2xl object-cover border border-rose-500/30 shadow-inner bg-rose-900" 
+              onError={(e) => {
+                if (!e.target.dataset.tried) {
+                  e.target.dataset.tried = "true";
+                  e.target.src = "Ícone";
+                }
+              }}
+            />
           </header>
 
           <main className="flex-1 p-4 space-y-4 overflow-y-auto max-h-[calc(100vh-140px)] custom-scrollbar">
@@ -908,7 +917,7 @@
 
                   {documentosFiltrados.length === 0 ? (
                     <div className="text-center py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-                      <p className="text-xs text-slate-400">Nenum documento na categoria "{categoriaFiltro}".</p>
+                      <p className="text-xs text-slate-400">Nenhum documento na categoria "{categoriaFiltro}".</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
