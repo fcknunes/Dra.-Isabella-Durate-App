@@ -666,20 +666,6 @@
                   </button>
                 </div>
 
-                {/* LOGO CENTRALIZADO COM 50% DE OPACIDADE */}
-                <div className="flex justify-center items-center py-10 my-auto min-h-[220px]">
-                  <img 
-                    src="logo.png" 
-                    alt="Logo Dra. Isabella Duarte" 
-                    className="max-w-[220px] w-full object-contain opacity-50 select-none pointer-events-none"
-                    onError={(e) => {
-                      if (!e.target.src.endsWith('logo.jpg')) {
-                        e.target.src = 'logo.jpg';
-                      }
-                    }}
-                  />
-                </div>
-
               </div>
             )}
 
