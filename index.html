@@ -70,6 +70,13 @@
       { nome: "Outro Procedimento...", valor: "" }
     ];
 
+    // OPÇÕES DE DURAÇÃO
+    const OPCOES_DURACAO = [
+      "1 hora",
+      "2 horas",
+      "3 horas"
+    ];
+
     // OPÇÕES DE SESSÃO
     const OPCOES_SESSAO = [
       "Sessão Única",
@@ -129,7 +136,13 @@
     // FUNÇÃO PARA GERAR FICHEIRO .ICS E INTEGRAR COM A AGENDA DO CELULAR (iOS/Apple Calendar)
     function baixarEventoICS(consulta) {
       const dataHoraInicio = new Date(`${consulta.data}T${consulta.hora || '14:00'}:00`);
-      const dataHoraFim = new Date(dataHoraInicio.getTime() + 60 * 60 * 1000); // 1 hora de duração por padrão
+
+      // Calcula as horas de duração selecionadas
+      let horasDuracao = 1;
+      if (consulta.duracao && consulta.duracao.includes('2')) horasDuracao = 2;
+      if (consulta.duracao && consulta.duracao.includes('3')) horasDuracao = 3;
+
+      const dataHoraFim = new Date(dataHoraInicio.getTime() + horasDuracao * 60 * 60 * 1000);
 
       const formatarDataICS = (date) => {
         return date.toISOString().replace(/-|:|\.\d+/g, '');
@@ -144,7 +157,7 @@
         'PRODID:-//Dra Isabella Duarte//Estetica Avancada//PT',
         'BEGIN:VEVENT',
         `SUMMARY:Atendimento: ${consulta.paciente_nome} - ${consulta.procedimento}`,
-        `DESCRIPTION:Procedimento: ${consulta.procedimento}\\nSessao: ${consulta.sessao || 'Unica'}\\nObservacoes: ${consulta.observacoes || 'Nenhuma'}`,
+        `DESCRIPTION:Procedimento: ${consulta.procedimento}\\nSessao: ${consulta.sessao || 'Unica'}\\nDuracao: ${consulta.duracao || '1 hora'}\\nObservacoes: ${consulta.observacoes || 'Nenhuma'}`,
         `DTSTART:${inicioStr}`,
         `DTEND:${fimStr}`,
         'END:VEVENT',
@@ -312,6 +325,7 @@
         procedimento: PROCEDIMENTOS_PRESET[0].nome,
         procedimento_custom: '',
         sessao: OPCOES_SESSAO[0],
+        duracao: OPCOES_DURACAO[0],
         data: todayStr,
         hora: '14:00',
         valor: '',
@@ -634,6 +648,7 @@
             procedimento: PROCEDIMENTOS_PRESET[0].nome,
             procedimento_custom: '',
             sessao: OPCOES_SESSAO[0],
+            duracao: OPCOES_DURACAO[0],
             data: todayStr,
             hora: '14:00',
             valor: '',
@@ -650,6 +665,7 @@
             procedimento: PROCEDIMENTOS_PRESET[0].nome,
             procedimento_custom: '',
             sessao: OPCOES_SESSAO[0],
+            duracao: OPCOES_DURACAO[0],
             data: todayStr,
             hora: '14:00',
             valor: '',
@@ -688,6 +704,7 @@
           paciente_nome: formConsulta.paciente_nome,
           procedimento: procFinal,
           sessao: formConsulta.sessao || OPCOES_SESSAO[0],
+          duracao: formConsulta.duracao || OPCOES_DURACAO[0],
           data: formConsulta.data,
           hora: formConsulta.hora,
           data_hora: formConsulta.data && formConsulta.hora ? `${formConsulta.data}T${formConsulta.hora}:00` : null,
@@ -716,6 +733,7 @@
           procedimento: c.procedimento,
           procedimento_custom: '',
           sessao: c.sessao || OPCOES_SESSAO[0],
+          duracao: c.duracao || OPCOES_DURACAO[0],
           data: c.data || todayStr,
           hora: c.hora || '14:00',
           valor: c.valor || '',
@@ -735,6 +753,7 @@
           paciente_nome: formConsulta.paciente_nome,
           procedimento: procFinal,
           sessao: formConsulta.sessao || OPCOES_SESSAO[0],
+          duracao: formConsulta.duracao || OPCOES_DURACAO[0],
           data: formConsulta.data,
           hora: formConsulta.hora,
           data_hora: formConsulta.data && formConsulta.hora ? `${formConsulta.data}T${formConsulta.hora}:00` : null,
@@ -1099,7 +1118,7 @@
               </div>
             )}
 
-            {/* AGENDA COMPLETA COM INTEGRAÇÃO DE CALENDÁRIO PARA CELLULAR / iOS */}
+            {/* AGENDA COMPLETA COM INTEGRAÇÃO DE DURAÇÃO E CALENDÁRIO */}
             {activeTab === 'agenda' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -1137,7 +1156,7 @@
                         <div key={c.id} className="p-4 bg-white/90 backdrop-blur-md rounded-2xl border border-slate-100 shadow-sm space-y-2.5">
                           <div className="flex justify-between items-start">
                             <div>
-                              <div className="flex items-center gap-2 flex-wrap">
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="text-xs font-extrabold text-slate-900">{c.hora || '14:00'}</span>
                                 <span className={`px-2 py-0.5 text-[9px] font-bold rounded-lg ${
                                   c.status === 'Concluído' ? 'bg-emerald-100 text-emerald-800' :
@@ -1151,6 +1170,9 @@
                                     {c.sessao}
                                   </span>
                                 )}
+                                <span className="px-2 py-0.5 text-[9px] font-bold rounded-lg bg-slate-100 text-slate-700">
+                                  ⏱️ {c.duracao || '1 hora'}
+                                </span>
                               </div>
                               <h3 className="font-bold text-slate-800 text-sm mt-1">{c.paciente_nome}</h3>
                               <p className="text-xs text-rose-900 font-semibold">{c.procedimento}</p>
@@ -1766,15 +1788,28 @@
                     />
                   )}
 
-                  <div>
-                    <label className="font-bold text-slate-600 block mb-1">Sessão</label>
-                    <select 
-                      className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
-                      value={formConsulta.sessao}
-                      onChange={e => setFormConsulta({...formConsulta, sessao: e.target.value})}
-                    >
-                      {OPCOES_SESSAO.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Sessão</label>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                        value={formConsulta.sessao}
+                        onChange={e => setFormConsulta({...formConsulta, sessao: e.target.value})}
+                      >
+                        {OPCOES_SESSAO.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Duração *</label>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                        value={formConsulta.duracao}
+                        onChange={e => setFormConsulta({...formConsulta, duracao: e.target.value})}
+                      >
+                        {OPCOES_DURACAO.map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
@@ -1849,15 +1884,28 @@
                     </select>
                   </div>
 
-                  <div>
-                    <label className="font-bold text-slate-600 block mb-1">Sessão</label>
-                    <select 
-                      className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
-                      value={formConsulta.sessao}
-                      onChange={e => setFormConsulta({...formConsulta, sessao: e.target.value})}
-                    >
-                      {OPCOES_SESSAO.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Sessão</label>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                        value={formConsulta.sessao}
+                        onChange={e => setFormConsulta({...formConsulta, sessao: e.target.value})}
+                      >
+                        {OPCOES_SESSAO.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Duração *</label>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                        value={formConsulta.duracao}
+                        onChange={e => setFormConsulta({...formConsulta, duracao: e.target.value})}
+                      >
+                        {OPCOES_DURACAO.map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2">
