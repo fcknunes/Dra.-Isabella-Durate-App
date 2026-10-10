@@ -135,6 +135,35 @@
       return dateStr;
     }
 
+    // GERAÇÃO / MANUTENÇÃO DE DATAS DISTINTAS POR PARCELA
+    function getDatasArray(datasExistentes, numParcelas, dataBase) {
+      const arr = [...(datasExistentes || [])];
+      
+      while (arr.length < numParcelas) {
+        const idx = arr.length;
+        if (idx === 0) {
+          arr.push(dataBase || new Date().toISOString().split('T')[0]);
+        } else {
+          let dStr = dataBase || new Date().toISOString().split('T')[0];
+          let parts = dStr.split('-');
+          if (parts.length === 3) {
+            let year = parseInt(parts[0], 10);
+            let month = parseInt(parts[1], 10) - 1 + idx;
+            let day = parseInt(parts[2], 10);
+            
+            let targetDate = new Date(year, month, day);
+            let y = targetDate.getFullYear();
+            let m = String(targetDate.getMonth() + 1).padStart(2, '0');
+            let d = String(targetDate.getDate()).padStart(2, '0');
+            arr.push(`${y}-${m}-${d}`);
+          } else {
+            arr.push(dStr);
+          }
+        }
+      }
+      return arr.slice(0, numParcelas);
+    }
+
     function obterParcelas(c) {
       const numParcelas = Number(c.qtd_parcelas) || 1;
       const total = Number(c.valor) || 0;
@@ -150,13 +179,15 @@
         }
       }
 
+      const baseDates = getDatasArray([], numParcelas, c.data_pagamento || c.data);
+
       if (parsed && Array.isArray(parsed) && parsed.length === numParcelas) {
-        return parsed.map(p => {
+        return parsed.map((p, idx) => {
           const pago = p.pago || foiPagoTotal;
           return {
             ...p,
             pago: pago,
-            data_pagamento: p.data_pagamento || (pago ? c.data_pagamento : null)
+            data_pagamento: p.data_pagamento || baseDates[idx] || c.data_pagamento || c.data || null
           };
         });
       }
@@ -167,7 +198,7 @@
           numero: i,
           valor: valorPorParcela,
           pago: foiPagoTotal,
-          data_pagamento: c.data_pagamento || null
+          data_pagamento: baseDates[i - 1] || c.data_pagamento || c.data || null
         });
       }
       return list;
@@ -428,7 +459,8 @@
         qtd_parcelas: 1,
         status: 'Agendado',
         status_pagamento: 'Pendente',
-        data_pagamento: '',
+        data_pagamento: todayStr,
+        datas_parcelas: [todayStr],
         observacoes: ''
       });
 
@@ -737,47 +769,29 @@
 
       // --- AGENDA / CONSULTAS & FINANCEIRO ---
       function handleAbrirNovoAgendamento(pacientePreSelecionado = null) {
-        if (pacientePreSelecionado) {
-          setModoPacienteManual(false);
-          setFormConsulta({
-            id: null,
-            paciente_id: pacientePreSelecionado.id,
-            paciente_nome: pacientePreSelecionado.nome,
-            procedimento: PROCEDIMENTOS_PRESET[0].nome,
-            procedimento_custom: '',
-            sessao: OPCOES_SESSAO[0],
-            duracao: OPCOES_DURACAO[0],
-            data: todayStr,
-            hora: '14:00',
-            valor: '',
-            forma_pagamento: 'PIX',
-            qtd_parcelas: 1,
-            status: 'Agendado',
-            status_pagamento: 'Pendente',
-            data_pagamento: '',
-            observacoes: ''
-          });
-        } else {
-          setModoPacienteManual(pacientes.length === 0);
-          setFormConsulta({
-            id: null,
-            paciente_id: pacientes[0]?.id || '',
-            paciente_nome: pacientes[0]?.nome || '',
-            procedimento: PROCEDIMENTOS_PRESET[0].nome,
-            procedimento_custom: '',
-            sessao: OPCOES_SESSAO[0],
-            duracao: OPCOES_DURACAO[0],
-            data: todayStr,
-            hora: '14:00',
-            valor: '',
-            forma_pagamento: 'PIX',
-            qtd_parcelas: 1,
-            status: 'Agendado',
-            status_pagamento: 'Pendente',
-            data_pagamento: '',
-            observacoes: ''
-          });
-        }
+        const pId = pacientePreSelecionado ? pacientePreSelecionado.id : (pacientes[0]?.id || '');
+        const pNome = pacientePreSelecionado ? pacientePreSelecionado.nome : (pacientes[0]?.nome || '');
+
+        setModoPacienteManual(pacientePreSelecionado ? false : (pacientes.length === 0));
+        setFormConsulta({
+          id: null,
+          paciente_id: pId,
+          paciente_nome: pNome,
+          procedimento: PROCEDIMENTOS_PRESET[0].nome,
+          procedimento_custom: '',
+          sessao: OPCOES_SESSAO[0],
+          duracao: OPCOES_DURACAO[0],
+          data: todayStr,
+          hora: '14:00',
+          valor: '',
+          forma_pagamento: 'PIX',
+          qtd_parcelas: 1,
+          status: 'Agendado',
+          status_pagamento: 'Pendente',
+          data_pagamento: todayStr,
+          datas_parcelas: [todayStr],
+          observacoes: ''
+        });
         setShowNovaConsulta(true);
       }
 
@@ -804,20 +818,24 @@
         if (!procFinal || !formConsulta.paciente_nome) return alert("Informe o nome da paciente e o procedimento.");
 
         const foiPago = formConsulta.status_pagamento === 'Recebido';
-        const dataPagamentoDigitada = formConsulta.data_pagamento || (foiPago ? todayStr : null);
         const numParcelas = Number(formConsulta.qtd_parcelas) || 1;
         const valorTotal = Number(formConsulta.valor || 0);
         const valorParcela = valorTotal > 0 ? Number((valorTotal / numParcelas).toFixed(2)) : 0;
 
+        const datasArr = getDatasArray(formConsulta.datas_parcelas, numParcelas, formConsulta.data);
+
         const parcelasIniciais = [];
         for (let i = 1; i <= numParcelas; i++) {
+          const dtParc = datasArr[i - 1] || formConsulta.data || todayStr;
           parcelasIniciais.push({
             numero: i,
             valor: valorParcela,
             pago: foiPago,
-            data_pagamento: dataPagamentoDigitada
+            data_pagamento: dtParc
           });
         }
+
+        const dataPagamentoDigitada = datasArr[0] || formConsulta.data_pagamento || formConsulta.data;
 
         const payload = {
           paciente_id: formConsulta.paciente_id || null,
@@ -871,6 +889,9 @@
       }
 
       function handleAbrirEditarConsulta(c) {
+        const parcelasAtuais = obterParcelas(c);
+        const datasArr = parcelasAtuais.map(p => p.data_pagamento || c.data_pagamento || c.data || todayStr);
+
         setFormConsulta({
           id: c.id,
           paciente_id: c.paciente_id || '',
@@ -887,6 +908,7 @@
           status: c.status || 'Agendado',
           status_pagamento: c.status_pagamento || 'Pendente',
           data_pagamento: c.data_pagamento || '',
+          datas_parcelas: datasArr,
           observacoes: c.observacoes || ''
         });
         setShowEditarConsulta(true);
@@ -898,9 +920,31 @@
         const numParcelas = Number(formConsulta.qtd_parcelas) || 1;
         const valorTotal = Number(formConsulta.valor || 0);
         const foiPago = formConsulta.status_pagamento === 'Recebido';
-        const dataPagamentoDigitada = formConsulta.data_pagamento || (foiPago ? todayStr : null);
+        const valorParcela = valorTotal > 0 ? Number((valorTotal / numParcelas).toFixed(2)) : 0;
 
-        const parcelasNovas = obterParcelas({ ...formConsulta, valor: valorTotal, qtd_parcelas: numParcelas, data_pagamento: dataPagamentoDigitada });
+        const datasArr = getDatasArray(formConsulta.datas_parcelas, numParcelas, formConsulta.data);
+
+        let parcelasAnteriores = [];
+        if (formConsulta.id) {
+          const cOrig = consultas.find(x => x.id === formConsulta.id);
+          if (cOrig) parcelasAnteriores = obterParcelas(cOrig);
+        }
+
+        const parcelasNovas = [];
+        for (let i = 1; i <= numParcelas; i++) {
+          const dtParc = datasArr[i - 1] || formConsulta.data || todayStr;
+          const pAnt = parcelasAnteriores[i - 1];
+          const pago = foiPago ? true : (pAnt ? pAnt.pago : false);
+
+          parcelasNovas.push({
+            numero: i,
+            valor: valorParcela,
+            pago: pago,
+            data_pagamento: dtParc
+          });
+        }
+
+        const dataPagamentoDigitada = datasArr[0] || formConsulta.data_pagamento || formConsulta.data;
 
         const payload = {
           paciente_id: formConsulta.paciente_id || null,
@@ -961,7 +1005,7 @@
 
         const parcelasAtualizadas = parcelasAtuais.map(p => {
           if (p.numero === numeroParcela) {
-            return { ...p, pago: true, data_pagamento: dataHojeAtual };
+            return { ...p, pago: true, data_pagamento: p.data_pagamento || dataHojeAtual };
           }
           return p;
         });
@@ -1011,14 +1055,16 @@
         const numParcelas = Number(c.qtd_parcelas) || 1;
         const total = Number(c.valor) || 0;
         const valParc = total > 0 ? Number((total / numParcelas).toFixed(2)) : 0;
+        const parcelasAtuais = obterParcelas(c);
 
         const parcelasTodasPagas = [];
         for (let i = 1; i <= numParcelas; i++) {
+          const pAnt = parcelasAtuais[i - 1];
           parcelasTodasPagas.push({
             numero: i,
             valor: valParc,
             pago: true,
-            data_pagamento: dataHojeAtual
+            data_pagamento: (pAnt && pAnt.data_pagamento) || dataHojeAtual
           });
         }
 
@@ -1096,7 +1142,7 @@
       const totalSaidas = saidas.reduce((acc, s) => acc + Number(s.valor || 0), 0);
       const saldoEmConta = valorRecebido - totalSaidas;
 
-      // LISTAGEM UNIFICADA
+      // LISTAGEM UNIFICADA DAS PARCELAS
       const listaFinanceiro = useMemo(() => {
         const itensEntrada = [];
         const dataHojeAtual = new Date().toISOString().split('T')[0];
@@ -1105,6 +1151,7 @@
           const parcelas = obterParcelas(c);
           if (parcelas.length > 1) {
             parcelas.forEach(p => {
+              const dtParc = p.data_pagamento || c.data_pagamento || c.data || dataHojeAtual;
               itensEntrada.push({
                 id: `c_${c.id}_p_${p.numero}`,
                 consultaId: c.id,
@@ -1118,7 +1165,7 @@
                 forma_pagamento: c.forma_pagamento,
                 valor: p.valor,
                 pago: p.pago,
-                data: p.pago ? (p.data_pagamento || c.data_pagamento || dataHojeAtual) : (c.data_pagamento || c.data || dataHojeAtual),
+                data: dtParc,
                 data_agendamento: c.data,
                 data_pagamento: p.data_pagamento || c.data_pagamento,
                 hora: c.hora,
@@ -1127,7 +1174,7 @@
             });
           } else {
             const foiPago = c.status_pagamento === 'Recebido';
-            const dataPagamentoFinal = c.data_pagamento;
+            const dataPagamentoFinal = c.data_pagamento || c.data;
 
             itensEntrada.push({
               id: `c_${c.id}`,
@@ -1544,7 +1591,7 @@
                                 <span>📊 {Number(c.qtd_parcelas || 1) > 1 ? `${c.qtd_parcelas}x de R$ ${(Number(c.valor || 0) / Number(c.qtd_parcelas || 1)).toFixed(2)}` : 'À Vista'}</span>
                               </div>
 
-                              {/* ETIQUETA DE STATUS E DATA DE PAGAMENTO / PREVISÃO */}
+                              {/* ETIQUETA DE STATUS DE PAGAMENTO */}
                               {foiPago ? (
                                 <p className="text-[10px] text-emerald-800 font-extrabold mt-1.5 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 w-fit">
                                   <span>✅ Pago em:</span>
@@ -1552,7 +1599,7 @@
                                 </p>
                               ) : (
                                 <p className="text-[10px] text-amber-800 font-extrabold mt-1.5 flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200/80 w-fit">
-                                  <span>⏳ Pagamento Pendente {c.data_pagamento ? `(Previsto: ${formatarDataBR(c.data_pagamento)})` : ''}</span>
+                                  <span>⏳ Pagamento Pendente</span>
                                 </p>
                               )}
 
@@ -1568,7 +1615,7 @@
                                 R$ {Number(c.valor || 0).toFixed(2)}
                               </span>
                               
-                              {/* BOTÕES PADRONIZADOS APENAS COM ÍCONES */}
+                              {/* BOTÕES PADRONIZADOS */}
                               <div className="flex items-center gap-1.5 mt-1 shrink-0">
                                 <button 
                                   type="button"
@@ -1612,7 +1659,7 @@
                             </div>
                           </div>
 
-                          {/* PAINEL DE PARCELAS E BAIXAS INDIVIDUAIS */}
+                          {/* PAINEL DE PARCELAS COM DATAS ESPECÍFICAS DE CADA UMA */}
                           <div className="pt-2 border-t border-slate-100 space-y-1.5">
                             <div className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider flex justify-between items-center">
                               <span>Parcelas do Agendamento</span>
@@ -1628,11 +1675,16 @@
                                 <div>
                                   <span className="font-bold text-slate-800">Parcela {p.numero}/{parcelas.length}:</span>{' '}
                                   <span className="font-extrabold text-slate-900">R$ {Number(p.valor || 0).toFixed(2)}</span>
+                                  {p.data_pagamento && (
+                                    <span className="text-[10px] text-slate-500 font-semibold block">
+                                      📅 {p.pago ? 'Pago em:' : 'Vencimento:'} {formatarDataBR(p.data_pagamento)}
+                                    </span>
+                                  )}
                                 </div>
                                 <div>
                                   {p.pago ? (
                                     <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-lg">
-                                      ✅ Pago em {p.data_pagamento ? formatarDataBR(p.data_pagamento) : (c.data_pagamento ? formatarDataBR(c.data_pagamento) : 'Hoje')}
+                                      ✅ Pago em {p.data_pagamento ? formatarDataBR(p.data_pagamento) : 'Hoje'}
                                     </span>
                                   ) : (
                                     <button
@@ -1817,7 +1869,7 @@
                             <div>
                               <div className="flex items-center gap-1.5 mb-1">
                                 <span className="text-[10px] font-bold text-slate-400">
-                                  📅 {item.pago ? (item.data_pagamento ? `Pago em: ${formatarDataBR(item.data_pagamento)}` : 'Pago') : (item.data_pagamento ? `Previsto: ${formatarDataBR(item.data_pagamento)}` : `Agendamento: ${formatarDataBR(item.data_agendamento)}`)}
+                                  📅 {item.pago ? `Pago em: ${formatarDataBR(item.data)}` : `Vencimento: ${formatarDataBR(item.data)}`}
                                 </span>
                                 {item.isParcela && (
                                   <span className="px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-rose-100 text-rose-900">
@@ -2285,7 +2337,7 @@
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="font-bold text-slate-600 block mb-1">Data *</label>
+                      <label className="font-bold text-slate-600 block mb-1">Data da Consulta *</label>
                       <input type="date" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.data} onChange={e => setFormConsulta({...formConsulta, data: e.target.value})} />
                     </div>
                     <div>
@@ -2312,7 +2364,14 @@
                       <select 
                         className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
                         value={formConsulta.qtd_parcelas}
-                        onChange={e => setFormConsulta({...formConsulta, qtd_parcelas: Number(e.target.value)})}
+                        onChange={e => {
+                          const nParc = Number(e.target.value);
+                          setFormConsulta({
+                            ...formConsulta, 
+                            qtd_parcelas: nParc,
+                            datas_parcelas: getDatasArray(formConsulta.datas_parcelas, nParc, formConsulta.data)
+                          });
+                        }}
                       >
                         {CONDICOES_PAGAMENTO.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                       </select>
@@ -2343,18 +2402,78 @@
                     </div>
                   </div>
 
-                  {/* CAMPO EDITÁVEL DA DATA DE PAGAMENTO / PREVISÃO */}
-                  <div>
-                    <label className="font-bold text-slate-600 block mb-1">
-                      {formConsulta.status_pagamento === 'Recebido' ? 'Data do Pagamento *' : 'Previsão / Data do Pagamento'}
-                    </label>
-                    <input 
-                      type="date" 
-                      className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
-                      value={formConsulta.data_pagamento || ''} 
-                      onChange={e => setFormConsulta({...formConsulta, data_pagamento: e.target.value})} 
-                    />
-                  </div>
+                  {/* DATAS DE PAGAMENTO DISTINTAS POR PARCELA */}
+                  {Number(formConsulta.qtd_parcelas || 1) <= 1 ? (
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">
+                        {formConsulta.status_pagamento === 'Recebido' ? 'Data do Pagamento *' : 'Previsão / Data do Pagamento'}
+                      </label>
+                      <input 
+                        type="date" 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
+                        value={(formConsulta.datas_parcelas && formConsulta.datas_parcelas[0]) || formConsulta.data_pagamento || ''} 
+                        onChange={e => {
+                          const val = e.target.value;
+                          setFormConsulta({
+                            ...formConsulta,
+                            data_pagamento: val,
+                            datas_parcelas: [val]
+                          });
+                        }} 
+                      />
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2.5">
+                      <div className="flex justify-between items-center">
+                        <label className="font-bold text-slate-700 text-xs uppercase tracking-wider block">
+                          📅 Data de Vencimento por Parcela ({formConsulta.qtd_parcelas}x)
+                        </label>
+                        <span className="text-[10px] text-slate-400 font-semibold">Datas individuais</span>
+                      </div>
+
+                      <div className="space-y-2">
+                        {Array.from({ length: Number(formConsulta.qtd_parcelas) }).map((_, idx) => {
+                          const valorParc = Number(formConsulta.valor || 0) > 0 
+                            ? (Number(formConsulta.valor) / Number(formConsulta.qtd_parcelas)).toFixed(2) 
+                            : '0.00';
+                          const datasArr = getDatasArray(formConsulta.datas_parcelas, Number(formConsulta.qtd_parcelas), formConsulta.data);
+                          const dataVal = datasArr[idx] || '';
+
+                          return (
+                            <div key={idx} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200 shadow-xs">
+                              <div className="shrink-0 w-28">
+                                <span className="font-extrabold text-slate-800 text-[11px] block">
+                                  Parcela {idx + 1}/{formConsulta.qtd_parcelas}
+                                </span>
+                                <span className="text-[10px] text-rose-900 font-bold block">
+                                  R$ {valorParc}
+                                </span>
+                              </div>
+
+                              <div className="flex-1">
+                                <input 
+                                  type="date" 
+                                  required
+                                  className="w-full p-2 bg-slate-50 border rounded-xl font-bold text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-500" 
+                                  value={dataVal} 
+                                  onChange={e => {
+                                    const novaVal = e.target.value;
+                                    const arrAtual = getDatasArray(formConsulta.datas_parcelas, Number(formConsulta.qtd_parcelas), formConsulta.data);
+                                    arrAtual[idx] = novaVal;
+                                    setFormConsulta({
+                                      ...formConsulta,
+                                      datas_parcelas: [...arrAtual],
+                                      data_pagamento: arrAtual[0] || ''
+                                    });
+                                  }} 
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   {/* RESUMO DO PARCELAMENTO */}
                   {Number(formConsulta.valor) > 0 && Number(formConsulta.qtd_parcelas) > 1 && (
@@ -2461,7 +2580,14 @@
                       <select 
                         className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
                         value={formConsulta.qtd_parcelas}
-                        onChange={e => setFormConsulta({...formConsulta, qtd_parcelas: Number(e.target.value)})}
+                        onChange={e => {
+                          const nParc = Number(e.target.value);
+                          setFormConsulta({
+                            ...formConsulta, 
+                            qtd_parcelas: nParc,
+                            datas_parcelas: getDatasArray(formConsulta.datas_parcelas, nParc, formConsulta.data)
+                          });
+                        }}
                       >
                         {CONDICOES_PAGAMENTO.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
                       </select>
@@ -2495,18 +2621,78 @@
                     </div>
                   </div>
 
-                  {/* CAMPO EDITÁVEL DA DATA DE PAGAMENTO / PREVISÃO */}
-                  <div>
-                    <label className="font-bold text-slate-600 block mb-1">
-                      {formConsulta.status_pagamento === 'Recebido' ? 'Data do Pagamento *' : 'Previsão / Data do Pagamento'}
-                    </label>
-                    <input 
-                      type="date" 
-                      className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
-                      value={formConsulta.data_pagamento || ''} 
-                      onChange={e => setFormConsulta({...formConsulta, data_pagamento: e.target.value})} 
-                    />
-                  </div>
+                  {/* DATAS DE PAGAMENTO DISTINTAS POR PARCELA */}
+                  {Number(formConsulta.qtd_parcelas || 1) <= 1 ? (
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">
+                        {formConsulta.status_pagamento === 'Recebido' ? 'Data do Pagamento *' : 'Previsão / Data do Pagamento'}
+                      </label>
+                      <input 
+                        type="date" 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
+                        value={(formConsulta.datas_parcelas && formConsulta.datas_parcelas[0]) || formConsulta.data_pagamento || ''} 
+                        onChange={e => {
+                          const val = e.target.value;
+                          setFormConsulta({
+                            ...formConsulta,
+                            data_pagamento: val,
+                            datas_parcelas: [val]
+                          });
+                        }} 
+                      />
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2.5">
+                      <div className="flex justify-between items-center">
+                        <label className="font-bold text-slate-700 text-xs uppercase tracking-wider block">
+                          📅 Data de Vencimento por Parcela ({formConsulta.qtd_parcelas}x)
+                        </label>
+                        <span className="text-[10px] text-slate-400 font-semibold">Datas individuais</span>
+                      </div>
+
+                      <div className="space-y-2">
+                        {Array.from({ length: Number(formConsulta.qtd_parcelas) }).map((_, idx) => {
+                          const valorParc = Number(formConsulta.valor || 0) > 0 
+                            ? (Number(formConsulta.valor) / Number(formConsulta.qtd_parcelas)).toFixed(2) 
+                            : '0.00';
+                          const datasArr = getDatasArray(formConsulta.datas_parcelas, Number(formConsulta.qtd_parcelas), formConsulta.data);
+                          const dataVal = datasArr[idx] || '';
+
+                          return (
+                            <div key={idx} className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200 shadow-xs">
+                              <div className="shrink-0 w-28">
+                                <span className="font-extrabold text-slate-800 text-[11px] block">
+                                  Parcela {idx + 1}/{formConsulta.qtd_parcelas}
+                                </span>
+                                <span className="text-[10px] text-rose-900 font-bold block">
+                                  R$ {valorParc}
+                                </span>
+                              </div>
+
+                              <div className="flex-1">
+                                <input 
+                                  type="date" 
+                                  required
+                                  className="w-full p-2 bg-slate-50 border rounded-xl font-bold text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-500" 
+                                  value={dataVal} 
+                                  onChange={e => {
+                                    const novaVal = e.target.value;
+                                    const arrAtual = getDatasArray(formConsulta.datas_parcelas, Number(formConsulta.qtd_parcelas), formConsulta.data);
+                                    arrAtual[idx] = novaVal;
+                                    setFormConsulta({
+                                      ...formConsulta,
+                                      datas_parcelas: [...arrAtual],
+                                      data_pagamento: arrAtual[0] || ''
+                                    });
+                                  }} 
+                                />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Observação (Opcional)</label>
