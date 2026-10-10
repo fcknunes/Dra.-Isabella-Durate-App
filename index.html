@@ -51,7 +51,7 @@
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useMemo } = React;
 
     // === CONFIGURAÇÃO DO SUPABASE ===
     const SUPABASE_URL = "https://paklhqzhfjxpczdxkxdd.supabase.co";
@@ -77,30 +77,36 @@
       "3 horas"
     ];
 
-    // OPÇÕES DE SESSÃO
+    // OPÇÕES DE SESSÃO CORRIGIDAS (SEM O TEXTO POR EXTENSO ENTRE PARÊNTESES)
     const OPCOES_SESSAO = [
       "Sessão Única",
-      "1ª Sessão (Primeira)",
-      "2ª Sessão (Segunda)",
-      "3ª Sessão (Terceira)",
-      "4ª Sessão (Quarta)",
-      "5ª Sessão (Quinta)",
-      "6ª Sessão (Sexta)",
-      "7ª Sessão (Sétima)",
-      "8ª Sessão (Oitava)",
-      "9ª Sessão (Nona)",
-      "10ª Sessão (Décima)",
-      "11ª Sessão (Décima Primeira)",
-      "12ª Sessão (Décima Segunda)",
-      "13ª Sessão (Décima Terceira)",
-      "14ª Sessão (Décima Quarta)",
-      "15ª Sessão (Décima Quinta)",
-      "16ª Sessão (Décima Sexta)",
-      "17ª Sessão (Décima Sétima)",
-      "18ª Sessão (Décima Oitava)",
-      "19ª Sessão (Décima Nona)",
-      "20ª Sessão (Vigésima)"
+      "1ª Sessão",
+      "2ª Sessão",
+      "3ª Sessão",
+      "4ª Sessão",
+      "5ª Sessão",
+      "6ª Sessão",
+      "7ª Sessão",
+      "8ª Sessão",
+      "9ª Sessão",
+      "10ª Sessão",
+      "11ª Sessão",
+      "12ª Sessão",
+      "13ª Sessão",
+      "14ª Sessão",
+      "15ª Sessão",
+      "16ª Sessão",
+      "17ª Sessão",
+      "18ª Sessão",
+      "19ª Sessão",
+      "20ª Sessão"
     ];
+
+    // FUNÇÃO AUXILIAR PARA LIMPAR NORMAS ANTIGAS DE SESSÃO
+    function cleanSessao(sessao) {
+      if (!sessao) return '';
+      return sessao.replace(/\s*\(.*?\)/g, '').trim();
+    }
 
     // OPÇÕES DE SAÍDA DE CAIXA
     const OPCOES_SAIDA = [
@@ -153,7 +159,7 @@
       window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // FUNÇÃO PARA GERAR FICHEIRO .ICS E INTEGRAR COM A AGENDA DO CELULAR (iOS/Apple Calendar)
+    // FUNÇÃO PARA GERAR FICHEIRO .ICS
     function baixarEventoICS(consulta) {
       const dataHoraInicio = new Date(`${consulta.data}T${consulta.hora || '14:00'}:00`);
 
@@ -176,7 +182,7 @@
         'PRODID:-//Dra Isabella Duarte//Estetica Avancada//PT',
         'BEGIN:VEVENT',
         `SUMMARY:Atendimento: ${consulta.paciente_nome} - ${consulta.procedimento}`,
-        `DESCRIPTION:Procedimento: ${consulta.procedimento}\\nSessao: ${consulta.sessao || 'Unica'}\\nDuracao: ${consulta.duracao || '1 hora'}\\nObservacoes: ${consulta.observacoes || 'Nenhuma'}`,
+        `DESCRIPTION:Procedimento: ${consulta.procedimento}\\nSessao: ${cleanSessao(consulta.sessao) || 'Unica'}\\nDuracao: ${consulta.duracao || '1 hora'}\\nObservacoes: ${consulta.observacoes || 'Nenhuma'}`,
         `DTSTART:${inicioStr}`,
         `DTEND:${fimStr}`,
         'END:VEVENT',
@@ -192,7 +198,7 @@
       document.body.removeChild(link);
     }
 
-    // COMPONENTE DE CALENDÁRIO INTERATIVO COM DESTAQUE DE DATAS
+    // COMPONENTE DE CALENDÁRIO INTERATIVO
     function CalendarWidget({ dataFiltro, setDataFiltro, consultas }) {
       const [currentMonth, setCurrentMonth] = useState(() => {
         if (dataFiltro) {
@@ -350,6 +356,7 @@
         valor: '',
         status: 'Agendado',
         status_pagamento: 'Pendente',
+        data_pagamento: '',
         observacoes: ''
       });
 
@@ -673,6 +680,7 @@
             valor: '',
             status: 'Agendado',
             status_pagamento: 'Pendente',
+            data_pagamento: '',
             observacoes: ''
           });
         } else {
@@ -690,6 +698,7 @@
             valor: '',
             status: 'Agendado',
             status_pagamento: 'Pendente',
+            data_pagamento: '',
             observacoes: ''
           });
         }
@@ -722,7 +731,7 @@
           paciente_id: formConsulta.paciente_id || null,
           paciente_nome: formConsulta.paciente_nome,
           procedimento: procFinal,
-          sessao: formConsulta.sessao || OPCOES_SESSAO[0],
+          sessao: cleanSessao(formConsulta.sessao) || OPCOES_SESSAO[0],
           duracao: formConsulta.duracao || OPCOES_DURACAO[0],
           data: formConsulta.data,
           hora: formConsulta.hora,
@@ -730,6 +739,7 @@
           valor: Number(formConsulta.valor || 0),
           status: formConsulta.status || 'Agendado',
           status_pagamento: formConsulta.status_pagamento || 'Pendente',
+          data_pagamento: formConsulta.status_pagamento === 'Recebido' ? (formConsulta.data_pagamento || todayStr) : null,
           observacoes: formConsulta.observacoes || ''
         };
 
@@ -751,13 +761,14 @@
           paciente_nome: c.paciente_nome || '',
           procedimento: c.procedimento,
           procedimento_custom: '',
-          sessao: c.sessao || OPCOES_SESSAO[0],
+          sessao: cleanSessao(c.sessao) || OPCOES_SESSAO[0],
           duracao: c.duracao || OPCOES_DURACAO[0],
           data: c.data || todayStr,
           hora: c.hora || '14:00',
           valor: c.valor || '',
           status: c.status || 'Agendado',
           status_pagamento: c.status_pagamento || 'Pendente',
+          data_pagamento: c.data_pagamento || '',
           observacoes: c.observacoes || ''
         });
         setShowEditarConsulta(true);
@@ -771,7 +782,7 @@
           paciente_id: formConsulta.paciente_id || null,
           paciente_nome: formConsulta.paciente_nome,
           procedimento: procFinal,
-          sessao: formConsulta.sessao || OPCOES_SESSAO[0],
+          sessao: cleanSessao(formConsulta.sessao) || OPCOES_SESSAO[0],
           duracao: formConsulta.duracao || OPCOES_DURACAO[0],
           data: formConsulta.data,
           hora: formConsulta.hora,
@@ -779,6 +790,7 @@
           valor: Number(formConsulta.valor || 0),
           status: formConsulta.status,
           status_pagamento: formConsulta.status_pagamento || 'Pendente',
+          data_pagamento: formConsulta.status_pagamento === 'Recebido' ? (formConsulta.data_pagamento || todayStr) : null,
           observacoes: formConsulta.observacoes || ''
         };
 
@@ -792,17 +804,38 @@
         }
       }
 
+      // DAR BAIXA NO PAGAMENTO E REGISTRAR A DATA DA BAIXA
       async function handleConfirmarPagamento(id) {
-        const { data, error } = await supabase
-          .from('consultas')
-          .update({ status_pagamento: 'Recebido' })
-          .eq('id', id)
-          .select();
+        const dataHoje = new Date().toISOString().split('T')[0];
+        
+        try {
+          const { data, error } = await supabase
+            .from('consultas')
+            .update({ 
+              status_pagamento: 'Recebido',
+              data_pagamento: dataHoje 
+            })
+            .eq('id', id)
+            .select();
 
-        if (error) {
-          alert("Erro ao confirmar pagamento: " + error.message);
-        } else if (data) {
-          setConsultas(consultas.map(c => c.id === id ? data[0] : c));
+          if (error) {
+            // Fallback caso a coluna data_pagamento ainda não exista na tabela do Supabase
+            const { data: fallbackData, error: fallbackError } = await supabase
+              .from('consultas')
+              .update({ status_pagamento: 'Recebido' })
+              .eq('id', id)
+              .select();
+
+            if (fallbackError) {
+              alert("Erro ao confirmar pagamento: " + fallbackError.message);
+            } else if (fallbackData) {
+              setConsultas(consultas.map(c => c.id === id ? { ...fallbackData[0], data_pagamento: dataHoje } : c));
+            }
+          } else if (data) {
+            setConsultas(consultas.map(c => c.id === id ? data[0] : c));
+          }
+        } catch (err) {
+          console.error("Erro ao confirmar baixa:", err);
         }
       }
 
@@ -846,12 +879,34 @@
       const totalSaidas = saidas.reduce((acc, s) => acc + Number(s.valor || 0), 0);
       const saldoEmConta = valorRecebido - totalSaidas;
 
-      const consultasFinanceiro = consultasValidas.filter(c => {
-        const pag = c.status_pagamento || 'Pendente';
-        if (filtroFinanceiro === 'Futuros') return pag === 'Pendente';
-        if (filtroFinanceiro === 'Recebidos') return pag === 'Recebido';
-        return true;
-      });
+      // LISTAGEM UNIFICADA PARA A ABA DO FINANCEIRO (AGORA INCLUINDO AS SAÍDAS NO "TODOS")
+      const listaFinanceiro = useMemo(() => {
+        if (filtroFinanceiro === 'Futuros') {
+          return consultasValidas
+            .filter(c => (c.status_pagamento || 'Pendente') === 'Pendente')
+            .map(c => ({ ...c, itemType: 'entrada' }));
+        }
+        if (filtroFinanceiro === 'Recebidos') {
+          return consultasValidas
+            .filter(c => c.status_pagamento === 'Recebido')
+            .map(c => ({ ...c, itemType: 'entrada' }));
+        }
+        if (filtroFinanceiro === 'Saidas') {
+          return saidas.map(s => ({ ...s, itemType: 'saida' }));
+        }
+        if (filtroFinanceiro === 'Todos') {
+          const entradas = consultasValidas.map(c => ({ ...c, itemType: 'entrada' }));
+          const despesas = saidas.map(s => ({ ...s, itemType: 'saida' }));
+          const unidas = [...entradas, ...despesas];
+          
+          return unidas.sort((a, b) => {
+            const dataA = a.data || (a.data_hora ? a.data_hora.split('T')[0] : '');
+            const dataB = b.data || (b.data_hora ? b.data_hora.split('T')[0] : '');
+            return new Date(dataB) - new Date(dataA);
+          });
+        }
+        return [];
+      }, [consultasValidas, saidas, filtroFinanceiro]);
 
       const questoesAtuais = QUESTOES_POR_FICHA[formFicha.tipo_ficha] || [];
 
@@ -1151,7 +1206,7 @@
               </div>
             )}
 
-            {/* AGENDA COMPLETA COM INTEGRAÇÃO DE DURAÇÃO E CALENDÁRIO */}
+            {/* AGENDA COMPLETA */}
             {activeTab === 'agenda' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -1164,7 +1219,6 @@
                   </button>
                 </div>
 
-                {/* CALENDÁRIO COM DESTAQUE DE DIAS COM AGENDAMENTO */}
                 <CalendarWidget 
                   dataFiltro={dataFiltro} 
                   setDataFiltro={setDataFiltro} 
@@ -1200,7 +1254,7 @@
                                 </span>
                                 {c.sessao && (
                                   <span className="px-2 py-0.5 text-[9px] font-extrabold rounded-lg bg-rose-100 text-rose-900">
-                                    {c.sessao}
+                                    {cleanSessao(c.sessao)}
                                   </span>
                                 )}
                                 <span className="px-2 py-0.5 text-[9px] font-bold rounded-lg bg-slate-100 text-slate-700">
@@ -1209,6 +1263,17 @@
                               </div>
                               <h3 className="font-bold text-slate-800 text-sm mt-1">{c.paciente_nome}</h3>
                               <p className="text-xs text-rose-900 font-semibold">{c.procedimento}</p>
+
+                              {foiPago && (
+                                <p className="text-[10px] text-emerald-800 font-extrabold mt-1 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100 w-fit">
+                                  <span>✅ Pago em:</span>
+                                  <span>
+                                    {c.data_pagamento 
+                                      ? new Date(c.data_pagamento + 'T00:00:00').toLocaleDateString('pt-BR') 
+                                      : (c.data ? new Date(c.data + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data confirmada')}
+                                  </span>
+                                </p>
+                              )}
 
                               {c.observacoes && (
                                 <p className="text-[11px] text-slate-600 mt-2 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
@@ -1223,7 +1288,6 @@
                               </span>
                               
                               <div className="flex items-center gap-1 mt-1">
-                                {/* BOTÃO DE ENVIAR LEMBRETE VIA WHATSAPP */}
                                 <button 
                                   onClick={() => {
                                     const pObj = pacientes.find(p => p.id === c.paciente_id || (p.nome && p.nome.toLowerCase() === (c.paciente_nome || '').toLowerCase()));
@@ -1235,7 +1299,6 @@
                                   <span>💬 Whats</span>
                                 </button>
 
-                                {/* BOTÃO DE SALVAR NO CALENDÁRIO DO CELULAR (iOS/Apple Calendar) */}
                                 <button 
                                   onClick={() => baixarEventoICS(c)} 
                                   className="px-2 py-1 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 text-rose-950 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95 shadow-xs"
@@ -1253,7 +1316,6 @@
                             </div>
                           </div>
 
-                          {/* BARRA DE STATUS FINANCEIRO NO CARD DA AGENDA */}
                           <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-xs">
                             <span className="text-[11px] text-slate-500 font-medium">Pagamento:</span>
                             {foiPago ? (
@@ -1290,7 +1352,7 @@
                   </button>
                 </div>
 
-                {/* CARD DESTACADO: SALDO ATUAL EM CONTA (POSICIONAMENTO E MARGENS AJUSTADOS) */}
+                {/* CARD DESTACADO: SALDO ATUAL EM CONTA */}
                 <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 text-white p-5 rounded-3xl shadow-md border border-emerald-700/50 flex justify-between items-center">
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5 text-emerald-200">
@@ -1309,7 +1371,7 @@
                   </div>
                 </div>
 
-                {/* MÉTRICAS SECUNDÁRIAS EM GRID DE 4 CAIXAS */}
+                {/* MÉTRICAS SECUNDÁRIAS */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-amber-500/90 backdrop-blur-md text-white p-4 rounded-3xl shadow-sm border border-amber-400 flex flex-col justify-between min-h-[105px]">
                     <div>
@@ -1380,95 +1442,111 @@
                   </button>
                 </div>
 
-                {/* LISTAGEM DOS LANÇAMENTOS */}
-                {filtroFinanceiro === 'Saidas' ? (
-                  saidas.length === 0 ? (
-                    <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white/90 backdrop-blur-md space-y-2">
-                      <p className="text-xs text-slate-400">Nenhuma saída de caixa registrada.</p>
+                {/* LISTAGEM DOS LANÇAMENTOS UNIFICADA */}
+                {listaFinanceiro.length === 0 ? (
+                  <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white/90 backdrop-blur-md space-y-2">
+                    <p className="text-xs text-slate-400">Nenhum lançamento encontrado nesta categoria.</p>
+                    {filtroFinanceiro === 'Saidas' && (
                       <button 
                         onClick={() => setShowNovaSaida(true)} 
                         className="px-3.5 py-1.5 bg-rose-900 text-white rounded-xl text-xs font-bold"
                       >
                         Adicionar Saída
                       </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2.5">
-                      {saidas.map(s => (
-                        <div key={s.id} className="p-4 bg-white/90 backdrop-blur-md border border-slate-100 rounded-2xl shadow-sm space-y-1.5">
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {listaFinanceiro.map(item => {
+                      if (item.itemType === 'saida') {
+                        return (
+                          <div key={`saida-${item.id}`} className="p-4 bg-white/90 backdrop-blur-md border border-rose-100 rounded-2xl shadow-sm space-y-1.5">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <div className="flex items-center gap-1.5 mb-1">
+                                  <span className="px-2 py-0.5 text-[9px] font-bold rounded-lg bg-rose-100 text-rose-900">
+                                    {item.categoria || 'Despesa'}
+                                  </span>
+                                  <span className="text-[9px] font-extrabold text-rose-700 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-200/60">
+                                    💸 Saída de Caixa
+                                  </span>
+                                </div>
+                                <p className="text-[10px] text-slate-400 font-bold block">
+                                  📅 {item.data ? new Date(item.data + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data não definida'}
+                                </p>
+                                {item.observacoes && (
+                                  <p className="text-[11px] text-slate-600 mt-1 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                    📝 {item.observacoes}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <span className="font-extrabold text-rose-800 text-sm block">
+                                  - R$ {Number(item.valor || 0).toFixed(2)}
+                                </span>
+                                <button onClick={() => handleExcluirSaida(item.id)} className="text-rose-600 p-1 mt-1">
+                                  <IconTrash />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // SE FOR CONSULTA / ATENDIMENTO
+                      const c = item;
+                      const foiPago = c.status_pagamento === 'Recebido';
+                      const dataExibicao = c.data || (c.data_hora ? c.data_hora.split('T')[0] : '');
+
+                      return (
+                        <div key={`consulta-${c.id}`} className="p-4 bg-white/90 backdrop-blur-md border border-slate-100 rounded-2xl shadow-sm space-y-2">
                           <div className="flex justify-between items-start">
                             <div>
-                              <span className="px-2 py-0.5 text-[9px] font-bold rounded-lg bg-rose-100 text-rose-900 inline-block mb-1">
-                                {s.categoria || 'Despesa'}
-                              </span>
-                              <p className="text-[10px] text-slate-400 font-bold block">
-                                📅 {s.data ? new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data não definida'}
+                              <p className="text-[10px] text-slate-400 font-bold">
+                                📅 {dataExibicao ? new Date(dataExibicao + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data não definida'} às {c.hora || '14:00'}
                               </p>
-                              {s.observacoes && (
-                                <p className="text-[11px] text-slate-600 mt-1 bg-slate-50 p-2 rounded-xl border border-slate-100">
-                                  📝 {s.observacoes}
+                              <h3 className="font-bold text-slate-800 text-sm mt-0.5">{c.paciente_nome}</h3>
+                              <p className="text-xs text-rose-900 font-semibold">
+                                {c.procedimento} {c.sessao ? `(${cleanSessao(c.sessao)})` : ''}
+                              </p>
+
+                              {/* DATA DE PAGAMENTO DA BAIXA EXIBIDA ABAIXO DO PROCEDIMENTO */}
+                              {foiPago && (
+                                <p className="text-[10px] text-emerald-800 font-extrabold mt-1 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100 w-fit">
+                                  <span>✅ Pago em:</span>
+                                  <span>
+                                    {c.data_pagamento 
+                                      ? new Date(c.data_pagamento + 'T00:00:00').toLocaleDateString('pt-BR') 
+                                      : (c.data ? new Date(c.data + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data confirmada')}
+                                  </span>
                                 </p>
                               )}
                             </div>
+
                             <div className="text-right">
-                              <span className="font-extrabold text-rose-800 text-sm block">
-                                - R$ {Number(s.valor || 0).toFixed(2)}
+                              <span className="font-extrabold text-slate-900 text-sm block">
+                                R$ {Number(c.valor || 0).toFixed(2)}
                               </span>
-                              <button onClick={() => handleExcluirSaida(s.id)} className="text-rose-600 p-1 mt-1">
-                                <IconTrash />
-                              </button>
+                              <span className={`px-2 py-0.5 text-[9px] font-bold rounded-lg inline-block mt-1 ${
+                                foiPago ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
+                              }`}>
+                                {foiPago ? '✅ Recebido' : '⏳ A Receber'}
+                              </span>
                             </div>
                           </div>
+
+                          {!foiPago && (
+                            <button 
+                              onClick={() => handleConfirmarPagamento(c.id)}
+                              className="w-full mt-2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                            >
+                              <IconCheck /> <span>Confirmar que o dinheiro entrou</span>
+                            </button>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  )
-                ) : (
-                  consultasFinanceiro.length === 0 ? (
-                    <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white/90 backdrop-blur-md">
-                      <p className="text-xs text-slate-400">Nenhum lançamento nesta categoria.</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2.5">
-                      {consultasFinanceiro.map(c => {
-                        const foiPago = c.status_pagamento === 'Recebido';
-                        const dataExibicao = c.data || (c.data_hora ? c.data_hora.split('T')[0] : '');
-                        return (
-                          <div key={c.id} className="p-4 bg-white/90 backdrop-blur-md border border-slate-100 rounded-2xl shadow-sm space-y-2">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <p className="text-[10px] text-slate-400 font-bold">
-                                  📅 {dataExibicao ? new Date(dataExibicao + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data não definida'} às {c.hora || '14:00'}
-                                </p>
-                                <h3 className="font-bold text-slate-800 text-sm mt-0.5">{c.paciente_nome}</h3>
-                                <p className="text-xs text-rose-900 font-semibold">{c.procedimento} {c.sessao ? `(${c.sessao})` : ''}</p>
-                              </div>
-
-                              <div className="text-right">
-                                <span className="font-extrabold text-slate-900 text-sm block">
-                                  R$ {Number(c.valor || 0).toFixed(2)}
-                                </span>
-                                <span className={`px-2 py-0.5 text-[9px] font-bold rounded-lg inline-block mt-1 ${
-                                  foiPago ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
-                                }`}>
-                                  {foiPago ? '✅ Recebido' : '⏳ A Receber'}
-                                </span>
-                              </div>
-                            </div>
-
-                            {!foiPago && (
-                              <button 
-                                onClick={() => handleConfirmarPagamento(c.id)}
-                                className="w-full mt-2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all"
-                              >
-                                <IconCheck /> <span>Confirmar que o dinheiro entrou</span>
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )
+                      );
+                    })}
+                  </div>
                 )}
               </div>
             )}
