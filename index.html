@@ -695,40 +695,48 @@
                 </p>
               ) : confirmadoSucesso ? (
                 <div className="space-y-4 pt-2">
-                  <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-4 rounded-2xl text-xs space-y-1">
-                    <p className="font-extrabold text-sm">✅ Presença Confirmada!</p>
-                    <p>Obrigada por confirmar o seu atendimento para o dia <strong>{new Date(consultaParaConfirmar.data + 'T00:00:00').toLocaleDateString('pt-BR')}</strong> às <strong>{consultaParaConfirmar.hora}</strong>.</p>
-                  </div>
-
-                  {/* ALERTA DE PERDA DO DINHEIRO DO SINAL */}
-                  <div className="bg-amber-50 border border-amber-300 p-4 rounded-2xl text-left space-y-1.5 text-xs text-amber-950">
-                    <p className="font-black text-amber-900 flex items-center gap-1">
-                      ⚠️ AVISO IMPORTANTE SOBRE A RESERVA
-                    </p>
-                    <p className="leading-relaxed">
-                      Lembramos que o valor cobrado como <strong>sinal de reserva</strong> garante o horário exclusivo da Dra. Isabella para você. 
-                    </p>
-                    <p className="font-bold text-rose-900 bg-amber-100/70 p-2 rounded-xl border border-amber-200/80">
-                      Em caso de não comparecimento ou falta sem aviso prévio prévio de 24h, o dinheiro do sinal não será reembolsado.
+                  <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-5 rounded-2xl text-xs space-y-2 text-center">
+                    <div className="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center text-xl mx-auto font-black">
+                      ✓
+                    </div>
+                    <p className="font-extrabold text-sm text-emerald-950">Presença Confirmada com Sucesso!</p>
+                    <p className="text-slate-600 leading-relaxed">
+                      Sua reserva foi gravada na agenda da Dra. Isabella Duarte para o dia <strong>{new Date(consultaParaConfirmar.data + 'T00:00:00').toLocaleDateString('pt-BR')}</strong> às <strong>{consultaParaConfirmar.hora}</strong>.
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4 text-xs text-left">
-                  <div className="bg-slate-50 p-4 rounded-2xl border space-y-2">
+                  {/* DADOS DA CONSULTA */}
+                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1.5">
                     <p><strong>Paciente:</strong> {consultaParaConfirmar.paciente_nome}</p>
                     <p><strong>Procedimento:</strong> {consultaParaConfirmar.procedimento}</p>
                     <p><strong>Data:</strong> {new Date(consultaParaConfirmar.data + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
                     <p><strong>Horário:</strong> {consultaParaConfirmar.hora}</p>
                   </div>
 
-                  <p className="text-center font-bold text-slate-700">Confirma a sua presença neste agendamento?</p>
+                  {/* AVISO DO SINAL EXIBIDO ANTES DE CONFIRMAR */}
+                  <div className="bg-amber-50 border border-amber-300 p-4 rounded-2xl space-y-2 text-amber-950">
+                    <p className="font-black text-amber-900 flex items-center gap-1.5 text-xs">
+                      ⚠️ AVISO IMPORTANTE SOBRE A RESERVA
+                    </p>
+                    <p className="leading-relaxed text-[11px]">
+                      O valor pago como <strong>sinal de reserva</strong> garante a reserva do horário exclusivo da Dra. Isabella para o seu atendimento.
+                    </p>
+                    <div className="bg-amber-100/80 p-2.5 rounded-xl border border-amber-200 text-[11px] font-bold text-rose-950">
+                      Em caso de não comparecimento ou falta sem aviso prévio de pelo menos 24 horas antecedência, o valor pago do sinal não será reembolsado.
+                    </div>
+                  </div>
+
+                  <p className="text-center font-bold text-slate-700 pt-1">
+                    Ao clicar no botão abaixo, você declara estar ciente do aviso acima e confirma a sua presença:
+                  </p>
 
                   <button 
                     onClick={handlePacienteConfirmarPresenca}
-                    className="w-full py-3.5 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold rounded-2xl text-xs shadow-md active:scale-95 transition-all flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold rounded-2xl text-xs shadow-md active:scale-95 transition-all flex items-center justify-center gap-2"
                   >
-                    <IconCheck /> <span>SIM, CONFIRMAR PRESENÇA</span>
+                    <IconCheck /> <span>ESTOU CIENTE E CONFIRMO PRESENÇA</span>
                   </button>
                 </div>
               )}
@@ -908,7 +916,6 @@
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="text-xs font-extrabold text-slate-900">{c.hora || '14:00'}</span>
                                 
-                                {/* STATUS DO AGENDAMENTO */}
                                 <span className={`px-2 py-0.5 text-[9px] font-bold rounded-lg ${
                                   estaConfirmado ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-extrabold' :
                                   c.status === 'Concluído' ? 'bg-blue-100 text-blue-800' :
@@ -928,7 +935,6 @@
                               <span className="font-extrabold text-slate-900 text-xs block">R$ {Number(c.valor || 0).toFixed(2)}</span>
                               
                               <div className="flex items-center gap-1 mt-1">
-                                {/* BOTÃO ENVIAR LINK DE CONFIRMAÇÃO PELO WHATSAPP */}
                                 <button 
                                   onClick={() => gerarLinkWhatsapp(c)}
                                   className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-xs active:scale-95"
