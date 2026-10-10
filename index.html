@@ -102,7 +102,7 @@
       "20ª Sessão"
     ];
 
-    // FORMAS DE PAGAMENTO (INCLUINDO CARTÃO DE DÉBITO)
+    // FORMAS DE PAGAMENTO
     const FORMAS_PAGAMENTO = [
       "PIX",
       "Dinheiro",
@@ -135,7 +135,7 @@
       return dateStr;
     }
 
-    function obterParcelas(c) {
+    function obterParcelas(c, defaultDate = '') {
       const numParcelas = Number(c.qtd_parcelas) || 1;
       const total = Number(c.valor) || 0;
       const valorPorParcela = total > 0 ? Number((total / numParcelas).toFixed(2)) : 0;
@@ -150,17 +150,22 @@
       }
 
       if (parsed && Array.isArray(parsed) && parsed.length === numParcelas) {
-        return parsed;
+        return parsed.map(p => ({
+          ...p,
+          data_pagamento: p.pago ? (p.data_pagamento || c.data_pagamento || defaultDate || new Date().toISOString().split('T')[0]) : null
+        }));
       }
 
       const foiPagoTotal = c.status_pagamento === 'Recebido';
       const list = [];
+      const dataFallback = c.data_pagamento || defaultDate || new Date().toISOString().split('T')[0];
+
       for (let i = 1; i <= numParcelas; i++) {
         list.push({
           numero: i,
           valor: valorPorParcela,
           pago: foiPagoTotal,
-          data_pagamento: foiPagoTotal ? c.data_pagamento : null
+          data_pagamento: foiPagoTotal ? dataFallback : null
         });
       }
       return list;
@@ -416,7 +421,7 @@
         qtd_parcelas: 1,
         status: 'Agendado',
         status_pagamento: 'Pendente',
-        data_pagamento: '',
+        data_pagamento: todayStr,
         observacoes: ''
       });
 
@@ -742,7 +747,7 @@
             qtd_parcelas: 1,
             status: 'Agendado',
             status_pagamento: 'Pendente',
-            data_pagamento: '',
+            data_pagamento: todayStr,
             observacoes: ''
           });
         } else {
@@ -762,7 +767,7 @@
             qtd_parcelas: 1,
             status: 'Agendado',
             status_pagamento: 'Pendente',
-            data_pagamento: '',
+            data_pagamento: todayStr,
             observacoes: ''
           });
         }
@@ -791,7 +796,7 @@
         const procFinal = formConsulta.procedimento === "Outro Procedimento..." ? formConsulta.procedimento_custom : formConsulta.procedimento;
         if (!procFinal || !formConsulta.paciente_nome) return alert("Informe o nome da paciente e o procedimento.");
 
-        const dataHojeAtual = new Date().toISOString().split('T')[0];
+        const dataPagamentoDigitada = formConsulta.data_pagamento || todayStr;
         const numParcelas = Number(formConsulta.qtd_parcelas) || 1;
         const valorTotal = Number(formConsulta.valor || 0);
         const valorParcela = valorTotal > 0 ? Number((valorTotal / numParcelas).toFixed(2)) : 0;
@@ -803,7 +808,7 @@
             numero: i,
             valor: valorParcela,
             pago: foiPago,
-            data_pagamento: foiPago ? dataHojeAtual : null
+            data_pagamento: foiPago ? dataPagamentoDigitada : null
           });
         }
 
@@ -821,7 +826,7 @@
           qtd_parcelas: numParcelas,
           status: foiPago ? 'Concluído' : (formConsulta.status || 'Agendado'),
           status_pagamento: foiPago ? 'Recebido' : (numParcelas > 1 ? 'Aguardando Pagamento' : (formConsulta.status_pagamento || 'Pendente')),
-          data_pagamento: foiPago ? dataHojeAtual : null,
+          data_pagamento: foiPago ? dataPagamentoDigitada : null,
           parcelas_detalhe: JSON.stringify(parcelasIniciais),
           observacoes: formConsulta.observacoes || ''
         };
@@ -874,7 +879,7 @@
           qtd_parcelas: c.qtd_parcelas || 1,
           status: c.status || 'Agendado',
           status_pagamento: c.status_pagamento || 'Pendente',
-          data_pagamento: c.data_pagamento || '',
+          data_pagamento: c.data_pagamento || todayStr,
           observacoes: c.observacoes || ''
         });
         setShowEditarConsulta(true);
@@ -886,9 +891,9 @@
         const numParcelas = Number(formConsulta.qtd_parcelas) || 1;
         const valorTotal = Number(formConsulta.valor || 0);
         const foiPago = formConsulta.status_pagamento === 'Recebido';
-        const dataHojeAtual = new Date().toISOString().split('T')[0];
+        const dataPagamentoDigitada = formConsulta.data_pagamento || todayStr;
 
-        const parcelasNovas = obterParcelas({ ...formConsulta, valor: valorTotal, qtd_parcelas: numParcelas });
+        const parcelasNovas = obterParcelas({ ...formConsulta, valor: valorTotal, qtd_parcelas: numParcelas }, dataPagamentoDigitada);
 
         const payload = {
           paciente_id: formConsulta.paciente_id || null,
@@ -904,7 +909,7 @@
           qtd_parcelas: numParcelas,
           status: foiPago ? 'Concluído' : formConsulta.status,
           status_pagamento: foiPago ? 'Recebido' : (numParcelas > 1 ? 'Aguardando Pagamento' : formConsulta.status_pagamento),
-          data_pagamento: foiPago ? (formConsulta.data_pagamento || dataHojeAtual) : null,
+          data_pagamento: foiPago ? dataPagamentoDigitada : null,
           parcelas_detalhe: JSON.stringify(parcelasNovas),
           observacoes: formConsulta.observacoes || ''
         };
@@ -939,13 +944,13 @@
         }
       }
 
-      // DAR BAIXA EM UMA PARCELA ESPECÍFICA (DATA É EXATAMENTE A DO MOMENTO DO CLIQUE)
+      // DAR BAIXA EM UMA PARCELA ESPECÍFICA (A DATA É REGISTRADA EXATAMENTE COMO HOJE)
       async function handleDarBaixaParcela(consultaId, numeroParcela) {
         const c = consultas.find(item => item.id === consultaId);
         if (!c) return;
 
         const dataHojeAtual = new Date().toISOString().split('T')[0];
-        const parcelasAtuais = obterParcelas(c);
+        const parcelasAtuais = obterParcelas(c, dataHojeAtual);
 
         const parcelasAtualizadas = parcelasAtuais.map(p => {
           if (p.numero === numeroParcela) {
@@ -958,7 +963,6 @@
         const peloMenosUmaPaga = parcelasAtualizadas.some(p => p.pago);
 
         const statusPagamentoNovo = todasPagas ? 'Recebido' : 'Aguardando Pagamento';
-        // Ao pagar a 1ª parcela (ou qualquer uma), o atendimento passa a ser Concluído
         const statusNovo = peloMenosUmaPaga ? 'Concluído' : c.status;
         const dataPagamentoNova = todasPagas ? dataHojeAtual : (c.data_pagamento || dataHojeAtual);
 
@@ -1091,7 +1095,7 @@
         const dataHojeAtual = new Date().toISOString().split('T')[0];
         
         consultasValidas.forEach(c => {
-          const parcelas = obterParcelas(c);
+          const parcelas = obterParcelas(c, dataHojeAtual);
           if (parcelas.length > 1) {
             parcelas.forEach(p => {
               itensEntrada.push({
@@ -1109,13 +1113,15 @@
                 pago: p.pago,
                 data: p.pago ? (p.data_pagamento || c.data_pagamento || dataHojeAtual) : (c.data || dataHojeAtual),
                 data_agendamento: c.data,
-                data_pagamento: p.data_pagamento,
+                data_pagamento: p.data_pagamento || c.data_pagamento || dataHojeAtual,
                 hora: c.hora,
                 consulta_ref: c
               });
             });
           } else {
             const foiPago = c.status_pagamento === 'Recebido';
+            const dataPagamentoFinal = c.data_pagamento || dataHojeAtual;
+
             itensEntrada.push({
               id: `c_${c.id}`,
               consultaId: c.id,
@@ -1129,9 +1135,9 @@
               forma_pagamento: c.forma_pagamento,
               valor: c.valor,
               pago: foiPago,
-              data: foiPago ? (c.data_pagamento || dataHojeAtual) : (c.data || dataHojeAtual),
+              data: foiPago ? dataPagamentoFinal : (c.data || dataHojeAtual),
               data_agendamento: c.data,
-              data_pagamento: c.data_pagamento,
+              data_pagamento: dataPagamentoFinal,
               hora: c.hora,
               consulta_ref: c
             });
@@ -1492,7 +1498,7 @@
                   <div className="space-y-2.5">
                     {consultasDoDia.map(c => {
                       const foiPago = c.status_pagamento === 'Recebido';
-                      const parcelas = obterParcelas(c);
+                      const parcelas = obterParcelas(c, todayStr);
 
                       return (
                         <div key={c.id} className="p-4 bg-white/90 backdrop-blur-md rounded-2xl border border-slate-100 shadow-sm space-y-2.5">
@@ -1528,7 +1534,7 @@
                               {foiPago && (
                                 <p className="text-[10px] text-emerald-800 font-extrabold mt-1.5 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 w-fit">
                                   <span>✅ Pago em:</span>
-                                  <span>{formatarDataBR(c.data_pagamento)}</span>
+                                  <span>{formatarDataBR(c.data_pagamento || todayStr)}</span>
                                 </p>
                               )}
 
@@ -1593,7 +1599,7 @@
                                 <div>
                                   {p.pago ? (
                                     <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-lg">
-                                      ✅ Pago em {formatarDataBR(p.data_pagamento || c.data_pagamento)}
+                                      ✅ Pago em {formatarDataBR(p.data_pagamento || c.data_pagamento || todayStr)}
                                     </span>
                                   ) : (
                                     <button
@@ -1778,7 +1784,7 @@
                             <div>
                               <div className="flex items-center gap-1.5 mb-1">
                                 <span className="text-[10px] font-bold text-slate-400">
-                                  📅 {item.pago ? `Pago em: ${formatarDataBR(item.data_pagamento || item.data)}` : `Agendamento: ${formatarDataBR(item.data_agendamento)}`}
+                                  📅 {item.pago ? `Pago em: ${formatarDataBR(item.data_pagamento || item.data || todayStr)}` : `Agendamento: ${formatarDataBR(item.data_agendamento)}`}
                                 </span>
                                 {item.isParcela && (
                                   <span className="px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-rose-100 text-rose-900">
@@ -2304,6 +2310,20 @@
                     </div>
                   </div>
 
+                  {/* DATA DO PAGAMENTO QUANDO MARCADO COMO RECEBIDO */}
+                  {formConsulta.status_pagamento === 'Recebido' && (
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Data do Pagamento *</label>
+                      <input 
+                        type="date" 
+                        required 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
+                        value={formConsulta.data_pagamento || todayStr} 
+                        onChange={e => setFormConsulta({...formConsulta, data_pagamento: e.target.value})} 
+                      />
+                    </div>
+                  )}
+
                   {/* RESUMO DO PARCELAMENTO */}
                   {Number(formConsulta.valor) > 0 && Number(formConsulta.qtd_parcelas) > 1 && (
                     <div className="p-3 bg-rose-50 border border-rose-200/80 rounded-2xl text-xs text-rose-950 space-y-1">
@@ -2442,6 +2462,20 @@
                       </select>
                     </div>
                   </div>
+
+                  {/* DATA DO PAGAMENTO QUANDO MARCADO COMO RECEBIDO */}
+                  {formConsulta.status_pagamento === 'Recebido' && (
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Data do Pagamento *</label>
+                      <input 
+                        type="date" 
+                        required 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
+                        value={formConsulta.data_pagamento || todayStr} 
+                        onChange={e => setFormConsulta({...formConsulta, data_pagamento: e.target.value})} 
+                      />
+                    </div>
+                  )}
 
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Observação (Opcional)</label>
