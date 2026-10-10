@@ -135,10 +135,15 @@
       return dateStr;
     }
 
-    function obterParcelas(c, defaultDate = '') {
+    function obterParcelas(c) {
       const numParcelas = Number(c.qtd_parcelas) || 1;
       const total = Number(c.valor) || 0;
       const valorPorParcela = total > 0 ? Number((total / numParcelas).toFixed(2)) : 0;
+
+      const today = new Date().toISOString().split('T')[0];
+      const isPassado = c.data && c.data < today;
+      const foiPagoTotal = c.status_pagamento === 'Recebido' || (isPassado && c.status !== 'Cancelado');
+      const dataFallback = c.data_pagamento || c.data || today;
 
       let parsed = null;
       if (c.parcelas_detalhe) {
@@ -150,16 +155,17 @@
       }
 
       if (parsed && Array.isArray(parsed) && parsed.length === numParcelas) {
-        return parsed.map(p => ({
-          ...p,
-          data_pagamento: p.pago ? (p.data_pagamento || c.data_pagamento || defaultDate || new Date().toISOString().split('T')[0]) : null
-        }));
+        return parsed.map(p => {
+          const pago = p.pago || (isPassado && c.status !== 'Cancelado');
+          return {
+            ...p,
+            pago: pago,
+            data_pagamento: pago ? (p.data_pagamento || c.data_pagamento || c.data) : null
+          };
+        });
       }
 
-      const foiPagoTotal = c.status_pagamento === 'Recebido';
       const list = [];
-      const dataFallback = c.data_pagamento || defaultDate || new Date().toISOString().split('T')[0];
-
       for (let i = 1; i <= numParcelas; i++) {
         list.push({
           numero: i,
@@ -796,11 +802,12 @@
         const procFinal = formConsulta.procedimento === "Outro Procedimento..." ? formConsulta.procedimento_custom : formConsulta.procedimento;
         if (!procFinal || !formConsulta.paciente_nome) return alert("Informe o nome da paciente e o procedimento.");
 
-        const dataPagamentoDigitada = formConsulta.data_pagamento || todayStr;
+        const isPassado = formConsulta.data < todayStr;
+        const dataPagamentoDigitada = formConsulta.data_pagamento || formConsulta.data || todayStr;
         const numParcelas = Number(formConsulta.qtd_parcelas) || 1;
         const valorTotal = Number(formConsulta.valor || 0);
         const valorParcela = valorTotal > 0 ? Number((valorTotal / numParcelas).toFixed(2)) : 0;
-        const foiPago = formConsulta.status_pagamento === 'Recebido';
+        const foiPago = formConsulta.status_pagamento === 'Recebido' || (isPassado && formConsulta.status !== 'Cancelado');
 
         const parcelasIniciais = [];
         for (let i = 1; i <= numParcelas; i++) {
@@ -879,7 +886,7 @@
           qtd_parcelas: c.qtd_parcelas || 1,
           status: c.status || 'Agendado',
           status_pagamento: c.status_pagamento || 'Pendente',
-          data_pagamento: c.data_pagamento || todayStr,
+          data_pagamento: c.data_pagamento || c.data || todayStr,
           observacoes: c.observacoes || ''
         });
         setShowEditarConsulta(true);
@@ -890,10 +897,11 @@
         const procFinal = formConsulta.procedimento === "Outro Procedimento..." ? formConsulta.procedimento_custom : formConsulta.procedimento;
         const numParcelas = Number(formConsulta.qtd_parcelas) || 1;
         const valorTotal = Number(formConsulta.valor || 0);
-        const foiPago = formConsulta.status_pagamento === 'Recebido';
-        const dataPagamentoDigitada = formConsulta.data_pagamento || todayStr;
+        const isPassado = formConsulta.data < todayStr;
+        const foiPago = formConsulta.status_pagamento === 'Recebido' || (isPassado && formConsulta.status !== 'Cancelado');
+        const dataPagamentoDigitada = formConsulta.data_pagamento || formConsulta.data || todayStr;
 
-        const parcelasNovas = obterParcelas({ ...formConsulta, valor: valorTotal, qtd_parcelas: numParcelas }, dataPagamentoDigitada);
+        const parcelasNovas = obterParcelas({ ...formConsulta, valor: valorTotal, qtd_parcelas: numParcelas, data_pagamento: dataPagamentoDigitada });
 
         const payload = {
           paciente_id: formConsulta.paciente_id || null,
@@ -944,13 +952,13 @@
         }
       }
 
-      // DAR BAIXA EM UMA PARCELA ESPECÍFICA (A DATA É REGISTRADA EXATAMENTE COMO HOJE)
+      // DAR BAIXA EM UMA PARCELA ESPECÍFICA (MOMENTO DO CLIQUE REGISTRA HOJE)
       async function handleDarBaixaParcela(consultaId, numeroParcela) {
         const c = consultas.find(item => item.id === consultaId);
         if (!c) return;
 
         const dataHojeAtual = new Date().toISOString().split('T')[0];
-        const parcelasAtuais = obterParcelas(c, dataHojeAtual);
+        const parcelasAtuais = obterParcelas(c);
 
         const parcelasAtualizadas = parcelasAtuais.map(p => {
           if (p.numero === numeroParcela) {
@@ -1095,7 +1103,8 @@
         const dataHojeAtual = new Date().toISOString().split('T')[0];
         
         consultasValidas.forEach(c => {
-          const parcelas = obterParcelas(c, dataHojeAtual);
+          const isPassado = c.data && c.data < dataHojeAtual;
+          const parcelas = obterParcelas(c);
           if (parcelas.length > 1) {
             parcelas.forEach(p => {
               itensEntrada.push({
@@ -1111,16 +1120,16 @@
                 forma_pagamento: c.forma_pagamento,
                 valor: p.valor,
                 pago: p.pago,
-                data: p.pago ? (p.data_pagamento || c.data_pagamento || dataHojeAtual) : (c.data || dataHojeAtual),
+                data: p.pago ? (p.data_pagamento || c.data_pagamento || c.data || dataHojeAtual) : (c.data || dataHojeAtual),
                 data_agendamento: c.data,
-                data_pagamento: p.data_pagamento || c.data_pagamento || dataHojeAtual,
+                data_pagamento: p.data_pagamento || c.data_pagamento || c.data,
                 hora: c.hora,
                 consulta_ref: c
               });
             });
           } else {
-            const foiPago = c.status_pagamento === 'Recebido';
-            const dataPagamentoFinal = c.data_pagamento || dataHojeAtual;
+            const foiPago = c.status_pagamento === 'Recebido' || (isPassado && c.status !== 'Cancelado');
+            const dataPagamentoFinal = c.data_pagamento || c.data || dataHojeAtual;
 
             itensEntrada.push({
               id: `c_${c.id}`,
@@ -1497,8 +1506,10 @@
                 ) : (
                   <div className="space-y-2.5">
                     {consultasDoDia.map(c => {
-                      const foiPago = c.status_pagamento === 'Recebido';
-                      const parcelas = obterParcelas(c, todayStr);
+                      const isPassado = c.data && c.data < todayStr;
+                      const foiPago = c.status_pagamento === 'Recebido' || (isPassado && c.status !== 'Cancelado');
+                      const statusExibicao = (isPassado && c.status !== 'Cancelado') ? 'Concluído' : (c.status || 'Agendado');
+                      const parcelas = obterParcelas(c);
 
                       return (
                         <div key={c.id} className="p-4 bg-white/90 backdrop-blur-md rounded-2xl border border-slate-100 shadow-sm space-y-2.5">
@@ -1507,11 +1518,11 @@
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="text-xs font-extrabold text-slate-900">{c.hora || '14:00'}</span>
                                 <span className={`px-2 py-0.5 text-[9px] font-bold rounded-lg ${
-                                  c.status === 'Concluído' ? 'bg-emerald-100 text-emerald-800' :
-                                  c.status === 'Cancelado' ? 'bg-rose-100 text-rose-800' :
+                                  statusExibicao === 'Concluído' ? 'bg-emerald-100 text-emerald-800' :
+                                  statusExibicao === 'Cancelado' ? 'bg-rose-100 text-rose-800' :
                                   'bg-amber-100 text-amber-800'
                                 }`}>
-                                  {c.status || 'Agendado'}
+                                  {statusExibicao}
                                 </span>
                                 {c.sessao && (
                                   <span className="px-2 py-0.5 text-[9px] font-extrabold rounded-lg bg-rose-100 text-rose-900">
@@ -1534,7 +1545,7 @@
                               {foiPago && (
                                 <p className="text-[10px] text-emerald-800 font-extrabold mt-1.5 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 w-fit">
                                   <span>✅ Pago em:</span>
-                                  <span>{formatarDataBR(c.data_pagamento || todayStr)}</span>
+                                  <span>{formatarDataBR(c.data_pagamento || c.data)}</span>
                                 </p>
                               )}
 
@@ -1599,7 +1610,7 @@
                                 <div>
                                   {p.pago ? (
                                     <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-lg">
-                                      ✅ Pago em {formatarDataBR(p.data_pagamento || c.data_pagamento || todayStr)}
+                                      ✅ Pago em {formatarDataBR(p.data_pagamento || c.data_pagamento || c.data)}
                                     </span>
                                   ) : (
                                     <button
@@ -1784,7 +1795,7 @@
                             <div>
                               <div className="flex items-center gap-1.5 mb-1">
                                 <span className="text-[10px] font-bold text-slate-400">
-                                  📅 {item.pago ? `Pago em: ${formatarDataBR(item.data_pagamento || item.data || todayStr)}` : `Agendamento: ${formatarDataBR(item.data_agendamento)}`}
+                                  📅 {item.pago ? `Pago em: ${formatarDataBR(item.data_pagamento || item.data)}` : `Agendamento: ${formatarDataBR(item.data_agendamento)}`}
                                 </span>
                                 {item.isParcela && (
                                   <span className="px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-rose-100 text-rose-900">
@@ -2318,7 +2329,7 @@
                         type="date" 
                         required 
                         className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
-                        value={formConsulta.data_pagamento || todayStr} 
+                        value={formConsulta.data_pagamento || formConsulta.data || todayStr} 
                         onChange={e => setFormConsulta({...formConsulta, data_pagamento: e.target.value})} 
                       />
                     </div>
@@ -2471,7 +2482,7 @@
                         type="date" 
                         required 
                         className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
-                        value={formConsulta.data_pagamento || todayStr} 
+                        value={formConsulta.data_pagamento || formConsulta.data || todayStr} 
                         onChange={e => setFormConsulta({...formConsulta, data_pagamento: e.target.value})} 
                       />
                     </div>
