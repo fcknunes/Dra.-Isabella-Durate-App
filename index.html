@@ -192,10 +192,10 @@
 
     const TIPOS_ANAMNESE = Object.keys(QUESTOES_POR_FICHA);
 
-    // Ícones SVG
+    // ÍCONES SVG PADRONIZADOS
     const IconHome = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 00-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>;
     const IconUsers = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>;
-    const IconCalendar = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>;
+    const IconCalendar = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>;
     const IconDollar = () => <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>;
     const IconPlus = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>;
     const IconSearch = () => <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>;
@@ -205,7 +205,7 @@
     const IconCheck = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg>;
     const IconWhatsapp = () => (
       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+        <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984 0 1.764.459 3.486 1.332 5.002l-1.416 5.17 5.292-1.388c1.46.797 3.107 1.217 4.778 1.218h.004c5.505 0 9.988-4.478 9.989-9.985 0-2.667-1.037-5.176-2.922-7.062a9.92 9.92 0 00-7.067-2.939zm0 1.832c4.498 0 8.156 3.659 8.157 8.153 0 2.181-.849 4.232-2.391 5.775-1.543 1.542-3.593 2.392-5.772 2.392h-.003c-1.472 0-2.916-.395-4.177-1.143l-.3-.178-3.104.814.828-3.023-.196-.312c-.822-1.309-1.258-2.825-1.258-4.328 0-4.493 3.658-8.15 8.156-8.15zm4.498 11.233c-.247-.124-1.464-.722-1.691-.805-.227-.083-.392-.124-.557.124-.165.247-.64.805-.784.97-.144.165-.289.185-.536.062-.247-.124-1.045-.385-1.991-1.229-.737-.657-1.235-1.469-1.38-1.716-.144-.247-.015-.381.108-.504.111-.111.247-.289.371-.433.124-.144.165-.247.247-.412.083-.165.042-.309-.021-.433-.062-.124-.557-1.343-.763-1.838-.2-.482-.404-.416-.557-.424l-.475-.008c-.165 0-.433.062-.66.309-.227.247-.866.845-.866 2.062 0 1.216.886 2.391 1.01 2.556.124.165 1.743 2.662 4.223 3.733.59.255 1.05.407 1.41.521.593.188 1.132.162 1.558.098.475-.071 1.464-.598 1.67-.1.175.206-.577.206-.897.083-.33.021-.454-.083z"/>
       </svg>
     );
 
@@ -951,7 +951,7 @@
         }
       }
 
-      // DAR BAIXA EM UMA PARCELA ESPECÍFICA (MOMENTO DO CLIQUE REGISTRA HOJE)
+      // DAR BAIXA EM UMA PARCELA ESPECÍFICA
       async function handleDarBaixaParcela(consultaId, numeroParcela) {
         const c = consultas.find(item => item.id === consultaId);
         if (!c) return;
@@ -1077,7 +1077,7 @@
         return dataConsulta === dataFiltro;
       });
 
-      // CÁLCULOS FINANCEIROS PROPORCIONAIS ÀS PARCELAS DADAS BAIXA
+      // CÁLCULOS FINANCEIROS PROPORCIONAIS
       const consultasValidas = consultas.filter(c => c.status !== 'Cancelado');
 
       const valorRecebido = consultasValidas.reduce((acc, c) => {
@@ -1096,7 +1096,7 @@
       const totalSaidas = saidas.reduce((acc, s) => acc + Number(s.valor || 0), 0);
       const saldoEmConta = valorRecebido - totalSaidas;
 
-      // LISTAGEM UNIFICADA DE PARCELAS E LANÇAMENTOS PARA O FINANCEIRO
+      // LISTAGEM UNIFICADA
       const listaFinanceiro = useMemo(() => {
         const itensEntrada = [];
         const dataHojeAtual = new Date().toISOString().split('T')[0];
@@ -1346,7 +1346,7 @@
                             }}
                             className="px-2 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-lg text-[10px] font-extrabold flex items-center gap-1 transition-all active:scale-95"
                           >
-                            💬 WhatsApp
+                            <IconWhatsapp /> <span>WhatsApp</span>
                           </button>
                         )}
                       </p>
@@ -1544,6 +1544,7 @@
                                 <span>📊 {Number(c.qtd_parcelas || 1) > 1 ? `${c.qtd_parcelas}x de R$ ${(Number(c.valor || 0) / Number(c.qtd_parcelas || 1)).toFixed(2)}` : 'À Vista'}</span>
                               </div>
 
+                              {/* ETIQUETA DE STATUS E DATA DE PAGAMENTO */}
                               {foiPago && c.data_pagamento ? (
                                 <p className="text-[10px] text-emerald-800 font-extrabold mt-1.5 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 w-fit">
                                   <span>✅ Pago em:</span>
@@ -1567,38 +1568,42 @@
                                 R$ {Number(c.valor || 0).toFixed(2)}
                               </span>
                               
-                              {/* BOTÕES PADRONIZADOS (SÓ ÍCONES) */}
-                              <div className="flex items-center gap-1.5 mt-1">
+                              {/* BOTÕES TOTALMENTE PADRONIZADOS E APENAS COM ÍCONES */}
+                              <div className="flex items-center gap-1.5 mt-1 shrink-0">
                                 <button 
+                                  type="button"
                                   onClick={() => {
                                     const pObj = pacientes.find(p => p.id === c.paciente_id || (p.nome && p.nome.toLowerCase() === (c.paciente_nome || '').toLowerCase()));
                                     enviarWhatsappConsulta(c, pObj?.telefone || '');
                                   }} 
-                                  className="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200/60 flex items-center justify-center transition-all active:scale-95 shadow-xs"
+                                  className="w-9 h-9 min-w-[36px] min-h-[36px] shrink-0 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200/80 flex items-center justify-center transition-all active:scale-95 shadow-xs"
                                   title="Enviar lembrete por WhatsApp"
                                 >
                                   <IconWhatsapp />
                                 </button>
 
                                 <button 
+                                  type="button"
                                   onClick={() => baixarEventoICS(c)} 
-                                  className="w-8 h-8 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 flex items-center justify-center transition-all active:scale-95 shadow-xs"
+                                  className="w-9 h-9 min-w-[36px] min-h-[36px] shrink-0 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/80 flex items-center justify-center transition-all active:scale-95 shadow-xs"
                                   title="Salvar no Calendário do Celular (iOS / Apple)"
                                 >
                                   <IconCalendar />
                                 </button>
 
                                 <button 
+                                  type="button"
                                   onClick={() => handleAbrirEditarConsulta(c)} 
-                                  className="w-8 h-8 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/60 flex items-center justify-center transition-all active:scale-95 shadow-xs"
+                                  className="w-9 h-9 min-w-[36px] min-h-[36px] shrink-0 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/80 flex items-center justify-center transition-all active:scale-95 shadow-xs"
                                   title="Editar Agendamento"
                                 >
                                   <IconEdit />
                                 </button>
 
                                 <button 
+                                  type="button"
                                   onClick={() => handleExcluirConsulta(c.id)} 
-                                  className="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/60 flex items-center justify-center transition-all active:scale-95 shadow-xs"
+                                  className="w-9 h-9 min-w-[36px] min-h-[36px] shrink-0 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/80 flex items-center justify-center transition-all active:scale-95 shadow-xs"
                                   title="Excluir Agendamento"
                                 >
                                   <IconTrash />
@@ -1960,7 +1965,7 @@
                             onClick={() => enviarWhatsappAniversario(p)}
                             className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-bold shadow-sm active:scale-95 transition-all flex items-center gap-1"
                           >
-                            💬 Parabéns
+                            <IconWhatsapp /> <span>Parabéns</span>
                           </button>
                         )}
                         <span className="text-xs font-extrabold text-rose-900 bg-rose-100 px-2.5 py-1 rounded-xl">
