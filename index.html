@@ -537,15 +537,32 @@
         if (!formSaida.valor) return alert("Informe o valor da saída.");
 
         const payload = { categoria: formSaida.categoria, valor: Number(formSaida.valor || 0), data: formSaida.data, observacoes: formSaida.observacoes || '' };
-        const { data, error } = await supabase.from('saidas').insert([payload]).select();
-        if (!error && data) setSaidas([data[0], ...saidas]);
+        
+        if (isSupabaseConfigured) {
+          try {
+            const { data, error } = await supabase.from('saidas').insert([payload]).select();
+            if (!error && data) {
+              setSaidas([data[0], ...saidas]);
+            } else {
+              setSaidas([{ id: Date.now(), ...payload }, ...saidas]);
+            }
+          } catch (e) {
+            setSaidas([{ id: Date.now(), ...payload }, ...saidas]);
+          }
+        } else {
+          setSaidas([{ id: Date.now(), ...payload }, ...saidas]);
+        }
+
         setFormSaida({ categoria: 'Uso Pessoal', valor: '', data: todayStr, observacoes: '' });
         setShowNovaSaida(false);
+        alert("Saída de caixa adicionada!");
       }
 
       async function handleExcluirSaida(id) {
         if (confirm("Deseja excluir esta saída?")) {
-          await supabase.from('saidas').delete().eq('id', id);
+          if (isSupabaseConfigured) {
+            try { await supabase.from('saidas').delete().eq('id', id); } catch (e) {}
+          }
           setSaidas(saidas.filter(s => s.id !== id));
         }
       }
@@ -882,7 +899,7 @@
               </div>
             )}
 
-            {/* AGENDA COMPLETA COM LINK DE CONFIRMAÇÃO DO WHATSAPP */}
+            {/* AGENDA COMPLETA */}
             {activeTab === 'agenda' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -970,28 +987,245 @@
               </div>
             )}
 
-            {/* FINANCEIRO */}
+            {/* FINANCEIRO COMPLETO */}
             {activeTab === 'financeiro' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Controle Financeiro</h2>
-                  <button onClick={() => setShowNovaSaida(true)} className="px-3.5 py-2 bg-rose-900 text-white rounded-xl text-xs font-bold">Adicionar Saída</button>
+                  <button 
+                    onClick={() => setShowNovaSaida(true)} 
+                    className="px-3.5 py-2 bg-rose-900 text-white rounded-xl text-xs font-bold shadow-md active:scale-95"
+                  >
+                    Adicionar Saída
+                  </button>
                 </div>
 
+                {/* OS 4 CARTÕES FINANCEIROS */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-amber-500 text-white p-4 rounded-3xl">
-                    <p className="text-[10px] uppercase font-bold text-amber-100">⏳ Futuros</p>
-                    <p className="text-lg font-black mt-1">R$ {valorAReceber.toFixed(2)}</p>
+                  <div className="bg-amber-500/90 backdrop-blur-md text-white p-4 rounded-3xl shadow-sm border border-amber-400 flex flex-col justify-between min-h-[105px]">
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-amber-100 tracking-wider">⏳ Lançamentos Futuros</p>
+                      <p className="text-lg font-black mt-1">R$ {valorAReceber.toFixed(2)}</p>
+                    </div>
+                    <p className="text-[9px] text-amber-100">A receber</p>
                   </div>
-                  <div className="bg-emerald-700 text-white p-4 rounded-3xl">
-                    <p className="text-[10px] uppercase font-bold text-emerald-100">✅ Confirmado</p>
-                    <p className="text-lg font-black mt-1">R$ {valorRecebido.toFixed(2)}</p>
+
+                  <div className="bg-emerald-700/90 backdrop-blur-md text-white p-4 rounded-3xl shadow-sm border border-emerald-600 flex flex-col justify-between min-h-[105px]">
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-emerald-100 tracking-wider">✅ Entrou em Caixa</p>
+                      <p className="text-lg font-black mt-1">R$ {valorRecebido.toFixed(2)}</p>
+                    </div>
+                    <p className="text-[9px] text-emerald-100">Confirmado</p>
+                  </div>
+
+                  <div className="bg-slate-900/90 backdrop-blur-md text-white p-4 rounded-3xl shadow-sm border border-slate-700 flex flex-col justify-between min-h-[105px]">
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-slate-300 tracking-wider">💰 Previsão Total</p>
+                      <p className="text-lg font-black mt-1">R$ {previsaoTotal.toFixed(2)}</p>
+                    </div>
+                    <p className="text-[9px] text-slate-400">Caixa + Futuro</p>
+                  </div>
+
+                  <div className="bg-rose-900/90 backdrop-blur-md text-white p-4 rounded-3xl shadow-sm border border-rose-700 flex flex-col justify-between min-h-[105px]">
+                    <div>
+                      <p className="text-[10px] uppercase font-bold text-rose-200 tracking-wider">💸 Saídas de Caixa</p>
+                      <p className="text-lg font-black mt-1">R$ {totalSaidas.toFixed(2)}</p>
+                    </div>
+                    <p className="text-[9px] text-rose-200">Despesas e Gastos</p>
                   </div>
                 </div>
+
+                {/* BOTÕES DE FILTRO */}
+                <div className="flex bg-slate-200/70 p-1 rounded-2xl text-xs font-bold text-slate-600 gap-1 backdrop-blur-sm">
+                  <button 
+                    onClick={() => setFiltroFinanceiro('Futuros')}
+                    className={`flex-1 py-2 rounded-xl text-center transition-all ${
+                      filtroFinanceiro === 'Futuros' ? 'bg-white text-slate-900 shadow-sm font-extrabold' : 'hover:text-slate-900'
+                    }`}
+                  >
+                    ⏳ Futuros
+                  </button>
+                  <button 
+                    onClick={() => setFiltroFinanceiro('Recebidos')}
+                    className={`flex-1 py-2 rounded-xl text-center transition-all ${
+                      filtroFinanceiro === 'Recebidos' ? 'bg-white text-slate-900 shadow-sm font-extrabold' : 'hover:text-slate-900'
+                    }`}
+                  >
+                    ✅ Recebidos
+                  </button>
+                  <button 
+                    onClick={() => setFiltroFinanceiro('Saidas')}
+                    className={`flex-1 py-2 rounded-xl text-center transition-all ${
+                      filtroFinanceiro === 'Saidas' ? 'bg-white text-slate-900 shadow-sm font-extrabold' : 'hover:text-slate-900'
+                    }`}
+                  >
+                    💸 Saídas
+                  </button>
+                  <button 
+                    onClick={() => setFiltroFinanceiro('Todos')}
+                    className={`px-3 py-2 rounded-xl text-center transition-all ${
+                      filtroFinanceiro === 'Todos' ? 'bg-white text-slate-900 shadow-sm font-extrabold' : 'hover:text-slate-900'
+                    }`}
+                  >
+                    Todos
+                  </button>
+                </div>
+
+                {/* LISTA DE SAÍDAS OU RECEBIMENTOS */}
+                {filtroFinanceiro === 'Saidas' ? (
+                  saidas.length === 0 ? (
+                    <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white/90 backdrop-blur-md space-y-2">
+                      <p className="text-xs text-slate-400">Nenhuma saída de caixa registrada.</p>
+                      <button 
+                        onClick={() => setShowNovaSaida(true)} 
+                        className="px-3.5 py-1.5 bg-rose-900 text-white rounded-xl text-xs font-bold"
+                      >
+                        Adicionar Saída
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {saidas.map(s => (
+                        <div key={s.id} className="p-4 bg-white/90 backdrop-blur-md border border-slate-100 rounded-2xl shadow-sm space-y-1.5">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="px-2 py-0.5 text-[9px] font-bold rounded-lg bg-rose-100 text-rose-900 inline-block mb-1">
+                                {s.categoria || 'Despesa'}
+                              </span>
+                              <p className="text-[10px] text-slate-400 font-bold block">
+                                📅 {s.data ? new Date(s.data + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data não definida'}
+                              </p>
+                              {s.observacoes && (
+                                <p className="text-[11px] text-slate-600 mt-1 bg-slate-50 p-2 rounded-xl border border-slate-100">
+                                  📝 {s.observacoes}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <span className="font-extrabold text-rose-800 text-sm block">
+                                - R$ {Number(s.valor || 0).toFixed(2)}
+                              </span>
+                              <button onClick={() => handleExcluirSaida(s.id)} className="text-rose-600 p-1 mt-1">
+                                <IconTrash />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )
+                ) : (
+                  consultasFinanceiro.length === 0 ? (
+                    <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white/90 backdrop-blur-md">
+                      <p className="text-xs text-slate-400">Nenhum lançamento nesta categoria.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {consultasFinanceiro.map(c => {
+                        const foiPago = c.status_pagamento === 'Recebido';
+                        const dataExibicao = c.data || (c.data_hora ? c.data_hora.split('T')[0] : '');
+                        return (
+                          <div key={c.id} className="p-4 bg-white/90 backdrop-blur-md border border-slate-100 rounded-2xl shadow-sm space-y-2">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="text-[10px] text-slate-400 font-bold">
+                                  📅 {dataExibicao ? new Date(dataExibicao + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data não definida'} às {c.hora || '14:00'}
+                                </p>
+                                <h3 className="font-bold text-slate-800 text-sm mt-0.5">{c.paciente_nome}</h3>
+                                <p className="text-xs text-rose-900 font-semibold">{c.procedimento} {c.sessao ? `(${c.sessao})` : ''}</p>
+                              </div>
+
+                              <div className="text-right">
+                                <span className="font-extrabold text-slate-900 text-sm block">
+                                  R$ {Number(c.valor || 0).toFixed(2)}
+                                </span>
+                                <span className={`px-2 py-0.5 text-[9px] font-bold rounded-lg inline-block mt-1 ${
+                                  foiPago ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
+                                }`}>
+                                  {foiPago ? '✅ Recebido' : '⏳ A Receber'}
+                                </span>
+                              </div>
+                            </div>
+
+                            {!foiPago && (
+                              <button 
+                                onClick={() => handleConfirmarPagamento(c.id)}
+                                className="w-full mt-2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                              >
+                                <IconCheck /> <span>Confirmar que o dinheiro entrou</span>
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )
+                )}
               </div>
             )}
 
           </main>
+
+          {/* MODAL ADICIONAR SAÍDA DE CAIXA */}
+          {showNovaSaida && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-3">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Adicionar Saída de Caixa</h3>
+                <form onSubmit={handleAddSaida} className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Tipo / Categoria da Saída *</label>
+                    <select 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-rose-900"
+                      value={formSaida.categoria}
+                      onChange={e => setFormSaida({...formSaida, categoria: e.target.value})}
+                    >
+                      {OPCOES_SAIDA.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Valor (R$) *</label>
+                      <input 
+                        type="number" 
+                        step="0.01"
+                        required 
+                        placeholder="Ex: 50.00" 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl" 
+                        value={formSaida.valor} 
+                        onChange={e => setFormSaida({...formSaida, valor: e.target.value})} 
+                      />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Data *</label>
+                      <input 
+                        type="date" 
+                        required 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl" 
+                        value={formSaida.data} 
+                        onChange={e => setFormSaida({...formSaida, data: e.target.value})} 
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Observações / Descrição *</label>
+                    <textarea 
+                      placeholder="Descreva aqui os detalhes desta saída..." 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl h-20" 
+                      value={formSaida.observacoes} 
+                      onChange={e => setFormSaida({...formSaida, observacoes: e.target.value})} 
+                    />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button type="button" onClick={() => setShowNovaSaida(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
+                    <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Salvar Saída</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
 
           {/* MODAL CONFIGURAR MENSAGEM DO WHATSAPP */}
           {showConfigMsg && (
@@ -1020,6 +1254,41 @@
                     Guardar
                   </button>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL CADASTRAR PACIENTE */}
+          {showNovoPaciente && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-3">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Cadastrar Paciente</h3>
+                <form onSubmit={handleAddPaciente} className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-0.5">Nome Completo *</label>
+                    <input required placeholder="Nome Completo *" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formPaciente.nome} onChange={e => setFormPaciente({...formPaciente, nome: e.target.value})} />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-0.5">Telefone / WhatsApp *</label>
+                    <input required placeholder="Telefone / WhatsApp *" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formPaciente.telefone} onChange={e => setFormPaciente({...formPaciente, telefone: e.target.value})} />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-0.5">Data de Nascimento</label>
+                    <input type="date" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formPaciente.data_nascimento} onChange={e => setFormPaciente({...formPaciente, data_nascimento: e.target.value})} />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-0.5">Observações Gerais</label>
+                    <textarea placeholder="Observações sobre a paciente..." className="w-full p-3 bg-slate-50 border rounded-2xl h-14" value={formPaciente.observacoes} onChange={e => setFormPaciente({...formPaciente, observacoes: e.target.value})} />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button type="button" onClick={() => setShowNovoPaciente(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
+                    <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Salvar Paciente</button>
+                  </div>
+                </form>
               </div>
             </div>
           )}
