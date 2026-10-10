@@ -156,7 +156,7 @@
           return {
             ...p,
             pago: pago,
-            data_pagamento: pago ? (p.data_pagamento || c.data_pagamento || null) : null
+            data_pagamento: p.data_pagamento || (pago ? c.data_pagamento : null)
           };
         });
       }
@@ -167,7 +167,7 @@
           numero: i,
           valor: valorPorParcela,
           pago: foiPagoTotal,
-          data_pagamento: foiPagoTotal ? (c.data_pagamento || null) : null
+          data_pagamento: c.data_pagamento || null
         });
       }
       return list;
@@ -804,7 +804,7 @@
         if (!procFinal || !formConsulta.paciente_nome) return alert("Informe o nome da paciente e o procedimento.");
 
         const foiPago = formConsulta.status_pagamento === 'Recebido';
-        const dataPagamentoDigitada = foiPago ? (formConsulta.data_pagamento || todayStr) : null;
+        const dataPagamentoDigitada = formConsulta.data_pagamento || (foiPago ? todayStr : null);
         const numParcelas = Number(formConsulta.qtd_parcelas) || 1;
         const valorTotal = Number(formConsulta.valor || 0);
         const valorParcela = valorTotal > 0 ? Number((valorTotal / numParcelas).toFixed(2)) : 0;
@@ -815,7 +815,7 @@
             numero: i,
             valor: valorParcela,
             pago: foiPago,
-            data_pagamento: foiPago ? dataPagamentoDigitada : null
+            data_pagamento: dataPagamentoDigitada
           });
         }
 
@@ -898,7 +898,7 @@
         const numParcelas = Number(formConsulta.qtd_parcelas) || 1;
         const valorTotal = Number(formConsulta.valor || 0);
         const foiPago = formConsulta.status_pagamento === 'Recebido';
-        const dataPagamentoDigitada = foiPago ? (formConsulta.data_pagamento || todayStr) : null;
+        const dataPagamentoDigitada = formConsulta.data_pagamento || (foiPago ? todayStr : null);
 
         const parcelasNovas = obterParcelas({ ...formConsulta, valor: valorTotal, qtd_parcelas: numParcelas, data_pagamento: dataPagamentoDigitada });
 
@@ -1118,7 +1118,7 @@
                 forma_pagamento: c.forma_pagamento,
                 valor: p.valor,
                 pago: p.pago,
-                data: p.pago ? (p.data_pagamento || c.data_pagamento || dataHojeAtual) : (c.data || dataHojeAtual),
+                data: p.pago ? (p.data_pagamento || c.data_pagamento || dataHojeAtual) : (c.data_pagamento || c.data || dataHojeAtual),
                 data_agendamento: c.data,
                 data_pagamento: p.data_pagamento || c.data_pagamento,
                 hora: c.hora,
@@ -1142,7 +1142,7 @@
               forma_pagamento: c.forma_pagamento,
               valor: c.valor,
               pago: foiPago,
-              data: foiPago ? (dataPagamentoFinal || todayStr) : (c.data || todayStr),
+              data: foiPago ? (dataPagamentoFinal || todayStr) : (dataPagamentoFinal || c.data || todayStr),
               data_agendamento: c.data,
               data_pagamento: dataPagamentoFinal,
               hora: c.hora,
@@ -1544,15 +1544,15 @@
                                 <span>📊 {Number(c.qtd_parcelas || 1) > 1 ? `${c.qtd_parcelas}x de R$ ${(Number(c.valor || 0) / Number(c.qtd_parcelas || 1)).toFixed(2)}` : 'À Vista'}</span>
                               </div>
 
-                              {/* ETIQUETA DE STATUS E DATA DE PAGAMENTO */}
-                              {foiPago && c.data_pagamento ? (
+                              {/* ETIQUETA DE STATUS E DATA DE PAGAMENTO / PREVISÃO */}
+                              {foiPago ? (
                                 <p className="text-[10px] text-emerald-800 font-extrabold mt-1.5 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 w-fit">
                                   <span>✅ Pago em:</span>
-                                  <span>{formatarDataBR(c.data_pagamento)}</span>
+                                  <span>{formatarDataBR(c.data_pagamento || c.data)}</span>
                                 </p>
                               ) : (
                                 <p className="text-[10px] text-amber-800 font-extrabold mt-1.5 flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200/80 w-fit">
-                                  <span>⏳ Pagamento Pendente</span>
+                                  <span>⏳ Pagamento Pendente {c.data_pagamento ? `(Previsto: ${formatarDataBR(c.data_pagamento)})` : ''}</span>
                                 </p>
                               )}
 
@@ -1568,7 +1568,7 @@
                                 R$ {Number(c.valor || 0).toFixed(2)}
                               </span>
                               
-                              {/* BOTÕES TOTALMENTE PADRONIZADOS E APENAS COM ÍCONES */}
+                              {/* BOTÕES PADRONIZADOS APENAS COM ÍCONES */}
                               <div className="flex items-center gap-1.5 mt-1 shrink-0">
                                 <button 
                                   type="button"
@@ -1817,7 +1817,7 @@
                             <div>
                               <div className="flex items-center gap-1.5 mb-1">
                                 <span className="text-[10px] font-bold text-slate-400">
-                                  📅 {item.pago ? (item.data_pagamento ? `Pago em: ${formatarDataBR(item.data_pagamento)}` : 'Pago') : `Agendamento: ${formatarDataBR(item.data_agendamento)}`}
+                                  📅 {item.pago ? (item.data_pagamento ? `Pago em: ${formatarDataBR(item.data_pagamento)}` : 'Pago') : (item.data_pagamento ? `Previsto: ${formatarDataBR(item.data_pagamento)}` : `Agendamento: ${formatarDataBR(item.data_agendamento)}`)}
                                 </span>
                                 {item.isParcela && (
                                   <span className="px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-rose-100 text-rose-900">
@@ -2343,19 +2343,18 @@
                     </div>
                   </div>
 
-                  {/* DATA DO PAGAMENTO QUANDO MARCADO COMO RECEBIDO */}
-                  {formConsulta.status_pagamento === 'Recebido' && (
-                    <div>
-                      <label className="font-bold text-slate-600 block mb-1">Data do Pagamento *</label>
-                      <input 
-                        type="date" 
-                        required 
-                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
-                        value={formConsulta.data_pagamento || todayStr} 
-                        onChange={e => setFormConsulta({...formConsulta, data_pagamento: e.target.value})} 
-                      />
-                    </div>
-                  )}
+                  {/* CAMPO EDITÁVEL DA DATA DE PAGAMENTO / PREVISÃO */}
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">
+                      {formConsulta.status_pagamento === 'Recebido' ? 'Data do Pagamento *' : 'Previsão / Data do Pagamento'}
+                    </label>
+                    <input 
+                      type="date" 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
+                      value={formConsulta.data_pagamento || ''} 
+                      onChange={e => setFormConsulta({...formConsulta, data_pagamento: e.target.value})} 
+                    />
+                  </div>
 
                   {/* RESUMO DO PARCELAMENTO */}
                   {Number(formConsulta.valor) > 0 && Number(formConsulta.qtd_parcelas) > 1 && (
@@ -2496,19 +2495,18 @@
                     </div>
                   </div>
 
-                  {/* DATA DO PAGAMENTO QUANDO MARCADO COMO RECEBIDO */}
-                  {formConsulta.status_pagamento === 'Recebido' && (
-                    <div>
-                      <label className="font-bold text-slate-600 block mb-1">Data do Pagamento *</label>
-                      <input 
-                        type="date" 
-                        required 
-                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
-                        value={formConsulta.data_pagamento || todayStr} 
-                        onChange={e => setFormConsulta({...formConsulta, data_pagamento: e.target.value})} 
-                      />
-                    </div>
-                  )}
+                  {/* CAMPO EDITÁVEL DA DATA DE PAGAMENTO / PREVISÃO */}
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">
+                      {formConsulta.status_pagamento === 'Recebido' ? 'Data do Pagamento *' : 'Previsão / Data do Pagamento'}
+                    </label>
+                    <input 
+                      type="date" 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
+                      value={formConsulta.data_pagamento || ''} 
+                      onChange={e => setFormConsulta({...formConsulta, data_pagamento: e.target.value})} 
+                    />
+                  </div>
 
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Observação (Opcional)</label>
