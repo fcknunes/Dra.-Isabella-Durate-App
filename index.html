@@ -845,6 +845,7 @@
 
       const previsaoTotal = valorAReceber + valorRecebido;
       const totalSaidas = saidas.reduce((acc, s) => acc + Number(s.valor || 0), 0);
+      const saldoEmConta = valorRecebido - totalSaidas;
 
       const consultasFinanceiro = consultasValidas.filter(c => {
         const pag = c.status_pagamento || 'Pendente';
@@ -1290,7 +1291,19 @@
                   </button>
                 </div>
 
-                {/* MÉTRICAS PRINCIPAIS EM GRID DE 4 CAIXAS COM MESMO TAMANHO */}
+                {/* CARD DESTACADO: SALDO ATUAL EM CONTA (CAIXA DISPONÍVEL REAL) */}
+                <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 text-white p-4.5 rounded-3xl shadow-md border border-emerald-700/50 flex justify-between items-center">
+                  <div>
+                    <p className="text-[10px] uppercase font-extrabold text-emerald-200 tracking-wider">💳 Saldo Atual em Conta</p>
+                    <p className="text-2xl font-black mt-1">R$ {saldoEmConta.toFixed(2)}</p>
+                    <p className="text-[9px] text-emerald-200 mt-0.5 font-medium">Caixa Confirmado (-) Saídas de Caixa</p>
+                  </div>
+                  <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-2xl backdrop-blur-md border border-white/10 shadow-inner">
+                    💰
+                  </div>
+                </div>
+
+                {/* MÉTRICAS SECUNDÁRIAS EM GRID DE 4 CAIXAS */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-amber-500/90 backdrop-blur-md text-white p-4 rounded-3xl shadow-sm border border-amber-400 flex flex-col justify-between min-h-[105px]">
                     <div>
