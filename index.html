@@ -70,16 +70,47 @@
       { nome: "Outro Procedimento...", valor: "" }
     ];
 
-    const OPCOES_DURACAO = ["1 hora", "2 horas", "3 horas"];
-
-    const OPCOES_SESSAO = [
-      "Sessão Única", "1ª Sessão (Primeira)", "2ª Sessão (Segunda)", "3ª Sessão (Terceira)",
-      "4ª Sessão (Quarta)", "5ª Sessão (Quinta)", "6ª Sessão (Sexta)", "7ª Sessão (Sétima)",
-      "8ª Sessão (Oitava)", "9ª Sessão (Nona)", "10ª Sessão (Décima)"
+    // OPÇÕES DE DURAÇÃO
+    const OPCOES_DURACAO = [
+      "1 hora",
+      "2 horas",
+      "3 horas"
     ];
 
-    const OPCOES_SAIDA = ["Uso Pessoal", "Uber", "Material", "Outros"];
+    // OPÇÕES DE SESSÃO
+    const OPCOES_SESSAO = [
+      "Sessão Única",
+      "1ª Sessão (Primeira)",
+      "2ª Sessão (Segunda)",
+      "3ª Sessão (Terceira)",
+      "4ª Sessão (Quarta)",
+      "5ª Sessão (Quinta)",
+      "6ª Sessão (Sexta)",
+      "7ª Sessão (Sétima)",
+      "8ª Sessão (Oitava)",
+      "9ª Sessão (Nona)",
+      "10ª Sessão (Décima)",
+      "11ª Sessão (Décima Primeira)",
+      "12ª Sessão (Décima Segunda)",
+      "13ª Sessão (Décima Terceira)",
+      "14ª Sessão (Décima Quarta)",
+      "15ª Sessão (Décima Quinta)",
+      "16ª Sessão (Décima Sexta)",
+      "17ª Sessão (Décima Sétima)",
+      "18ª Sessão (Décima Oitava)",
+      "19ª Sessão (Décima Nona)",
+      "20ª Sessão (Vigésima)"
+    ];
 
+    // OPÇÕES DE SAÍDA DE CAIXA
+    const OPCOES_SAIDA = [
+      "Uso Pessoal",
+      "Uber",
+      "Material",
+      "Outros"
+    ];
+
+    // SCHEMA DE PERGUNTAS ESPECÍFICAS POR TIPO DE FICHA
     const QUESTOES_POR_FICHA = {
       "Avaliação Facial": [
         { id: "alergias_medicamentos", label: "Alergias ou uso contínuo de medicamentos?", placeholder: "Ex: Alergia a Dipirona, toma anticoncepcional..." },
@@ -101,17 +132,44 @@
     const IconTrash = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>;
     const IconCamera = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>;
     const IconCheck = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg>;
-    const IconWhatsapp = () => <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.285-.143-1.689-.834-1.951-.929-.262-.095-.453-.143-.644.143-.191.286-.74.929-.907 1.12-.167.19-.334.214-.619.071-.285-.143-1.205-.444-2.296-1.416-.848-.757-1.421-1.692-1.587-1.978-.167-.286-.018-.441.125-.583.129-.128.285-.333.428-.5.143-.167.19-.286.285-.476.095-.19.048-.357-.024-.5-.071-.143-.644-1.551-.882-2.122-.232-.556-.468-.48-.644-.489-.166-.008-.357-.01-.548-.01-.19 0-.5.071-.762.357-.262.286-1 1.001-1 2.441 0 1.439 1.048 2.833 1.191 3.023.143.19 2.062 3.149 4.996 4.414.698.301 1.244.481 1.669.616.702.223 1.341.191 1.846.116.564-.084 1.689-.69 1.927-1.357.238-.667.238-1.238.167-1.357-.07-.12-.261-.19-.546-.333z"/></svg>;
 
-    // FUNÇÃO PARA GERAR FICHEIRO .ICS (iOS/Apple Calendar)
+    // FUNÇÕES DE INTEGRAÇÃO COM WHATSAPP
+    function enviarWhatsappConsulta(consulta, telefonePaciente) {
+      const tel = (telefonePaciente || '').replace(/\D/g, '');
+      if (!tel) return alert("Paciente sem telefone cadastrado ou número inválido.");
+      
+      const dataFormatada = consulta.data ? new Date(consulta.data + 'T00:00:00').toLocaleDateString('pt-BR') : '';
+      const msg = `Olá, ${consulta.paciente_nome}! Passando para lembrar do seu atendimento de *${consulta.procedimento}* com a Dra. Isabella Duarte no dia *${dataFormatada}* às *${consulta.hora || '14:00'}*. Duração: ${consulta.duracao || '1 hora'}. Podemos confirmar?`;
+      
+      window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    function enviarWhatsappAniversario(paciente) {
+      const tel = (paciente?.telefone || '').replace(/\D/g, '');
+      if (!tel) return alert("Paciente sem telefone cadastrado ou número inválido.");
+      
+      const msg = `Olá, ${paciente.nome}! 🎉 A Dra. Isabella Duarte te deseja um Feliz Aniversário! Que seu dia seja iluminado e repleto de momentos especiais! 💖✨`;
+      
+      window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(msg)}`, '_blank');
+    }
+
+    // FUNÇÃO PARA GERAR FICHEIRO .ICS E INTEGRAR COM A AGENDA DO CELULAR (iOS/Apple Calendar)
     function baixarEventoICS(consulta) {
       const dataHoraInicio = new Date(`${consulta.data}T${consulta.hora || '14:00'}:00`);
+
+      // Calcula as horas de duração selecionadas
       let horasDuracao = 1;
       if (consulta.duracao && consulta.duracao.includes('2')) horasDuracao = 2;
       if (consulta.duracao && consulta.duracao.includes('3')) horasDuracao = 3;
 
       const dataHoraFim = new Date(dataHoraInicio.getTime() + horasDuracao * 60 * 60 * 1000);
-      const formatarDataICS = (date) => date.toISOString().replace(/-|:|\.\d+/g, '');
+
+      const formatarDataICS = (date) => {
+        return date.toISOString().replace(/-|:|\.\d+/g, '');
+      };
+
+      const inicioStr = formatarDataICS(dataHoraInicio);
+      const fimStr = formatarDataICS(dataHoraFim);
 
       const conteudoICS = [
         'BEGIN:VCALENDAR',
@@ -119,9 +177,9 @@
         'PRODID:-//Dra Isabella Duarte//Estetica Avancada//PT',
         'BEGIN:VEVENT',
         `SUMMARY:Atendimento: ${consulta.paciente_nome} - ${consulta.procedimento}`,
-        `DESCRIPTION:Procedimento: ${consulta.procedimento}\\nSessao: ${consulta.sessao || 'Unica'}\\nDuracao: ${consulta.duracao || '1 hora'}`,
-        `DTSTART:${formatarDataICS(dataHoraInicio)}`,
-        `DTEND:${formatarDataICS(dataHoraFim)}`,
+        `DESCRIPTION:Procedimento: ${consulta.procedimento}\\nSessao: ${consulta.sessao || 'Unica'}\\nDuracao: ${consulta.duracao || '1 hora'}\\nObservacoes: ${consulta.observacoes || 'Nenhuma'}`,
+        `DTSTART:${inicioStr}`,
+        `DTEND:${fimStr}`,
         'END:VEVENT',
         'END:VCALENDAR'
       ].join('\r\n');
@@ -135,12 +193,14 @@
       document.body.removeChild(link);
     }
 
-    // COMPONENTE DE CALENDÁRIO INTERATIVO
+    // COMPONENTE DE CALENDÁRIO INTERATIVO COM DESTAQUE DE DATAS
     function CalendarWidget({ dataFiltro, setDataFiltro, consultas }) {
       const [currentMonth, setCurrentMonth] = useState(() => {
         if (dataFiltro) {
           const parts = dataFiltro.split('-');
-          if (parts.length === 3) return new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+          if (parts.length === 3) {
+            return new Date(Number(parts[0]), Number(parts[1]) - 1, 1);
+          }
         }
         return new Date();
       });
@@ -154,7 +214,11 @@
 
       const year = currentMonth.getFullYear();
       const month = currentMonth.getMonth();
-      const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+
+      const monthNames = [
+        "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+        "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+      ];
 
       const firstDayOfWeek = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -163,19 +227,28 @@
       const nextMonth = () => setCurrentMonth(new Date(year, month + 1, 1));
 
       const daysGrid = [];
-      for (let i = 0; i < firstDayOfWeek; i++) daysGrid.push(null);
+      for (let i = 0; i < firstDayOfWeek; i++) {
+        daysGrid.push(null);
+      }
       for (let d = 1; d <= daysInMonth; d++) {
         const mm = String(month + 1).padStart(2, '0');
         const dd = String(d).padStart(2, '0');
-        daysGrid.push({ day: d, dateStr: `${year}-${mm}-${dd}` });
+        const dateStr = `${year}-${mm}-${dd}`;
+        daysGrid.push({ day: d, dateStr });
       }
 
       return (
         <div className="bg-white/90 backdrop-blur-md p-4 rounded-3xl border border-slate-100 shadow-sm space-y-3">
           <div className="flex justify-between items-center px-1">
-            <button type="button" onClick={prevMonth} className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 font-bold text-sm flex items-center justify-center">‹</button>
-            <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">{monthNames[month]} {year}</span>
-            <button type="button" onClick={nextMonth} className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 text-slate-700 font-bold text-sm flex items-center justify-center">›</button>
+            <button type="button" onClick={prevMonth} className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-900 text-slate-700 font-bold text-sm flex items-center justify-center transition-colors">
+              ‹
+            </button>
+            <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+              {monthNames[month]} {year}
+            </span>
+            <button type="button" onClick={nextMonth} className="w-8 h-8 rounded-xl bg-slate-100 hover:bg-rose-50 hover:text-rose-900 text-slate-700 font-bold text-sm flex items-center justify-center transition-colors">
+              ›
+            </button>
           </div>
 
           <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-400">
@@ -185,12 +258,16 @@
           <div className="grid grid-cols-7 gap-1">
             {daysGrid.map((item, idx) => {
               if (!item) return <div key={`empty-${idx}`} className="h-9" />;
+
               const isSelected = item.dateStr === dataFiltro;
               const temAgendamento = diasComAgendamento.has(item.dateStr);
 
               let bgStyle = "bg-slate-50/50 text-slate-700 hover:bg-rose-50";
-              if (isSelected) bgStyle = "bg-rose-900 text-white font-black shadow-md scale-105 z-10";
-              else if (temAgendamento) bgStyle = "bg-rose-100 text-rose-950 font-extrabold border border-rose-300 shadow-sm";
+              if (isSelected) {
+                bgStyle = "bg-rose-900 text-white font-black shadow-md scale-105 z-10";
+              } else if (temAgendamento) {
+                bgStyle = "bg-rose-100 text-rose-950 font-extrabold border border-rose-300 shadow-sm";
+              }
 
               return (
                 <button
@@ -200,11 +277,26 @@
                   className={`h-9 rounded-2xl flex flex-col items-center justify-center text-xs relative transition-all active:scale-95 ${bgStyle}`}
                 >
                   <span>{item.day}</span>
-                  {temAgendamento && !isSelected && <span className="w-1.5 h-1.5 bg-rose-600 rounded-full absolute bottom-1"></span>}
-                  {temAgendamento && isSelected && <span className="w-1.5 h-1.5 bg-amber-300 rounded-full absolute bottom-1"></span>}
+                  {temAgendamento && !isSelected && (
+                    <span className="w-1.5 h-1.5 bg-rose-600 rounded-full absolute bottom-1"></span>
+                  )}
+                  {temAgendamento && isSelected && (
+                    <span className="w-1.5 h-1.5 bg-amber-300 rounded-full absolute bottom-1"></span>
+                  )}
                 </button>
               );
             })}
+          </div>
+
+          <div className="flex items-center justify-around pt-2 border-t border-slate-100 text-[10px] font-bold text-slate-500">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-100 border border-rose-300 inline-block"></span>
+              <span>Com agendamento</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-900 inline-block"></span>
+              <span>Dia selecionado</span>
+            </div>
           </div>
         </div>
       );
@@ -213,15 +305,6 @@
     function App() {
       const todayStr = new Date().toISOString().split('T')[0];
 
-      // TELA PÚBLICA DE CONFIRMAÇÃO DO PACIENTE (Via Link do WhatsApp ?confirmar_id=123)
-      const urlParams = new URLSearchParams(window.location.search);
-      const confirmarIdParam = urlParams.get('confirmar_id');
-
-      const [consultaParaConfirmar, setConsultaParaConfirmar] = useState(null);
-      const [confirmadoSucesso, setConfirmadoSucesso] = useState(false);
-      const [carregandoConfirmacao, setCarregandoConfirmacao] = useState(!!confirmarIdParam);
-
-      // Estado Principal
       const [activeTab, setActiveTab] = useState('dashboard');
       const [pacientes, setPacientes] = useState([]);
       const [consultas, setConsultas] = useState([]);
@@ -236,13 +319,6 @@
       const [loading, setLoading] = useState(false);
       const [uploading, setUploading] = useState(false);
       const [modoPacienteManual, setModoPacienteManual] = useState(false);
-
-      // Template de Mensagem do WhatsApp
-      const [showConfigMsg, setShowConfigMsg] = useState(false);
-      const [templateMsg, setTemplateMsg] = useState(() => {
-        return localStorage.getItem('template_whatsapp_dra') || 
-          "Olá {paciente}! Passando para confirmar o seu agendamento de *{procedimento}* no dia *{data} às {hora}* com a Dra. Isabella Duarte.\n\nPor favor, confirme sua presença clicando no link abaixo:\n{link}";
-      });
 
       // Aniversariantes do dia
       const [aniversariantesHoje, setAniversariantesHoje] = useState([]);
@@ -286,26 +362,8 @@
         respostas_especificas: {}
       });
 
-      // CARREGAR CONSULTA DO LINK DE CONFIRMAÇÃO SE ABRIR VIA PACIENTE
       useEffect(() => {
-        if (confirmarIdParam && isSupabaseConfigured) {
-          supabase
-            .from('consultas')
-            .select('*')
-            .eq('id', confirmarIdParam)
-            .single()
-            .then(({ data, error }) => {
-              if (data && !error) {
-                setConsultaParaConfirmar(data);
-                if (data.status === 'Confirmado') setConfirmadoSucesso(true);
-              }
-              setCarregandoConfirmacao(false);
-            });
-        }
-      }, [confirmarIdParam]);
-
-      useEffect(() => {
-        if (isSupabaseConfigured && !confirmarIdParam) {
+        if (isSupabaseConfigured) {
           carregarDados();
           carregarSaidas();
         }
@@ -318,6 +376,7 @@
         }
       }, [selectedPaciente]);
 
+      // VERIFICAÇÃO DE ANIVERSARIANTES DO DIA
       useEffect(() => {
         if (pacientes.length > 0) {
           const today = new Date();
@@ -328,57 +387,26 @@
           const niverHoje = pacientes.filter(p => {
             if (!p.data_nascimento) return false;
             const parts = p.data_nascimento.split('-');
-            return parts.length >= 3 && `${parts[1]}-${parts[2]}` === todayMMDD;
+            if (parts.length < 3) return false;
+            const [, pMonth, pDay] = parts;
+            return `${pMonth}-${pDay}` === todayMMDD;
           });
 
           setAniversariantesHoje(niverHoje);
-          if (niverHoje.length > 0 && !localStorage.getItem(`hide_birthday_popup_${todayStr}`)) {
+
+          const keyNaoMostrar = `hide_birthday_popup_${todayStr}`;
+          const jaFechouHoje = localStorage.getItem(keyNaoMostrar);
+
+          if (niverHoje.length > 0 && !jaFechouHoje) {
             setShowPopupAniversario(true);
           }
         }
       }, [pacientes]);
 
-      function salvarTemplateMsg(texto) {
-        setTemplateMsg(texto);
-        localStorage.setItem('template_whatsapp_dra', texto);
-      }
-
-      function gerarLinkWhatsapp(c) {
-        const pacienteObj = pacientes.find(p => p.id === c.paciente_id);
-        const telefoneRaw = pacienteObj?.telefone || '';
-        const telefoneApenasNumeros = telefoneRaw.replace(/\D/g, '');
-
-        const dataFormatada = c.data ? new Date(c.data + 'T00:00:00').toLocaleDateString('pt-BR') : '';
-        const linkConfirmacao = `${window.location.origin}${window.location.pathname}?confirmar_id=${c.id}`;
-
-        let textoFinal = templateMsg
-          .replace(/{paciente}/g, c.paciente_nome || 'Paciente')
-          .replace(/{procedimento}/g, c.procedimento || '')
-          .replace(/{data}/g, dataFormatada)
-          .replace(/{hora}/g, c.hora || '')
-          .replace(/{link}/g, linkConfirmacao);
-
-        const urlWa = `https://wa.me/55${telefoneApenasNumeros}?text=${encodeURIComponent(textoFinal)}`;
-        window.open(urlWa, '_blank');
-      }
-
-      async function handlePacienteConfirmarPresenca() {
-        if (!consultaParaConfirmar) return;
-
-        const { error } = await supabase
-          .from('consultas')
-          .update({ status: 'Confirmado' })
-          .eq('id', consultaParaConfirmar.id);
-
-        if (!error) {
-          setConfirmadoSucesso(true);
-        } else {
-          alert("Erro ao confirmar agendamento: " + error.message);
-        }
-      }
-
       function handleFecharPopupAniversario(naoMostrarMais = false) {
-        if (naoMostrarMais) localStorage.setItem(`hide_birthday_popup_${todayStr}`, 'true');
+        if (naoMostrarMais) {
+          localStorage.setItem(`hide_birthday_popup_${todayStr}`, 'true');
+        }
         setShowPopupAniversario(false);
       }
 
@@ -401,29 +429,39 @@
         try {
           const { data, error } = await supabase.from('saidas').select('*').order('data', { ascending: false });
           if (!error && data) setSaidas(data);
-        } catch (err) {}
+        } catch (err) {
+          console.error("Erro ao carregar saídas:", err);
+        }
       }
 
       async function carregarDocumentos(pacienteId) {
         try {
           const { data, error } = await supabase.from('documentos').select('*').eq('paciente_id', pacienteId).order('created_at', { ascending: false });
           if (!error && data) setDocumentos(data);
-        } catch (err) {}
+        } catch (err) {
+          console.error("Erro ao carregar documentos:", err);
+        }
       }
 
       async function carregarFichas(pacienteId) {
         try {
           const { data, error } = await supabase.from('fichas_anamnese').select('*').eq('paciente_id', pacienteId).order('data', { ascending: false });
           if (!error && data) setFichasAnamnese(data);
-        } catch (err) {}
+        } catch (err) {
+          console.error("Erro ao carregar fichas de anamnese:", err);
+        }
       }
 
+      // --- PACIENTES ---
       async function handleAddPaciente(e) {
         e.preventDefault();
-        if (!formPaciente.nome || !formPaciente.telefone) return alert("Por favor, preencha o nome e o telefone.");
+        if (!formPaciente.nome || !formPaciente.telefone) return alert("Por favor, preencha o nome e o telefone da paciente.");
 
         const { data, error } = await supabase.from('pacientes').insert([formPaciente]).select();
-        if (!error && data) {
+
+        if (error) {
+          alert("Erro ao guardar paciente: " + error.message);
+        } else if (data) {
           setPacientes([...pacientes, data[0]].sort((a,b) => a.nome.localeCompare(b.nome)));
           setFormPaciente({ nome: '', telefone: '', data_nascimento: '', observacoes: '' });
           setShowNovoPaciente(false);
@@ -444,24 +482,35 @@
         e.preventDefault();
         if (!selectedPaciente) return;
 
-        const { data, error } = await supabase.from('pacientes').update(formPaciente).eq('id', selectedPaciente.id).select();
-        if (!error && data) {
-          setPacientes(pacientes.map(p => p.id === selectedPaciente.id ? data[0] : p));
+        const { data, error } = await supabase
+          .from('pacientes')
+          .update(formPaciente)
+          .eq('id', selectedPaciente.id)
+          .select();
+
+        if (error) {
+          alert("Erro ao atualizar: " + error.message);
+        } else if (data) {
+          const atualizados = pacientes.map(p => p.id === selectedPaciente.id ? data[0] : p);
+          setPacientes(atualizados);
           setSelectedPaciente(data[0]);
           setShowEditarPaciente(false);
         }
       }
 
       async function handleExcluirPaciente(id) {
-        if (confirm("Tem certeza que deseja excluir esta paciente?")) {
+        if (confirm("Tem certeza que deseja excluir esta paciente? Esta ação não pode ser desfeita.")) {
           const { error } = await supabase.from('pacientes').delete().eq('id', id);
-          if (!error) {
+          if (error) {
+            alert("Erro ao eliminar paciente: " + error.message);
+          } else {
             setPacientes(pacientes.filter(p => p.id !== id));
             setSelectedPaciente(null);
           }
         }
       }
 
+      // --- FICHAS DE ANAMNESE DIGITAL ---
       async function handleSalvarFicha(e) {
         e.preventDefault();
         if (!selectedPaciente) return;
@@ -476,50 +525,78 @@
         };
 
         const { data, error } = await supabase.from('fichas_anamnese').insert([payload]).select();
-        if (!error && data) {
+
+        if (error) {
+          alert("Erro ao salvar ficha: " + error.message);
+        } else if (data) {
           setFichasAnamnese([data[0], ...fichasAnamnese]);
           setShowNovaFicha(false);
-          setFormFicha({ tipo_ficha: TIPOS_ANAMNESE[0], data: todayStr, queixa_principal: '', avaliacao_medica: '', respostas_especificas: {} });
-          alert("Ficha de Anamnese salva!");
+          setFormFicha({
+            tipo_ficha: TIPOS_ANAMNESE[0],
+            data: todayStr,
+            queixa_principal: '',
+            avaliacao_medica: '',
+            respostas_especificas: {}
+          });
+          alert("Ficha de Anamnese salva com sucesso!");
         }
       }
 
       async function handleExcluirFicha(fichaId) {
-        if (confirm("Deseja excluir esta ficha?")) {
+        if (confirm("Deseja excluir esta ficha de anamnese?")) {
           const { error } = await supabase.from('fichas_anamnese').delete().eq('id', fichaId);
-          if (!error) setFichasAnamnese(fichasAnamnese.filter(f => f.id !== fichaId));
+          if (error) {
+            alert("Erro ao excluir ficha: " + error.message);
+          } else {
+            setFichasAnamnese(fichasAnamnese.filter(f => f.id !== fichaId));
+            if (selectedFichaVer && selectedFichaVer.id === fichaId) setSelectedFichaVer(null);
+          }
         }
       }
 
+      // --- FOTOS E DOCUMENTOS ---
       async function handleAddDocumento(e) {
         e.preventDefault();
-        if (!formDoc.titulo || !formDoc.file || !selectedPaciente) return alert("Preencha o título e o ficheiro.");
+        if (!formDoc.titulo || !formDoc.file || !selectedPaciente) {
+          return alert("Preencha o título e selecione um ficheiro.");
+        }
 
         setUploading(true);
         try {
           const file = formDoc.file;
-          const fileName = `${selectedPaciente.id}/${formDoc.categoria}/${Date.now()}.${file.name.split('.').pop()}`;
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${selectedPaciente.id}/${formDoc.categoria}/${Date.now()}.${fileExt}`;
 
-          const { error: uploadErr } = await supabase.storage.from('prontuarios').upload(fileName, file);
+          const { error: uploadErr } = await supabase.storage
+            .from('prontuarios')
+            .upload(fileName, file);
+
           if (uploadErr) throw uploadErr;
 
-          const publicUrl = supabase.storage.from('prontuarios').getPublicUrl(fileName).data.publicUrl;
-          const { data: docData, error: docErr } = await supabase.from('documentos').insert([{
+          const { data: urlData } = supabase.storage.from('prontuarios').getPublicUrl(fileName);
+          const publicUrl = urlData.publicUrl;
+
+          const novoDoc = {
             paciente_id: selectedPaciente.id,
             titulo: formDoc.titulo,
             descricao: formDoc.descricao || '',
             categoria: formDoc.categoria,
             url: publicUrl,
             tipo: file.type.includes('image') ? 'imagem' : 'documento'
-          }]).select();
+          };
+
+          const { data: docData, error: docErr } = await supabase.from('documentos').insert([novoDoc]).select();
+
+          if (docErr) throw docErr;
 
           if (docData) {
             setDocumentos([docData[0], ...documentos]);
             setFormDoc({ titulo: '', descricao: '', categoria: 'Fotos', file: null });
             setShowNovoDoc(false);
+            alert("Ficheiro salvo com sucesso na pasta " + formDoc.categoria + "!");
           }
         } catch (err) {
-          alert("Erro no envio: " + err.message);
+          alert("Erro no envio do ficheiro: " + (err.message || "Erro desconhecido."));
         } finally {
           setUploading(false);
         }
@@ -528,29 +605,42 @@
       async function handleExcluirDoc(docId) {
         if (confirm("Deseja remover este documento?")) {
           const { error } = await supabase.from('documentos').delete().eq('id', docId);
-          if (!error) setDocumentos(documentos.filter(d => d.id !== docId));
+          if (error) {
+            alert("Erro ao eliminar documento: " + error.message);
+          } else {
+            setDocumentos(documentos.filter(d => d.id !== docId));
+          }
         }
       }
 
+      // --- SAÍDAS DE CAIXA / DESPESAS ---
       async function handleAddSaida(e) {
         e.preventDefault();
-        if (!formSaida.valor) return alert("Informe o valor da saída.");
+        if (!formSaida.valor) return alert("Por favor, informe o valor da saída.");
 
-        const payload = { categoria: formSaida.categoria, valor: Number(formSaida.valor || 0), data: formSaida.data, observacoes: formSaida.observacoes || '' };
-        
+        const payload = {
+          categoria: formSaida.categoria,
+          valor: Number(formSaida.valor || 0),
+          data: formSaida.data,
+          observacoes: formSaida.observacoes || ''
+        };
+
         if (isSupabaseConfigured) {
           try {
             const { data, error } = await supabase.from('saidas').insert([payload]).select();
             if (!error && data) {
               setSaidas([data[0], ...saidas]);
             } else {
-              setSaidas([{ id: Date.now(), ...payload }, ...saidas]);
+              const localObj = { id: Date.now(), ...payload };
+              setSaidas([localObj, ...saidas]);
             }
-          } catch (e) {
-            setSaidas([{ id: Date.now(), ...payload }, ...saidas]);
+          } catch (err) {
+            const localObj = { id: Date.now(), ...payload };
+            setSaidas([localObj, ...saidas]);
           }
         } else {
-          setSaidas([{ id: Date.now(), ...payload }, ...saidas]);
+          const localObj = { id: Date.now(), ...payload };
+          setSaidas([localObj, ...saidas]);
         }
 
         setFormSaida({ categoria: 'Uso Pessoal', valor: '', data: todayStr, observacoes: '' });
@@ -559,7 +649,7 @@
       }
 
       async function handleExcluirSaida(id) {
-        if (confirm("Deseja excluir esta saída?")) {
+        if (confirm("Deseja excluir esta saída de caixa?")) {
           if (isSupabaseConfigured) {
             try { await supabase.from('saidas').delete().eq('id', id); } catch (e) {}
           }
@@ -567,30 +657,67 @@
         }
       }
 
+      // --- AGENDA / CONSULTAS & FINANCEIRO ---
       function handleAbrirNovoAgendamento(pacientePreSelecionado = null) {
-        setModoPacienteManual(pacientePreSelecionado ? false : pacientes.length === 0);
-        setFormConsulta({
-          id: null,
-          paciente_id: pacientePreSelecionado?.id || pacientes[0]?.id || '',
-          paciente_nome: pacientePreSelecionado?.nome || pacientes[0]?.nome || '',
-          procedimento: PROCEDIMENTOS_PRESET[0].nome,
-          procedimento_custom: '',
-          sessao: OPCOES_SESSAO[0],
-          duracao: OPCOES_DURACAO[0],
-          data: todayStr,
-          hora: '14:00',
-          valor: '',
-          status: 'Agendado',
-          status_pagamento: 'Pendente',
-          observacoes: ''
-        });
+        if (pacientePreSelecionado) {
+          setModoPacienteManual(false);
+          setFormConsulta({
+            id: null,
+            paciente_id: pacientePreSelecionado.id,
+            paciente_nome: pacientePreSelecionado.nome,
+            procedimento: PROCEDIMENTOS_PRESET[0].nome,
+            procedimento_custom: '',
+            sessao: OPCOES_SESSAO[0],
+            duracao: OPCOES_DURACAO[0],
+            data: todayStr,
+            hora: '14:00',
+            valor: '',
+            status: 'Agendado',
+            status_pagamento: 'Pendente',
+            observacoes: ''
+          });
+        } else {
+          setModoPacienteManual(pacientes.length === 0);
+          setFormConsulta({
+            id: null,
+            paciente_id: pacientes[0]?.id || '',
+            paciente_nome: pacientes[0]?.nome || '',
+            procedimento: PROCEDIMENTOS_PRESET[0].nome,
+            procedimento_custom: '',
+            sessao: OPCOES_SESSAO[0],
+            duracao: OPCOES_DURACAO[0],
+            data: todayStr,
+            hora: '14:00',
+            valor: '',
+            status: 'Agendado',
+            status_pagamento: 'Pendente',
+            observacoes: ''
+          });
+        }
         setShowNovaConsulta(true);
+      }
+
+      function handleProcedimentoChange(nomeProcedimento) {
+        setFormConsulta({
+          ...formConsulta,
+          procedimento: nomeProcedimento
+        });
+      }
+
+      function handlePacienteSelect(e) {
+        const pacId = e.target.value;
+        const pObj = pacientes.find(p => p.id === pacId);
+        setFormConsulta({
+          ...formConsulta,
+          paciente_id: pacId,
+          paciente_nome: pObj ? pObj.nome : ''
+        });
       }
 
       async function handleAddConsulta(e) {
         e.preventDefault();
         const procFinal = formConsulta.procedimento === "Outro Procedimento..." ? formConsulta.procedimento_custom : formConsulta.procedimento;
-        if (!procFinal || !formConsulta.paciente_nome) return alert("Informe a paciente e o procedimento.");
+        if (!procFinal || !formConsulta.paciente_nome) return alert("Informe o nome da paciente e o procedimento.");
 
         const payload = {
           paciente_id: formConsulta.paciente_id || null,
@@ -607,18 +734,14 @@
           observacoes: formConsulta.observacoes || ''
         };
 
-        let { data, error } = await supabase.from('consultas').insert([payload]).select();
-        if (error && error.message.includes('duracao')) {
-          delete payload.duracao;
-          const res = await supabase.from('consultas').insert([payload]).select();
-          data = res.data;
-          error = res.error;
-        }
+        const { data, error } = await supabase.from('consultas').insert([payload]).select();
 
-        if (!error && data) {
-          setConsultas([...consultas, { ...data[0], duracao: formConsulta.duracao }]);
+        if (error) {
+          alert("Erro ao agendar consulta: " + error.message);
+        } else if (data) {
+          setConsultas([...consultas, data[0]]);
           setShowNovaConsulta(false);
-          alert("Agendamento criado!");
+          alert("Agendamento criado com sucesso!");
         }
       }
 
@@ -660,117 +783,66 @@
           observacoes: formConsulta.observacoes || ''
         };
 
-        let { data, error } = await supabase.from('consultas').update(payload).eq('id', formConsulta.id).select();
-        if (error && error.message.includes('duracao')) {
-          delete payload.duracao;
-          const res = await supabase.from('consultas').update(payload).eq('id', formConsulta.id).select();
-          data = res.data;
-          error = res.error;
-        }
+        const { data, error } = await supabase.from('consultas').update(payload).eq('id', formConsulta.id).select();
 
-        if (!error && data) {
-          setConsultas(consultas.map(c => c.id === formConsulta.id ? { ...data[0], duracao: formConsulta.duracao } : c));
+        if (error) {
+          alert("Erro ao atualizar consulta: " + error.message);
+        } else if (data) {
+          setConsultas(consultas.map(c => c.id === formConsulta.id ? data[0] : c));
           setShowEditarConsulta(false);
         }
       }
 
       async function handleConfirmarPagamento(id) {
-        const { data, error } = await supabase.from('consultas').update({ status_pagamento: 'Recebido' }).eq('id', id).select();
-        if (!error && data) setConsultas(consultas.map(c => c.id === id ? data[0] : c));
-      }
+        const { data, error } = await supabase
+          .from('consultas')
+          .update({ status_pagamento: 'Recebido' })
+          .eq('id', id)
+          .select();
 
-      async function handleExcluirConsulta(id) {
-        if (confirm("Deseja excluir este agendamento?")) {
-          const { error } = await supabase.from('consultas').delete().eq('id', id);
-          if (!error) setConsultas(consultas.filter(c => c.id !== id));
+        if (error) {
+          alert("Erro ao confirmar pagamento: " + error.message);
+        } else if (data) {
+          setConsultas(consultas.map(c => c.id === id ? data[0] : c));
         }
       }
 
-      // --- TELA PÚBLICA DE CONFIRMAÇÃO DO PACIENTE ---
-      if (confirmarIdParam) {
-        return (
-          <div className="max-w-md mx-auto min-h-screen p-4 flex flex-col justify-center items-center">
-            <div className="bg-white/95 backdrop-blur-md w-full rounded-3xl p-6 shadow-2xl border border-rose-100 text-center space-y-5">
-              
-              <div className="w-20 h-20 rounded-2xl overflow-hidden mx-auto border-2 border-rose-300 shadow-md bg-[#e2c7b5] p-0.5">
-                <img src="Ícone.png" alt="Dra. Isabella Duarte" className="w-full h-full object-cover" style={{ transform: 'scale(2.35)' }} />
-              </div>
-
-              <div>
-                <span className="text-[10px] uppercase font-extrabold tracking-widest text-rose-800 bg-rose-50 px-3 py-1 rounded-full">
-                  Confirmação de Agendamento
-                </span>
-                <h1 className="text-xl font-extrabold text-slate-800 mt-2">Dra. Isabella Duarte</h1>
-                <p className="text-xs text-slate-500">Estética Avançada</p>
-              </div>
-
-              {carregandoConfirmacao ? (
-                <p className="text-xs text-slate-400 py-6">A carregar detalhes do agendamento...</p>
-              ) : !consultaParaConfirmar ? (
-                <p className="text-xs text-rose-700 bg-rose-50 p-4 rounded-2xl font-bold">
-                  Agendamento não encontrado ou já foi alterado.
-                </p>
-              ) : confirmadoSucesso ? (
-                <div className="space-y-4 pt-2">
-                  <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 p-5 rounded-2xl text-xs space-y-2 text-center">
-                    <div className="w-12 h-12 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center text-xl mx-auto font-black">
-                      ✓
-                    </div>
-                    <p className="font-extrabold text-sm text-emerald-950">Presença Confirmada com Sucesso!</p>
-                    <p className="text-slate-600 leading-relaxed">
-                      Sua reserva foi gravada na agenda da Dra. Isabella Duarte para o dia <strong>{new Date(consultaParaConfirmar.data + 'T00:00:00').toLocaleDateString('pt-BR')}</strong> às <strong>{consultaParaConfirmar.hora}</strong>.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4 text-xs text-left">
-                  {/* DADOS DA CONSULTA */}
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-1.5">
-                    <p><strong>Paciente:</strong> {consultaParaConfirmar.paciente_nome}</p>
-                    <p><strong>Procedimento:</strong> {consultaParaConfirmar.procedimento}</p>
-                    <p><strong>Data:</strong> {new Date(consultaParaConfirmar.data + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
-                    <p><strong>Horário:</strong> {consultaParaConfirmar.hora}</p>
-                  </div>
-
-                  {/* AVISO DO SINAL EXIBIDO ANTES DE CONFIRMAR */}
-                  <div className="bg-amber-50 border border-amber-300 p-4 rounded-2xl space-y-2 text-amber-950">
-                    <p className="font-black text-amber-900 flex items-center gap-1.5 text-xs">
-                      ⚠️ AVISO IMPORTANTE SOBRE A RESERVA
-                    </p>
-                    <p className="leading-relaxed text-[11px]">
-                      O valor pago como <strong>sinal de reserva</strong> garante a reserva do horário exclusivo da Dra. Isabella para o seu atendimento.
-                    </p>
-                    <div className="bg-amber-100/80 p-2.5 rounded-xl border border-amber-200 text-[11px] font-bold text-rose-950">
-                      Em caso de não comparecimento ou falta sem aviso prévio de pelo menos 24 horas de antecedência, o valor pago do sinal não será reembolsado.
-                    </div>
-                  </div>
-
-                  <p className="text-center font-bold text-slate-700 pt-1">
-                    Ao clicar no botão abaixo, você declara estar ciente do aviso acima e confirma a sua presença:
-                  </p>
-
-                  <button 
-                    onClick={handlePacienteConfirmarPresenca}
-                    className="w-full py-4 bg-emerald-700 hover:bg-emerald-800 text-white font-extrabold rounded-2xl text-xs shadow-md active:scale-95 transition-all flex items-center justify-center gap-2"
-                  >
-                    <IconCheck /> <span>ESTOU CIENTE E CONFIRMO PRESENÇA</span>
-                  </button>
-                </div>
-              )}
-
-            </div>
-          </div>
-        );
+      async function handleExcluirConsulta(id) {
+        if (confirm("Deseja cancelar/excluir este agendamento?")) {
+          const { error } = await supabase.from('consultas').delete().eq('id', id);
+          if (error) {
+            alert("Erro ao excluir consulta: " + error.message);
+          } else {
+            setConsultas(consultas.filter(c => c.id !== id));
+          }
+        }
       }
 
-      // --- TELA PRINCIPAL DO APLICATIVO ---
-      const pacientesFiltrados = pacientes.filter(p => (p.nome && p.nome.toLowerCase().includes(busca.toLowerCase())) || (p.telefone && p.telefone.includes(busca)));
-      const documentosFiltrados = documentos.filter(d => categoriaFiltro === 'Todas' || (d.categoria || 'Fotos') === categoriaFiltro);
-      const consultasDoDia = consultas.filter(c => (c.data || (c.data_hora ? c.data_hora.split('T')[0] : '')) === dataFiltro);
+      // Filtros e Cálculos
+      const pacientesFiltrados = pacientes.filter(p => 
+        (p.nome && p.nome.toLowerCase().includes(busca.toLowerCase())) || 
+        (p.telefone && p.telefone.includes(busca))
+      );
 
+      const documentosFiltrados = documentos.filter(d => 
+        categoriaFiltro === 'Todas' || (d.categoria || 'Fotos') === categoriaFiltro
+      );
+
+      const consultasDoDia = consultas.filter(c => {
+        const dataConsulta = c.data || (c.data_hora ? c.data_hora.split('T')[0] : '');
+        return dataConsulta === dataFiltro;
+      });
+
+      // CÁLCULOS FINANCEIROS
       const consultasValidas = consultas.filter(c => c.status !== 'Cancelado');
-      const valorAReceber = consultasValidas.filter(c => (c.status_pagamento || 'Pendente') === 'Pendente').reduce((acc, c) => acc + Number(c.valor || 0), 0);
-      const valorRecebido = consultasValidas.filter(c => c.status_pagamento === 'Recebido').reduce((acc, c) => acc + Number(c.valor || 0), 0);
+      const valorAReceber = consultasValidas
+        .filter(c => (c.status_pagamento || 'Pendente') === 'Pendente')
+        .reduce((acc, c) => acc + Number(c.valor || 0), 0);
+
+      const valorRecebido = consultasValidas
+        .filter(c => c.status_pagamento === 'Recebido')
+        .reduce((acc, c) => acc + Number(c.valor || 0), 0);
+
       const previsaoTotal = valorAReceber + valorRecebido;
       const totalSaidas = saidas.reduce((acc, s) => acc + Number(s.valor || 0), 0);
 
@@ -792,8 +864,20 @@
               <span className="text-[10px] uppercase tracking-widest text-rose-300 font-bold block">Estética Avançada</span>
               <h1 className="text-lg font-bold tracking-tight text-rose-50">Dra. Isabella Duarte</h1>
             </div>
+            
             <div className="w-12 h-12 rounded-2xl overflow-hidden flex items-center justify-center border-2 border-rose-400/40 shadow-md bg-[#e2c7b5] p-0.5">
-              <img src="Ícone.png" alt="Dra. Isabella Duarte" className="w-full h-full object-cover" style={{ transform: 'scale(2.35)' }} />
+              <img 
+                src="Ícone.png" 
+                alt="Ícone Dra. Isabella Duarte" 
+                className="w-full h-full object-cover transition-transform" 
+                style={{ transform: 'scale(2.35)' }}
+                onError={(e) => {
+                  if (!e.target.dataset.tried) {
+                    e.target.dataset.tried = "true";
+                    e.target.src = "Ícone";
+                  }
+                }}
+              />
             </div>
           </header>
 
@@ -802,16 +886,25 @@
             {/* DASHBOARD */}
             {activeTab === 'dashboard' && (
               <div className="space-y-4">
+
+                {/* BANNER DE ANIVERSARIANTES DO DIA */}
                 {aniversariantesHoje.length > 0 && (
                   <div className="bg-gradient-to-r from-amber-500 to-rose-600 text-white p-4 rounded-3xl shadow-md flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <span className="text-2xl">🎂</span>
                       <div>
                         <p className="text-[10px] uppercase font-bold text-amber-100 tracking-wider">Aniversariante(s) de Hoje</p>
-                        <p className="text-xs font-extrabold mt-0.5">{aniversariantesHoje.map(p => p.nome).join(', ')}</p>
+                        <p className="text-xs font-extrabold mt-0.5">
+                          {aniversariantesHoje.map(p => p.nome).join(', ')}
+                        </p>
                       </div>
                     </div>
-                    <button onClick={() => setShowPopupAniversario(true)} className="px-3 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-xl text-xs font-bold border border-white/20">Ver</button>
+                    <button 
+                      onClick={() => setShowPopupAniversario(true)} 
+                      className="px-3 py-1.5 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-xl text-xs font-bold text-white border border-white/20 active:scale-95 transition-all"
+                    >
+                      Ver
+                    </button>
                   </div>
                 )}
 
@@ -831,7 +924,7 @@
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => setShowNovoPaciente(true)} className="p-4 bg-white/90 backdrop-blur-md border border-rose-100/80 rounded-2xl shadow-sm text-left flex items-center justify-between">
+                  <button onClick={() => setShowNovoPaciente(true)} className="p-4 bg-white/90 backdrop-blur-md border border-rose-100/80 rounded-2xl shadow-sm text-left flex items-center justify-between active:scale-95 transition-all">
                     <div>
                       <p className="text-xs font-bold text-slate-800">+ Paciente</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Novo cadastro</p>
@@ -839,7 +932,7 @@
                     <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center"><IconUsers /></div>
                   </button>
 
-                  <button onClick={() => handleAbrirNovoAgendamento()} className="p-4 bg-white/90 backdrop-blur-md border border-rose-100/80 rounded-2xl shadow-sm text-left flex items-center justify-between">
+                  <button onClick={() => handleAbrirNovoAgendamento()} className="p-4 bg-white/90 backdrop-blur-md border border-rose-100/80 rounded-2xl shadow-sm text-left flex items-center justify-between active:scale-95 transition-all">
                     <div>
                       <p className="text-xs font-bold text-slate-800">+ Agendar</p>
                       <p className="text-[10px] text-slate-400 mt-0.5">Nova consulta</p>
@@ -847,6 +940,7 @@
                     <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-700 flex items-center justify-center"><IconCalendar /></div>
                   </button>
                 </div>
+
               </div>
             )}
 
@@ -855,27 +949,43 @@
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Prontuário de Pacientes</h2>
-                  <button onClick={() => setShowNovoPaciente(true)} className="px-3 py-1.5 bg-rose-900 text-white rounded-xl text-xs font-bold flex items-center gap-1">
+                  <button onClick={() => setShowNovoPaciente(true)} className="px-3 py-1.5 bg-rose-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm active:scale-95">
                     <IconPlus /> <span>Cadastrar</span>
                   </button>
                 </div>
 
                 <div className="relative">
                   <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none"><IconSearch /></div>
-                  <input type="text" placeholder="Buscar por nome ou telefone..." className="w-full pl-9 pr-4 py-2.5 bg-white/90 border rounded-2xl text-xs" value={busca} onChange={e => setBusca(e.target.value)} />
+                  <input 
+                    type="text" 
+                    placeholder="Buscar por nome ou telefone..." 
+                    className="w-full pl-9 pr-4 py-2.5 bg-white/90 backdrop-blur-sm border border-slate-200 rounded-2xl text-xs focus:outline-none focus:ring-2 focus:ring-rose-500/20"
+                    value={busca}
+                    onChange={e => setBusca(e.target.value)}
+                  />
                 </div>
 
-                <div className="space-y-2">
-                  {pacientesFiltrados.map(p => (
-                    <div key={p.id} onClick={() => setSelectedPaciente(p)} className="p-3.5 bg-white/90 border border-slate-100 rounded-2xl shadow-sm flex items-center justify-between cursor-pointer">
-                      <div>
-                        <p className="font-bold text-slate-800 text-xs">{p.nome}</p>
-                        <p className="text-[11px] text-slate-400">{p.telefone || 'Sem telefone'}</p>
+                {loading ? (
+                  <div className="text-center py-8 text-xs text-slate-400">A carregar pacientes...</div>
+                ) : pacientesFiltrados.length === 0 ? (
+                  <div className="text-center py-8 text-xs text-slate-400">Nenhum paciente cadastrado.</div>
+                ) : (
+                  <div className="space-y-2">
+                    {pacientesFiltrados.map(p => (
+                      <div 
+                        key={p.id} 
+                        onClick={() => setSelectedPaciente(p)}
+                        className="p-3.5 bg-white/90 backdrop-blur-md border border-slate-100 rounded-2xl shadow-sm flex items-center justify-between active:bg-rose-50/50 transition-colors cursor-pointer"
+                      >
+                        <div className="space-y-1">
+                          <p className="font-bold text-slate-800 text-xs">{p.nome}</p>
+                          <p className="text-[11px] text-slate-400">{p.telefone || 'Sem telefone'}</p>
+                        </div>
+                        <span className="text-slate-300 text-base font-bold">›</span>
                       </div>
-                      <span className="text-slate-300 font-bold">›</span>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -883,98 +993,278 @@
             {selectedPaciente && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <button onClick={() => setSelectedPaciente(null)} className="text-xs text-rose-800 font-bold bg-white/90 px-3 py-1.5 rounded-xl border">‹ Voltar</button>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleAbrirNovoAgendamento(selectedPaciente)} className="p-2 bg-rose-900 text-white rounded-xl font-bold text-xs flex items-center gap-1"><IconCalendar /> <span>Agendar</span></button>
-                    <button onClick={() => handleAbrirEditar(selectedPaciente)} className="p-2 bg-amber-50 text-amber-800 rounded-xl border"><IconEdit /></button>
-                    <button onClick={() => handleExcluirPaciente(selectedPaciente.id)} className="p-2 bg-rose-50 text-rose-800 rounded-xl border"><IconTrash /></button>
+                  <button onClick={() => setSelectedPaciente(null)} className="text-xs text-rose-800 font-bold flex items-center gap-1 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm">
+                    ‹ Voltar para Lista
+                  </button>
+
+                  <div className="flex items-center gap-2">
+                    <button onClick={() => handleAbrirNovoAgendamento(selectedPaciente)} className="p-2 bg-rose-900 text-white rounded-xl shadow-sm font-bold text-xs flex items-center gap-1">
+                      <IconCalendar /> <span>Agendar</span>
+                    </button>
+                    <button onClick={() => handleAbrirEditar(selectedPaciente)} className="p-2 bg-amber-50 text-amber-800 rounded-xl border border-amber-200 font-bold text-xs flex items-center gap-1">
+                      <IconEdit />
+                    </button>
+                    <button onClick={() => handleExcluirPaciente(selectedPaciente.id)} className="p-2 bg-rose-50 text-rose-800 rounded-xl border border-rose-200 font-bold text-xs flex items-center gap-1">
+                      <IconTrash />
+                    </button>
                   </div>
                 </div>
 
-                <div className="bg-white/90 p-4 rounded-3xl border space-y-2 text-xs">
-                  <h2 className="text-base font-extrabold text-slate-800">{selectedPaciente.nome}</h2>
-                  <p>📞 <strong>Tel:</strong> {selectedPaciente.telefone || 'Não informado'}</p>
-                  <p>🎂 <strong>Nascimento:</strong> {selectedPaciente.data_nascimento ? new Date(selectedPaciente.data_nascimento + 'T00:00:00').toLocaleDateString('pt-BR') : 'Não informada'}</p>
+                {/* DADOS BÁSICOS */}
+                <div className="bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-base font-extrabold text-slate-800">{selectedPaciente.nome}</h2>
+                      <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-2">
+                        <span>📞 <strong>Tel:</strong> {selectedPaciente.telefone || 'Não informado'}</span>
+                        {selectedPaciente.telefone && (
+                          <button 
+                            onClick={() => {
+                              const tel = selectedPaciente.telefone.replace(/\D/g, '');
+                              window.open(`https://api.whatsapp.com/send?phone=55${tel}`, '_blank');
+                            }}
+                            className="px-2 py-0.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-lg text-[10px] font-extrabold flex items-center gap-1 transition-all active:scale-95"
+                          >
+                            💬 WhatsApp
+                          </button>
+                        )}
+                      </p>
+                      <p className="text-xs text-slate-500">🎂 <strong>Nascimento:</strong> {selectedPaciente.data_nascimento ? new Date(selectedPaciente.data_nascimento + 'T00:00:00').toLocaleDateString('pt-BR') : 'Não informada'}</p>
+                    </div>
+                  </div>
+
+                  {selectedPaciente.observacoes && (
+                    <p className="text-xs text-slate-600 bg-slate-50/80 p-3 rounded-2xl border border-slate-100">
+                      <strong>Observações:</strong> {selectedPaciente.observacoes}
+                    </p>
+                  )}
                 </div>
+
+                {/* FICHAS DE ANAMNESE DIGITAL */}
+                <div className="bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Fichas de Anamnese Digital</h3>
+                      <p className="text-[10px] text-slate-400">Preenchidas na consulta pela Dra. Isabella</p>
+                    </div>
+                    <button onClick={() => setShowNovaFicha(true)} className="px-3 py-1.5 bg-rose-900 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-sm">
+                      <IconPlus /> <span>Preencher</span>
+                    </button>
+                  </div>
+
+                  {fichasAnamnese.length === 0 ? (
+                    <div className="text-center py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                      <p className="text-xs text-slate-400">Nenhuma ficha digital preenchida ainda.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {fichasAnamnese.map(f => (
+                        <div key={f.id} className="p-3 bg-slate-50/80 border border-slate-200 rounded-2xl flex justify-between items-center">
+                          <div>
+                            <span className="text-[10px] font-bold px-2 py-0.5 bg-rose-100 text-rose-900 rounded-lg block w-fit mb-1">
+                              {f.tipo_ficha}
+                            </span>
+                            <p className="text-xs font-bold text-slate-800">
+                              Data: {new Date(f.data + 'T00:00:00').toLocaleDateString('pt-BR')}
+                            </p>
+                            {f.queixa_principal && (
+                              <p className="text-[11px] text-slate-500 truncate max-w-[200px]">Queixa: {f.queixa_principal}</p>
+                            )}
+                          </div>
+                          <div className="flex gap-1">
+                            <button onClick={() => setSelectedFichaVer(f)} className="px-2.5 py-1 bg-white border rounded-xl text-xs font-bold text-slate-700 shadow-sm">
+                              Ver
+                            </button>
+                            <button onClick={() => handleExcluirFicha(f.id)} className="p-1.5 text-rose-600">
+                              <IconTrash />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* GALERIA DE FOTOS/DOCUMENTOS DO PACIENTE */}
+                <div className="bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Fotos & Anexos do Paciente</h3>
+                      <p className="text-[10px] text-slate-400">Fotos da ficha impressa, exames e termos</p>
+                    </div>
+                    <button onClick={() => setShowNovoDoc(true)} className="px-3 py-1.5 bg-rose-900 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-sm">
+                      <IconCamera /> <span>Anexar</span>
+                    </button>
+                  </div>
+
+                  <div className="flex gap-1.5 overflow-x-auto pb-1 text-[11px]">
+                    {['Todas', 'Fotos', 'Termos', 'Exames', 'Fichas', 'Outros'].map(cat => (
+                      <button 
+                        key={cat} 
+                        onClick={() => setCategoriaFiltro(cat)}
+                        className={`px-3 py-1 rounded-xl font-bold whitespace-nowrap transition-all ${
+                          categoriaFiltro === cat 
+                            ? 'bg-rose-900 text-white shadow-sm' 
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+
+                  {documentosFiltrados.length === 0 ? (
+                    <div className="text-center py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
+                      <p className="text-xs text-slate-400">Nenhum documento na categoria "{categoriaFiltro}".</p>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-3">
+                      {documentosFiltrados.map(doc => (
+                        <div key={doc.id} className="relative bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden p-2">
+                          <span className="absolute top-3 left-3 z-10 px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-[9px] font-bold rounded-lg">
+                            {doc.categoria || 'Fotos'}
+                          </span>
+                          
+                          {doc.tipo === 'imagem' ? (
+                            <img src={doc.url} alt={doc.titulo} className="w-full h-28 object-cover rounded-xl" />
+                          ) : (
+                            <div className="w-full h-28 bg-rose-50 rounded-xl flex items-center justify-center text-rose-800 font-bold text-xs flex-col gap-1">
+                              📄 Ficheiro
+                            </div>
+                          )}
+                          <div className="mt-2 flex justify-between items-center px-1">
+                            <div>
+                              <p className="text-[10px] font-bold text-slate-800 truncate max-w-[100px]">{doc.titulo}</p>
+                              {doc.descricao && <p className="text-[9px] text-slate-500 truncate max-w-[100px]">{doc.descricao}</p>}
+                              <p className="text-[9px] text-slate-400">{new Date(doc.created_at).toLocaleDateString('pt-BR')}</p>
+                            </div>
+                            <button onClick={() => handleExcluirDoc(doc.id)} className="text-rose-600 p-1">
+                              <IconTrash />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
               </div>
             )}
 
-            {/* AGENDA COMPLETA */}
+            {/* AGENDA COMPLETA COM INTEGRAÇÃO DE DURAÇÃO E CALENDÁRIO */}
             {activeTab === 'agenda' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Agenda de Atendimentos</h2>
-                  <div className="flex gap-1.5">
-                    <button onClick={() => setShowConfigMsg(true)} className="px-2.5 py-1.5 bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-xl text-[10px] font-bold flex items-center gap-1">
-                      <IconWhatsapp /> <span>Mensagem</span>
-                    </button>
-                    <button onClick={() => handleAbrirNovoAgendamento()} className="px-3 py-1.5 bg-rose-900 text-white rounded-xl text-xs font-bold flex items-center gap-1">
-                      <IconPlus /> <span>Agendar</span>
-                    </button>
-                  </div>
+                  <button 
+                    onClick={() => handleAbrirNovoAgendamento()} 
+                    className="px-3.5 py-2 bg-rose-900 text-white rounded-xl text-xs font-bold flex items-center gap-1 shadow-md active:scale-95"
+                  >
+                    <IconPlus /> <span>Incluir Agendamento</span>
+                  </button>
                 </div>
 
-                <CalendarWidget dataFiltro={dataFiltro} setDataFiltro={setDataFiltro} consultas={consultas} />
+                {/* CALENDÁRIO COM DESTAQUE DE DIAS COM AGENDAMENTO */}
+                <CalendarWidget 
+                  dataFiltro={dataFiltro} 
+                  setDataFiltro={setDataFiltro} 
+                  consultas={consultas} 
+                />
 
                 {consultasDoDia.length === 0 ? (
-                  <div className="text-center py-10 border border-dashed rounded-3xl bg-white/90">
+                  <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white/90 backdrop-blur-md space-y-3">
                     <p className="text-xs text-slate-400">Nenhuma consulta agendada para este dia.</p>
+                    <button 
+                      onClick={() => handleAbrirNovoAgendamento()} 
+                      className="px-4 py-2 bg-rose-50 text-rose-900 border border-rose-200 text-xs font-bold rounded-xl"
+                    >
+                      + Incluir Agendamento
+                    </button>
                   </div>
                 ) : (
                   <div className="space-y-2.5">
                     {consultasDoDia.map(c => {
                       const foiPago = c.status_pagamento === 'Recebido';
-                      const estaConfirmado = c.status === 'Confirmado';
-
                       return (
-                        <div key={c.id} className="p-4 bg-white/90 rounded-2xl border shadow-sm space-y-2.5">
+                        <div key={c.id} className="p-4 bg-white/90 backdrop-blur-md rounded-2xl border border-slate-100 shadow-sm space-y-2.5">
                           <div className="flex justify-between items-start">
                             <div>
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="text-xs font-extrabold text-slate-900">{c.hora || '14:00'}</span>
-                                
                                 <span className={`px-2 py-0.5 text-[9px] font-bold rounded-lg ${
-                                  estaConfirmado ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-extrabold' :
-                                  c.status === 'Concluído' ? 'bg-blue-100 text-blue-800' :
+                                  c.status === 'Concluído' ? 'bg-emerald-100 text-emerald-800' :
                                   c.status === 'Cancelado' ? 'bg-rose-100 text-rose-800' :
                                   'bg-amber-100 text-amber-800'
                                 }`}>
-                                  {estaConfirmado ? '✅ Confirmado' : c.status || 'Agendado'}
+                                  {c.status || 'Agendado'}
                                 </span>
-
-                                <span className="px-2 py-0.5 text-[9px] font-bold rounded-lg bg-slate-100 text-slate-700">⏱️ {c.duracao || '1 hora'}</span>
+                                {c.sessao && (
+                                  <span className="px-2 py-0.5 text-[9px] font-extrabold rounded-lg bg-rose-100 text-rose-900">
+                                    {c.sessao}
+                                  </span>
+                                )}
+                                <span className="px-2 py-0.5 text-[9px] font-bold rounded-lg bg-slate-100 text-slate-700">
+                                  ⏱️ {c.duracao || '1 hora'}
+                                </span>
                               </div>
                               <h3 className="font-bold text-slate-800 text-sm mt-1">{c.paciente_nome}</h3>
                               <p className="text-xs text-rose-900 font-semibold">{c.procedimento}</p>
+
+                              {c.observacoes && (
+                                <p className="text-[11px] text-slate-600 mt-2 bg-slate-50/80 p-2.5 rounded-xl border border-slate-100">
+                                  📝 <strong>Obs:</strong> {c.observacoes}
+                                </p>
+                              )}
                             </div>
                             
                             <div className="text-right flex flex-col items-end gap-1.5">
-                              <span className="font-extrabold text-slate-900 text-xs block">R$ {Number(c.valor || 0).toFixed(2)}</span>
+                              <span className="font-extrabold text-slate-900 text-xs block">
+                                R$ {Number(c.valor || 0).toFixed(2)}
+                              </span>
                               
                               <div className="flex items-center gap-1 mt-1">
+                                {/* BOTÃO DE ENVIAR LEMBRETE VIA WHATSAPP */}
                                 <button 
-                                  onClick={() => gerarLinkWhatsapp(c)}
-                                  className="px-2 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 shadow-xs active:scale-95"
-                                  title="Enviar Link de Confirmação por WhatsApp"
+                                  onClick={() => {
+                                    const pObj = pacientes.find(p => p.id === c.paciente_id || (p.nome && p.nome.toLowerCase() === (c.paciente_nome || '').toLowerCase()));
+                                    enviarWhatsappConsulta(c, pObj?.telefone || '');
+                                  }} 
+                                  className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 text-emerald-900 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95 shadow-xs"
+                                  title="Enviar lembrete por WhatsApp"
                                 >
-                                  <IconWhatsapp /> <span>Confirmar</span>
+                                  <span>💬 Whats</span>
                                 </button>
 
-                                <button onClick={() => baixarEventoICS(c)} className="px-2 py-1 bg-rose-50 border border-rose-200 text-rose-950 rounded-lg text-[10px] font-bold">
+                                {/* BOTÃO DE SALVAR NO CALENDÁRIO DO CELULAR (iOS/Apple Calendar) */}
+                                <button 
+                                  onClick={() => baixarEventoICS(c)} 
+                                  className="px-2 py-1 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 text-rose-950 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95 shadow-xs"
+                                  title="Salvar no Calendário do Celular (iOS / Apple)"
+                                >
                                   <span>📅 iOS</span>
                                 </button>
-                                <button onClick={() => handleAbrirEditarConsulta(c)} className="p-1.5 bg-slate-100 text-slate-700 rounded-lg"><IconEdit /></button>
-                                <button onClick={() => handleExcluirConsulta(c.id)} className="p-1.5 bg-rose-50 text-rose-700 rounded-lg"><IconTrash /></button>
+                                <button onClick={() => handleAbrirEditarConsulta(c)} className="p-1.5 bg-slate-100 text-slate-700 rounded-lg">
+                                  <IconEdit />
+                                </button>
+                                <button onClick={() => handleExcluirConsulta(c.id)} className="p-1.5 bg-rose-50 text-rose-700 rounded-lg">
+                                  <IconTrash />
+                                </button>
                               </div>
                             </div>
                           </div>
 
-                          <div className="pt-2 border-t flex justify-between items-center text-xs">
+                          {/* BARRA DE STATUS FINANCEIRO NO CARD DA AGENDA */}
+                          <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-xs">
                             <span className="text-[11px] text-slate-500 font-medium">Pagamento:</span>
                             {foiPago ? (
-                              <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border text-[10px] font-bold rounded-xl flex items-center gap-1"><IconCheck /> <span>Pago</span></span>
+                              <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-xl flex items-center gap-1">
+                                <IconCheck /> <span>Pago</span>
+                              </span>
                             ) : (
-                              <button onClick={() => handleConfirmarPagamento(c.id)} className="px-2.5 py-1 bg-emerald-100 text-emerald-900 text-[10px] font-extrabold rounded-xl flex items-center gap-1">
+                              <button 
+                                onClick={() => handleConfirmarPagamento(c.id)}
+                                className="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 text-[10px] font-extrabold rounded-xl transition-all flex items-center gap-1 shadow-sm active:scale-95"
+                              >
                                 <IconCheck /> <span>Dar Baixa</span>
                               </button>
                             )}
@@ -987,7 +1277,7 @@
               </div>
             )}
 
-            {/* FINANCEIRO COMPLETO */}
+            {/* FINANCEIRO */}
             {activeTab === 'financeiro' && (
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
@@ -1000,7 +1290,7 @@
                   </button>
                 </div>
 
-                {/* OS 4 CARTÕES FINANCEIROS */}
+                {/* MÉTRICAS PRINCIPAIS EM GRID DE 4 CAIXAS COM MESMO TAMANHO */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-amber-500/90 backdrop-blur-md text-white p-4 rounded-3xl shadow-sm border border-amber-400 flex flex-col justify-between min-h-[105px]">
                     <div>
@@ -1035,7 +1325,7 @@
                   </div>
                 </div>
 
-                {/* BOTÕES DE FILTRO */}
+                {/* ABAS DE FILTRO DO FINANCEIRO */}
                 <div className="flex bg-slate-200/70 p-1 rounded-2xl text-xs font-bold text-slate-600 gap-1 backdrop-blur-sm">
                   <button 
                     onClick={() => setFiltroFinanceiro('Futuros')}
@@ -1071,7 +1361,7 @@
                   </button>
                 </div>
 
-                {/* LISTA DE SAÍDAS OU RECEBIMENTOS */}
+                {/* LISTAGEM DOS LANÇAMENTOS */}
                 {filtroFinanceiro === 'Saidas' ? (
                   saidas.length === 0 ? (
                     <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white/90 backdrop-blur-md space-y-2">
@@ -1209,9 +1499,9 @@
                   </div>
 
                   <div>
-                    <label className="font-bold text-slate-600 block mb-1">Observações / Descrição *</label>
+                    <label className="font-bold text-slate-600 block mb-1">Campo de Observações *</label>
                     <textarea 
-                      placeholder="Descreva aqui os detalhes desta saída..." 
+                      placeholder="Descreva aqui o motivo ou detalhes desta saída..." 
                       className="w-full p-3 bg-slate-50 border rounded-2xl h-20" 
                       value={formSaida.observacoes} 
                       onChange={e => setFormSaida({...formSaida, observacoes: e.target.value})} 
@@ -1227,31 +1517,196 @@
             </div>
           )}
 
-          {/* MODAL CONFIGURAR MENSAGEM DO WHATSAPP */}
-          {showConfigMsg && (
+          {/* POPUP ANIVERSARIANTES DO DIA */}
+          {showPopupAniversario && aniversariantesHoje.length > 0 && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-3">
-                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Personalizar Mensagem do WhatsApp</h3>
-                <p className="text-[11px] text-slate-500 leading-relaxed">
-                  Utilize as variáveis abaixo no texto para que o sistema substitua automaticamente:
-                  <br />
-                  <code className="bg-slate-100 px-1 rounded text-rose-800 font-bold">{'{paciente}'}</code>, 
-                  <code className="bg-slate-100 px-1 rounded text-rose-800 font-bold">{'{procedimento}'}</code>, 
-                  <code className="bg-slate-100 px-1 rounded text-rose-800 font-bold">{'{data}'}</code>, 
-                  <code className="bg-slate-100 px-1 rounded text-rose-800 font-bold">{'{hora}'}</code>, 
-                  <code className="bg-slate-100 px-1 rounded text-rose-800 font-bold">{'{link}'}</code>
-                </p>
+              <div className="bg-white w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl border border-rose-100 text-center">
+                <div className="w-16 h-16 bg-rose-100 text-rose-900 rounded-full flex items-center justify-center text-3xl mx-auto shadow-inner">
+                  🎉
+                </div>
 
-                <textarea 
-                  rows="6" 
-                  className="w-full p-3 bg-slate-50 border rounded-2xl text-xs font-mono"
-                  value={templateMsg}
-                  onChange={e => salvarTemplateMsg(e.target.value)}
-                />
+                <div>
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-rose-800 bg-rose-50 px-3 py-1 rounded-full">
+                    Aniversariante(s) do Dia!
+                  </span>
+                  <h3 className="text-base font-extrabold text-slate-800 mt-2">
+                    {aniversariantesHoje.length === 1 
+                      ? "Hoje temos paciente de aniversário!" 
+                      : "Hoje temos pacientes fazendo aniversário!"}
+                  </h3>
+                </div>
 
-                <div className="flex justify-end pt-2">
-                  <button onClick={() => setShowConfigMsg(false)} className="px-5 py-2.5 bg-rose-900 text-white font-bold rounded-2xl text-xs">
-                    Guardar
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2 text-left max-h-48 overflow-y-auto">
+                  {aniversariantesHoje.map(p => (
+                    <div key={p.id} className="flex justify-between items-center border-b border-slate-200/60 pb-2 last:border-0 last:pb-0">
+                      <div>
+                        <p className="text-xs font-bold text-slate-800">{p.nome}</p>
+                        <p className="text-[10px] text-slate-500">📞 {p.telefone || 'Sem telefone'}</p>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        {p.telefone && (
+                          <button
+                            onClick={() => enviarWhatsappAniversario(p)}
+                            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-bold shadow-sm active:scale-95 transition-all flex items-center gap-1"
+                          >
+                            💬 Parabéns
+                          </button>
+                        )}
+                        <span className="text-xs font-extrabold text-rose-900 bg-rose-100 px-2.5 py-1 rounded-xl">
+                          🎂 Hoje
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-2 pt-2">
+                  <button 
+                    onClick={() => handleFecharPopupAniversario(false)} 
+                    className="w-full p-3 bg-rose-900 text-white font-bold rounded-2xl text-xs shadow-md active:scale-95 transition-all"
+                  >
+                    Entendido / Fechar
+                  </button>
+                  <button 
+                    onClick={() => handleFecharPopupAniversario(true)} 
+                    className="w-full p-2.5 text-slate-400 hover:text-slate-600 font-bold text-[11px]"
+                  >
+                    Não mostrar novamente hoje
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL PREENCHER FICHA DE ANAMNESE DIGITAL */}
+          {showNovaFicha && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Ficha de Anamnese Digital</h3>
+                <p className="text-[10px] text-slate-400">Preenchimento pela Dra. Isabella para {selectedPaciente?.nome}</p>
+
+                <form onSubmit={handleSalvarFicha} className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Tipo de Ficha / Procedimento *</label>
+                    <select 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-rose-900"
+                      value={formFicha.tipo_ficha}
+                      onChange={e => {
+                        const novoTipo = e.target.value;
+                        setFormFicha({
+                          ...formFicha,
+                          tipo_ficha: novoTipo,
+                          respostas_especificas: {}
+                        });
+                      }}
+                    >
+                      {TIPOS_ANAMNESE.map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Data da Avaliação *</label>
+                    <input type="date" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formFicha.data} onChange={e => setFormFicha({...formFicha, data: e.target.value})} />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Queixa Principal / Objetivo Geral</label>
+                    <textarea placeholder="Ex: Queixa de marcas de expressão ou flacidez..." className="w-full p-3 bg-slate-50 border rounded-2xl h-16" value={formFicha.queixa_principal} onChange={e => setFormFicha({...formFicha, queixa_principal: e.target.value})} />
+                  </div>
+
+                  {/* CAMPOS DINÂMICOS */}
+                  {questoesAtuais.length > 0 && (
+                    <div className="p-3 bg-rose-50/50 border border-rose-100 rounded-2xl space-y-3">
+                      <p className="text-[10px] font-extrabold uppercase tracking-wider text-rose-900">Perguntas Específicas: {formFicha.tipo_ficha}</p>
+
+                      {questoesAtuais.map(q => (
+                        <div key={q.id}>
+                          <label className="font-bold text-slate-700 block mb-1">{q.label}</label>
+                          {q.type === 'select' ? (
+                            <select 
+                              className="w-full p-2.5 bg-white border rounded-xl text-xs font-medium"
+                              value={formFicha.respostas_especificas[q.id] || q.options[0]}
+                              onChange={e => setFormFicha({
+                                ...formFicha,
+                                respostas_especificas: {
+                                  ...formFicha.respostas_especificas,
+                                  [q.id]: e.target.value
+                                }
+                              })}
+                            >
+                              {q.options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                            </select>
+                          ) : (
+                            <input 
+                              type="text"
+                              placeholder={q.placeholder || ''}
+                              className="w-full p-2.5 bg-white border rounded-xl text-xs"
+                              value={formFicha.respostas_especificas[q.id] || ''}
+                              onChange={e => setFormFicha({
+                                ...formFicha,
+                                respostas_especificas: {
+                                  ...formFicha.respostas_especificas,
+                                  [q.id]: e.target.value
+                                }
+                              })}
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Avaliação Técnica & Conduta Médica</label>
+                    <textarea placeholder="Ex: Aplicação realizada, dosagem, condutas pós-procedimento..." className="w-full p-3 bg-slate-50 border rounded-2xl h-20" value={formFicha.avaliacao_medica} onChange={e => setFormFicha({...formFicha, avaliacao_medica: e.target.value})} />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button type="button" onClick={() => setShowNovaFicha(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
+                    <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Salvar Ficha</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL VER FICHA PREENCHIDA */}
+          {selectedFichaVer && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+                <span className="text-[10px] font-bold px-2.5 py-1 bg-rose-100 text-rose-900 rounded-xl block w-fit">
+                  {selectedFichaVer.tipo_ficha}
+                </span>
+                <h3 className="text-sm font-bold text-slate-800">Ficha de {selectedPaciente?.nome}</h3>
+                <p className="text-xs text-slate-400">Data: {new Date(selectedFichaVer.data + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+
+                <div className="space-y-2.5 text-xs pt-2">
+                  <div className="bg-slate-50 p-3 rounded-2xl border">
+                    <strong className="text-slate-700 block mb-0.5">Queixa Principal / Objetivo:</strong>
+                    <p className="text-slate-600">{selectedFichaVer.queixa_principal || 'Não informada'}</p>
+                  </div>
+
+                  {selectedFichaVer.respostas_especificas && Object.keys(selectedFichaVer.respostas_especificas).length > 0 && (
+                    <div className="bg-rose-50/40 p-3 rounded-2xl border border-rose-100 space-y-2">
+                      <strong className="text-rose-950 block mb-1 font-extrabold uppercase text-[10px]">Perguntas do Procedimento:</strong>
+                      {Object.entries(selectedFichaVer.respostas_especificas).map(([key, val]) => (
+                        <div key={key} className="border-b border-rose-100/60 pb-1.5 last:border-0 last:pb-0">
+                          <span className="text-[11px] font-bold text-slate-700 capitalize block">{key.replace(/_/g, ' ')}:</span>
+                          <span className="text-slate-600 text-xs">{val || 'Não informado'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="bg-rose-50/60 p-3 rounded-2xl border border-rose-100">
+                    <strong className="text-rose-950 block mb-0.5">Avaliação Técnica & Conduta Médica:</strong>
+                    <p className="text-rose-900">{selectedFichaVer.avaliacao_medica || 'Sem anotações adicionais'}</p>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button type="button" onClick={() => setSelectedFichaVer(null)} className="w-full p-3 bg-slate-900 text-white font-bold rounded-2xl text-xs">
+                    Fechar
                   </button>
                 </div>
               </div>
@@ -1293,6 +1748,37 @@
             </div>
           )}
 
+          {/* MODAL EDITAR PACIENTE */}
+          {showEditarPaciente && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-3">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Editar Dados da Paciente</h3>
+                <form onSubmit={handleSalvarEdicao} className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Nome Completo *</label>
+                    <input required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formPaciente.nome} onChange={e => setFormPaciente({...formPaciente, nome: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Telefone / WhatsApp *</label>
+                    <input required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formPaciente.telefone} onChange={e => setFormPaciente({...formPaciente, telefone: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Data de Nascimento</label>
+                    <input type="date" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formPaciente.data_nascimento} onChange={e => setFormPaciente({...formPaciente, data_nascimento: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Observações Gerais</label>
+                    <textarea className="w-full p-3 bg-slate-50 border rounded-2xl h-14" value={formPaciente.observacoes} onChange={e => setFormPaciente({...formPaciente, observacoes: e.target.value})} />
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <button type="button" onClick={() => setShowEditarPaciente(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
+                    <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Salvar Edição</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
           {/* MODAL AGENDAR CONSULTA */}
           {showNovaConsulta && (
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
@@ -1300,49 +1786,128 @@
                 <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Incluir Agendamento</h3>
                 <form onSubmit={handleAddConsulta} className="space-y-3 text-xs">
                   <div>
-                    <label className="font-bold text-slate-600 block mb-1">Paciente *</label>
-                    <select required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.paciente_id} onChange={e => {
-                      const p = pacientes.find(p => p.id === e.target.value);
-                      setFormConsulta({...formConsulta, paciente_id: e.target.value, paciente_nome: p ? p.nome : ''});
-                    }}>
-                      <option value="">-- Selecione --</option>
-                      {pacientes.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}
-                    </select>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="font-bold text-slate-600 block">Paciente *</label>
+                      <button 
+                        type="button" 
+                        onClick={() => setModoPacienteManual(!modoPacienteManual)} 
+                        className="text-[10px] text-rose-800 font-bold underline"
+                      >
+                        {modoPacienteManual ? "‹ Escolher da lista" : "+ Digitar novo nome"}
+                      </button>
+                    </div>
+
+                    {!modoPacienteManual && pacientes.length > 0 ? (
+                      <select 
+                        required 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-medium"
+                        value={formConsulta.paciente_id}
+                        onChange={handlePacienteSelect}
+                      >
+                        <option value="">-- Selecione a Paciente --</option>
+                        {pacientes.map(p => (
+                          <option key={p.id} value={p.id}>{p.nome}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input 
+                        required 
+                        placeholder="Digite o nome completo da paciente *" 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl" 
+                        value={formConsulta.paciente_nome} 
+                        onChange={e => setFormConsulta({...formConsulta, paciente_nome: e.target.value, paciente_id: ''})} 
+                      />
+                    )}
                   </div>
 
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Procedimento *</label>
-                    <select className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.procedimento} onChange={e => setFormConsulta({...formConsulta, procedimento: e.target.value})}>
-                      {PROCEDIMENTOS_PRESET.map(proc => <option key={proc.nome} value={proc.nome}>{proc.nome}</option>)}
+                    <select 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl"
+                      value={formConsulta.procedimento}
+                      onChange={e => handleProcedimentoChange(e.target.value)}
+                    >
+                      {PROCEDIMENTOS_PRESET.map(proc => (
+                        <option key={proc.nome} value={proc.nome}>{proc.nome}</option>
+                      ))}
                     </select>
                   </div>
 
+                  {formConsulta.procedimento === "Outro Procedimento..." && (
+                    <input 
+                      required 
+                      placeholder="Nome do Procedimento Personalizado *" 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl" 
+                      value={formConsulta.procedimento_custom} 
+                      onChange={e => setFormConsulta({...formConsulta, procedimento_custom: e.target.value})} 
+                    />
+                  )}
+
                   <div className="grid grid-cols-2 gap-2">
                     <div>
+                      <label className="font-bold text-slate-600 block mb-1">Sessão</label>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                        value={formConsulta.sessao}
+                        onChange={e => setFormConsulta({...formConsulta, sessao: e.target.value})}
+                      >
+                        {OPCOES_SESSAO.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
                       <label className="font-bold text-slate-600 block mb-1">Duração *</label>
-                      <select className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.duracao} onChange={e => setFormConsulta({...formConsulta, duracao: e.target.value})}>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                        value={formConsulta.duracao}
+                        onChange={e => setFormConsulta({...formConsulta, duracao: e.target.value})}
+                      >
                         {OPCOES_DURACAO.map(d => <option key={d} value={d}>{d}</option>)}
                       </select>
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="font-bold text-slate-600 block mb-1">Data *</label>
                       <input type="date" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.data} onChange={e => setFormConsulta({...formConsulta, data: e.target.value})} />
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="font-bold text-slate-600 block mb-1">Horário *</label>
                       <input type="time" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.hora} onChange={e => setFormConsulta({...formConsulta, hora: e.target.value})} />
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="font-bold text-slate-600 block mb-1">Valor (R$)</label>
-                      <input type="number" placeholder="350" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.valor} onChange={e => setFormConsulta({...formConsulta, valor: e.target.value})} />
+                      <input type="number" placeholder="Ex: 350" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.valor} onChange={e => setFormConsulta({...formConsulta, valor: e.target.value})} />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Status Pagamento</label>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                        value={formConsulta.status_pagamento}
+                        onChange={e => setFormConsulta({...formConsulta, status_pagamento: e.target.value})}
+                      >
+                        <option value="Pendente">⏳ Pendente</option>
+                        <option value="Recebido">✅ Recebido</option>
+                      </select>
                     </div>
                   </div>
 
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Observação (Opcional)</label>
+                    <textarea 
+                      placeholder="Notas ou detalhes adicionais sobre o agendamento..." 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl h-16" 
+                      value={formConsulta.observacoes} 
+                      onChange={e => setFormConsulta({...formConsulta, observacoes: e.target.value})} 
+                    />
+                  </div>
+
                   <div className="flex gap-2 pt-2">
-                    <button type="button" onClick={() => setShowNovaConsulta(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl">Cancelar</button>
+                    <button type="button" onClick={() => setShowNovaConsulta(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
                     <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Confirmar</button>
                   </div>
                 </form>
@@ -1350,8 +1915,157 @@
             </div>
           )}
 
+          {/* MODAL EDITAR CONSULTA */}
+          {showEditarConsulta && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-3 max-h-[90vh] overflow-y-auto">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Editar Agendamento</h3>
+                <form onSubmit={handleSalvarEdicaoConsulta} className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Paciente</label>
+                    <input required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.paciente_nome} onChange={e => setFormConsulta({...formConsulta, paciente_nome: e.target.value})} />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Procedimento</label>
+                    <select 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl"
+                      value={formConsulta.procedimento}
+                      onChange={e => handleProcedimentoChange(e.target.value)}
+                    >
+                      {PROCEDIMENTOS_PRESET.map(proc => (
+                        <option key={proc.nome} value={proc.nome}>{proc.nome}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Sessão</label>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                        value={formConsulta.sessao}
+                        onChange={e => setFormConsulta({...formConsulta, sessao: e.target.value})}
+                      >
+                        {OPCOES_SESSAO.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Duração *</label>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                        value={formConsulta.duracao}
+                        onChange={e => setFormConsulta({...formConsulta, duracao: e.target.value})}
+                      >
+                        {OPCOES_DURACAO.map(d => <option key={d} value={d}>{d}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Data</label>
+                      <input type="date" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.data} onChange={e => setFormConsulta({...formConsulta, data: e.target.value})} />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Horário</label>
+                      <input type="time" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.hora} onChange={e => setFormConsulta({...formConsulta, hora: e.target.value})} />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Status do Atendimento</label>
+                    <select className="w-full p-3 bg-slate-50 border rounded-2xl font-bold" value={formConsulta.status} onChange={e => setFormConsulta({...formConsulta, status: e.target.value})}>
+                      <option value="Agendado">Agendado</option>
+                      <option value="Concluído">Concluído</option>
+                      <option value="Cancelado">Cancelado</option>
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Valor (R$)</label>
+                      <input type="number" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.valor} onChange={e => setFormConsulta({...formConsulta, valor: e.target.value})} />
+                    </div>
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Status Pagamento</label>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold"
+                        value={formConsulta.status_pagamento}
+                        onChange={e => setFormConsulta({...formConsulta, status_pagamento: e.target.value})}
+                      >
+                        <option value="Pendente">⏳ Pendente</option>
+                        <option value="Recebido">✅ Recebido</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Observação (Opcional)</label>
+                    <textarea 
+                      placeholder="Notas ou detalhes adicionais sobre o agendamento..." 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl h-16" 
+                      value={formConsulta.observacoes} 
+                      onChange={e => setFormConsulta({...formConsulta, observacoes: e.target.value})} 
+                    />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button type="button" onClick={() => setShowEditarConsulta(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
+                    <button type="submit" className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">Salvar Alterações</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL ANEXAR DOCUMENTO / FOTO */}
+          {showNovoDoc && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl p-5 space-y-4">
+                <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider">Anexar Documento / Foto</h3>
+                <form onSubmit={handleAddDocumento} className="space-y-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Título *</label>
+                    <input required placeholder="Ex: Foto Antes / Depois, Exame de Sangue" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formDoc.titulo} onChange={e => setFormDoc({...formDoc, titulo: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Descrição (Opcional)</label>
+                    <textarea placeholder="Detalhes adicionais sobre o documento..." className="w-full p-3 bg-slate-50 border rounded-2xl h-16" value={formDoc.descricao} onChange={e => setFormDoc({...formDoc, descricao: e.target.value})} />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Selecione a Pasta / Categoria *</label>
+                    <select 
+                      className="w-full p-3 bg-slate-50 border rounded-2xl" 
+                      value={formDoc.categoria} 
+                      onChange={e => setFormDoc({...formDoc, categoria: e.target.value})}
+                    >
+                      <option value="Fotos">📸 Fotos (Antes / Depois)</option>
+                      <option value="Fichas">📝 Fichas & Prontuários (Impressos)</option>
+                      <option value="Termos">📄 Termos & Contratos</option>
+                      <option value="Exames">📑 Exames & Laudos</option>
+                      <option value="Outros">📌 Outros Documentos</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Escolher Foto / Ficheiro *</label>
+                    <input type="file" accept="image/*,.pdf" required onChange={e => setFormDoc({ ...formDoc, file: e.target.files[0] })} className="w-full p-2 text-xs text-slate-500 bg-slate-50 border rounded-2xl file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-rose-900 file:text-white" />
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button type="button" onClick={() => setShowNovoDoc(false)} className="w-1/2 p-3 bg-slate-100 font-bold rounded-2xl text-slate-600">Cancelar</button>
+                    <button type="submit" disabled={uploading} className="w-1/2 p-3 bg-rose-900 font-bold text-white rounded-2xl">
+                      {uploading ? 'A enviar...' : 'Adicionar'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
           {/* Menu Flutuante Inferior */}
-          <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto glass-nav border-t px-4 py-2 flex justify-around text-[10px] font-bold text-slate-400 z-20">
+          <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto glass-nav border-t border-slate-200/80 px-4 py-2 flex justify-around text-[10px] font-bold text-slate-400 z-20 shadow-2xl">
             <button onClick={() => { setActiveTab('dashboard'); setSelectedPaciente(null); }} className={`flex flex-col items-center gap-1 ${activeTab === 'dashboard' ? 'text-rose-900 font-black' : ''}`}>
               <IconHome /> <span>Início</span>
             </button>
