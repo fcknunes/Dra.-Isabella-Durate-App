@@ -77,7 +77,7 @@
       "3 horas"
     ];
 
-    // OPÇÕES DE SESSÃO CORRIGIDAS (SEM O TEXTO POR EXTENSO ENTRE PARÊNTESES)
+    // OPÇÕES DE SESSÃO
     const OPCOES_SESSAO = [
       "Sessão Única",
       "1ª Sessão",
@@ -102,10 +102,67 @@
       "20ª Sessão"
     ];
 
-    // FUNÇÃO AUXILIAR PARA LIMPAR NORMAS ANTIGAS DE SESSÃO
+    // FORMAS DE PAGAMENTO
+    const FORMAS_PAGAMENTO = [
+      "PIX",
+      "Dinheiro",
+      "Cartão de Crédito"
+    ];
+
+    // CONDIÇÕES DE PAGAMENTO (1x a 5x)
+    const CONDICOES_PAGAMENTO = [
+      { label: "À Vista (1x)", value: 1 },
+      { label: "2x Parcelado", value: 2 },
+      { label: "3x Parcelado", value: 3 },
+      { label: "4x Parcelado", value: 4 },
+      { label: "5x Parcelado", value: 5 }
+    ];
+
+    // FUNÇÕES AUXILIARES DE FORMATAÇÃO
     function cleanSessao(sessao) {
       if (!sessao) return '';
       return sessao.replace(/\s*\(.*?\)/g, '').trim();
+    }
+
+    function formatarDataBR(dateStr) {
+      if (!dateStr) return '';
+      const clean = dateStr.split('T')[0];
+      const parts = clean.split('-');
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return dateStr;
+    }
+
+    function obterParcelas(c, todayStr) {
+      const numParcelas = Number(c.qtd_parcelas) || 1;
+      const total = Number(c.valor) || 0;
+      const valorPorParcela = total > 0 ? Number((total / numParcelas).toFixed(2)) : 0;
+
+      let parsed = null;
+      if (c.parcelas_detalhe) {
+        if (typeof c.parcelas_detalhe === 'string') {
+          try { parsed = JSON.parse(c.parcelas_detalhe); } catch(e) {}
+        } else if (Array.isArray(c.parcelas_detalhe)) {
+          parsed = c.parcelas_detalhe;
+        }
+      }
+
+      if (parsed && Array.isArray(parsed) && parsed.length === numParcelas) {
+        return parsed;
+      }
+
+      const foiPago = c.status_pagamento === 'Recebido';
+      const list = [];
+      for (let i = 1; i <= numParcelas; i++) {
+        list.push({
+          numero: i,
+          valor: valorPorParcela,
+          pago: foiPago,
+          data_pagamento: foiPago ? (c.data_pagamento || todayStr) : null
+        });
+      }
+      return list;
     }
 
     // OPÇÕES DE SAÍDA DE CAIXA
@@ -116,7 +173,7 @@
       "Outros"
     ];
 
-    // SCHEMA DE PERGUNTAS ESPECÍFICAS POR TIPO DE FICHA
+    // SCHEMA DE PERGUNTAS ESPECÍFICAS
     const QUESTOES_POR_FICHA = {
       "Avaliação Facial": [
         { id: "alergias_medicamentos", label: "Alergias ou uso contínuo de medicamentos?", placeholder: "Ex: Alergia a Dipirona, toma anticoncepcional..." },
@@ -139,12 +196,12 @@
     const IconCamera = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>;
     const IconCheck = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg>;
 
-    // FUNÇÕES DE INTEGRAÇÃO COM WHATSAPP
+    // WHATSAPP
     function enviarWhatsappConsulta(consulta, telefonePaciente) {
       const tel = (telefonePaciente || '').replace(/\D/g, '');
       if (!tel) return alert("Paciente sem telefone cadastrado ou número inválido.");
       
-      const dataFormatada = consulta.data ? new Date(consulta.data + 'T00:00:00').toLocaleDateString('pt-BR') : '';
+      const dataFormatada = consulta.data ? formatarDataBR(consulta.data) : '';
       const msg = `Olá, ${consulta.paciente_nome}! Passando para lembrar do seu atendimento de *${consulta.procedimento}* com a Dra. Isabella Duarte no dia *${dataFormatada}* às *${consulta.hora || '14:00'}*. Duração: ${consulta.duracao || '1 hora'}. Podemos confirmar?`;
       
       window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(msg)}`, '_blank');
@@ -159,7 +216,7 @@
       window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // FUNÇÃO PARA GERAR FICHEIRO .ICS
+    // EVENTO ICS
     function baixarEventoICS(consulta) {
       const dataHoraInicio = new Date(`${consulta.data}T${consulta.hora || '14:00'}:00`);
 
@@ -198,7 +255,7 @@
       document.body.removeChild(link);
     }
 
-    // COMPONENTE DE CALENDÁRIO INTERATIVO
+    // CALENDÁRIO INTERATIVO
     function CalendarWidget({ dataFiltro, setDataFiltro, consultas }) {
       const [currentMonth, setCurrentMonth] = useState(() => {
         if (dataFiltro) {
@@ -354,6 +411,8 @@
         data: todayStr,
         hora: '14:00',
         valor: '',
+        forma_pagamento: 'PIX',
+        qtd_parcelas: 1,
         status: 'Agendado',
         status_pagamento: 'Pendente',
         data_pagamento: '',
@@ -678,6 +737,8 @@
             data: todayStr,
             hora: '14:00',
             valor: '',
+            forma_pagamento: 'PIX',
+            qtd_parcelas: 1,
             status: 'Agendado',
             status_pagamento: 'Pendente',
             data_pagamento: '',
@@ -696,6 +757,8 @@
             data: todayStr,
             hora: '14:00',
             valor: '',
+            forma_pagamento: 'PIX',
+            qtd_parcelas: 1,
             status: 'Agendado',
             status_pagamento: 'Pendente',
             data_pagamento: '',
@@ -727,6 +790,21 @@
         const procFinal = formConsulta.procedimento === "Outro Procedimento..." ? formConsulta.procedimento_custom : formConsulta.procedimento;
         if (!procFinal || !formConsulta.paciente_nome) return alert("Informe o nome da paciente e o procedimento.");
 
+        const numParcelas = Number(formConsulta.qtd_parcelas) || 1;
+        const valorTotal = Number(formConsulta.valor || 0);
+        const valorParcela = valorTotal > 0 ? Number((valorTotal / numParcelas).toFixed(2)) : 0;
+        const foiPago = formConsulta.status_pagamento === 'Recebido';
+
+        const parcelasIniciais = [];
+        for (let i = 1; i <= numParcelas; i++) {
+          parcelasIniciais.push({
+            numero: i,
+            valor: valorParcela,
+            pago: foiPago,
+            data_pagamento: foiPago ? (formConsulta.data_pagamento || todayStr) : null
+          });
+        }
+
         const payload = {
           paciente_id: formConsulta.paciente_id || null,
           paciente_nome: formConsulta.paciente_nome,
@@ -736,17 +814,42 @@
           data: formConsulta.data,
           hora: formConsulta.hora,
           data_hora: formConsulta.data && formConsulta.hora ? `${formConsulta.data}T${formConsulta.hora}:00` : null,
-          valor: Number(formConsulta.valor || 0),
-          status: formConsulta.status || 'Agendado',
-          status_pagamento: formConsulta.status_pagamento || 'Pendente',
-          data_pagamento: formConsulta.status_pagamento === 'Recebido' ? (formConsulta.data_pagamento || todayStr) : null,
+          valor: valorTotal,
+          forma_pagamento: formConsulta.forma_pagamento || 'PIX',
+          qtd_parcelas: numParcelas,
+          status: foiPago ? 'Concluído' : (formConsulta.status || 'Agendado'),
+          status_pagamento: foiPago ? 'Recebido' : (numParcelas > 1 ? 'Aguardando Pagamento' : (formConsulta.status_pagamento || 'Pendente')),
+          data_pagamento: foiPago ? (formConsulta.data_pagamento || todayStr) : null,
+          parcelas_detalhe: JSON.stringify(parcelasIniciais),
           observacoes: formConsulta.observacoes || ''
         };
 
         const { data, error } = await supabase.from('consultas').insert([payload]).select();
 
         if (error) {
-          alert("Erro ao agendar consulta: " + error.message);
+          // Fallback se a coluna parcelas_detalhe / forma_pagamento não existir na tabela
+          const { data: fbData, error: fbError } = await supabase.from('consultas').insert([{
+            paciente_id: payload.paciente_id,
+            paciente_nome: payload.paciente_nome,
+            procedimento: payload.procedimento,
+            sessao: payload.sessao,
+            duracao: payload.duracao,
+            data: payload.data,
+            hora: payload.hora,
+            valor: payload.valor,
+            status: payload.status,
+            status_pagamento: payload.status_pagamento,
+            data_pagamento: payload.data_pagamento,
+            observacoes: payload.observacoes
+          }]).select();
+
+          if (fbError) {
+            alert("Erro ao agendar consulta: " + fbError.message);
+          } else if (fbData) {
+            setConsultas([...consultas, { ...fbData[0], ...payload }]);
+            setShowNovaConsulta(false);
+            alert("Agendamento criado com sucesso!");
+          }
         } else if (data) {
           setConsultas([...consultas, data[0]]);
           setShowNovaConsulta(false);
@@ -766,6 +869,8 @@
           data: c.data || todayStr,
           hora: c.hora || '14:00',
           valor: c.valor || '',
+          forma_pagamento: c.forma_pagamento || 'PIX',
+          qtd_parcelas: c.qtd_parcelas || 1,
           status: c.status || 'Agendado',
           status_pagamento: c.status_pagamento || 'Pendente',
           data_pagamento: c.data_pagamento || '',
@@ -777,6 +882,11 @@
       async function handleSalvarEdicaoConsulta(e) {
         e.preventDefault();
         const procFinal = formConsulta.procedimento === "Outro Procedimento..." ? formConsulta.procedimento_custom : formConsulta.procedimento;
+        const numParcelas = Number(formConsulta.qtd_parcelas) || 1;
+        const valorTotal = Number(formConsulta.valor || 0);
+        const foiPago = formConsulta.status_pagamento === 'Recebido';
+
+        const parcelasNovas = obterParcelas({ ...formConsulta, valor: valorTotal, qtd_parcelas: numParcelas }, todayStr);
 
         const payload = {
           paciente_id: formConsulta.paciente_id || null,
@@ -787,55 +897,141 @@
           data: formConsulta.data,
           hora: formConsulta.hora,
           data_hora: formConsulta.data && formConsulta.hora ? `${formConsulta.data}T${formConsulta.hora}:00` : null,
-          valor: Number(formConsulta.valor || 0),
-          status: formConsulta.status,
-          status_pagamento: formConsulta.status_pagamento || 'Pendente',
-          data_pagamento: formConsulta.status_pagamento === 'Recebido' ? (formConsulta.data_pagamento || todayStr) : null,
+          valor: valorTotal,
+          forma_pagamento: formConsulta.forma_pagamento || 'PIX',
+          qtd_parcelas: numParcelas,
+          status: foiPago ? 'Concluído' : formConsulta.status,
+          status_pagamento: foiPago ? 'Recebido' : (numParcelas > 1 ? 'Aguardando Pagamento' : formConsulta.status_pagamento),
+          data_pagamento: foiPago ? (formConsulta.data_pagamento || todayStr) : null,
+          parcelas_detalhe: JSON.stringify(parcelasNovas),
           observacoes: formConsulta.observacoes || ''
         };
 
         const { data, error } = await supabase.from('consultas').update(payload).eq('id', formConsulta.id).select();
 
         if (error) {
-          alert("Erro ao atualizar consulta: " + error.message);
+          const { data: fbData, error: fbErr } = await supabase.from('consultas').update({
+            paciente_id: payload.paciente_id,
+            paciente_nome: payload.paciente_nome,
+            procedimento: payload.procedimento,
+            sessao: payload.sessao,
+            duracao: payload.duracao,
+            data: payload.data,
+            hora: payload.hora,
+            valor: payload.valor,
+            status: payload.status,
+            status_pagamento: payload.status_pagamento,
+            data_pagamento: payload.data_pagamento,
+            observacoes: payload.observacoes
+          }).eq('id', formConsulta.id).select();
+
+          if (fbErr) {
+            alert("Erro ao atualizar consulta: " + fbErr.message);
+          } else if (fbData) {
+            setConsultas(consultas.map(c => c.id === formConsulta.id ? { ...fbData[0], ...payload } : c));
+            setShowEditarConsulta(false);
+          }
         } else if (data) {
           setConsultas(consultas.map(c => c.id === formConsulta.id ? data[0] : c));
           setShowEditarConsulta(false);
         }
       }
 
-      // DAR BAIXA NO PAGAMENTO E REGISTRAR A DATA DA BAIXA
-      async function handleConfirmarPagamento(id) {
+      // DAR BAIXA EM UMA PARCELA ESPECÍFICA
+      async function handleDarBaixaParcela(consultaId, numeroParcela) {
+        const c = consultas.find(item => item.id === consultaId);
+        if (!c) return;
+
         const dataHoje = new Date().toISOString().split('T')[0];
-        
+        const parcelasAtuais = obterParcelas(c, dataHoje);
+
+        const parcelasAtualizadas = parcelasAtuais.map(p => {
+          if (p.numero === numeroParcela) {
+            return { ...p, pago: true, data_pagamento: dataHoje };
+          }
+          return p;
+        });
+
+        const todasPagas = parcelasAtualizadas.every(p => p.pago);
+        const statusPagamentoNovo = todasPagas ? 'Recebido' : 'Aguardando Pagamento';
+        const statusNovo = todasPagas ? 'Concluído' : c.status;
+        const dataPagamentoNova = todasPagas ? dataHoje : (c.data_pagamento || dataHoje);
+
+        const payload = {
+          status_pagamento: statusPagamentoNovo,
+          status: statusNovo,
+          data_pagamento: dataPagamentoNova,
+          parcelas_detalhe: JSON.stringify(parcelasAtualizadas)
+        };
+
         try {
-          const { data, error } = await supabase
-            .from('consultas')
-            .update({ 
-              status_pagamento: 'Recebido',
-              data_pagamento: dataHoje 
-            })
-            .eq('id', id)
-            .select();
-
+          const { data, error } = await supabase.from('consultas').update(payload).eq('id', consultaId).select();
           if (error) {
-            // Fallback caso a coluna data_pagamento ainda não exista na tabela do Supabase
-            const { data: fallbackData, error: fallbackError } = await supabase
-              .from('consultas')
-              .update({ status_pagamento: 'Recebido' })
-              .eq('id', id)
-              .select();
+            const { data: fbData, error: fbErr } = await supabase.from('consultas').update({
+              status_pagamento: statusPagamentoNovo,
+              status: statusNovo,
+              data_pagamento: dataPagamentoNova
+            }).eq('id', consultaId).select();
 
-            if (fallbackError) {
-              alert("Erro ao confirmar pagamento: " + fallbackError.message);
-            } else if (fallbackData) {
-              setConsultas(consultas.map(c => c.id === id ? { ...fallbackData[0], data_pagamento: dataHoje } : c));
+            if (!fbErr && fbData) {
+              setConsultas(consultas.map(item => item.id === consultaId ? { ...fbData[0], parcelas_detalhe: parcelasAtualizadas } : item));
+            } else {
+              setConsultas(consultas.map(item => item.id === consultaId ? { ...item, ...payload, parcelas_detalhe: parcelasAtualizadas } : item));
             }
           } else if (data) {
-            setConsultas(consultas.map(c => c.id === id ? data[0] : c));
+            setConsultas(consultas.map(item => item.id === consultaId ? { ...data[0], parcelas_detalhe: parcelasAtualizadas } : item));
           }
         } catch (err) {
-          console.error("Erro ao confirmar baixa:", err);
+          setConsultas(consultas.map(item => item.id === consultaId ? { ...item, ...payload, parcelas_detalhe: parcelasAtualizadas } : item));
+        }
+      }
+
+      // DAR BAIXA TOTAL NO PAGAMENTO
+      async function handleConfirmarPagamento(id) {
+        const dataHoje = new Date().toISOString().split('T')[0];
+        const c = consultas.find(item => item.id === id);
+        if (!c) return;
+
+        const numParcelas = Number(c.qtd_parcelas) || 1;
+        const total = Number(c.valor) || 0;
+        const valParc = total > 0 ? Number((total / numParcelas).toFixed(2)) : 0;
+
+        const parcelasTodasPagas = [];
+        for (let i = 1; i <= numParcelas; i++) {
+          parcelasTodasPagas.push({
+            numero: i,
+            valor: valParc,
+            pago: true,
+            data_pagamento: dataHoje
+          });
+        }
+
+        const payload = {
+          status_pagamento: 'Recebido',
+          status: 'Concluído',
+          data_pagamento: dataHoje,
+          parcelas_detalhe: JSON.stringify(parcelasTodasPagas)
+        };
+
+        try {
+          const { data, error } = await supabase.from('consultas').update(payload).eq('id', id).select();
+          if (error) {
+            const { data: fbData, error: fbErr } = await supabase.from('consultas').update({
+              status_pagamento: 'Recebido',
+              status: 'Concluído',
+              data_pagamento: dataHoje
+            }).eq('id', id).select();
+
+            if (!fbErr && fbData) {
+              setConsultas(consultas.map(item => item.id === id ? { ...fbData[0], parcelas_detalhe: parcelasTodasPagas } : item));
+            } else {
+              setConsultas(consultas.map(item => item.id === id ? { ...item, ...payload, parcelas_detalhe: parcelasTodasPagas } : item));
+            }
+          } else if (data) {
+            setConsultas(consultas.map(item => item.id === id ? { ...data[0], parcelas_detalhe: parcelasTodasPagas } : item));
+          }
+        } catch (err) {
+          setConsultas(consultas.map(item => item.id === id ? { ...item, ...payload, parcelas_detalhe: parcelasTodasPagas } : item));
         }
       }
 
@@ -868,7 +1064,7 @@
       // CÁLCULOS FINANCEIROS
       const consultasValidas = consultas.filter(c => c.status !== 'Cancelado');
       const valorAReceber = consultasValidas
-        .filter(c => (c.status_pagamento || 'Pendente') === 'Pendente')
+        .filter(c => (c.status_pagamento || 'Pendente') !== 'Recebido')
         .reduce((acc, c) => acc + Number(c.valor || 0), 0);
 
       const valorRecebido = consultasValidas
@@ -879,11 +1075,11 @@
       const totalSaidas = saidas.reduce((acc, s) => acc + Number(s.valor || 0), 0);
       const saldoEmConta = valorRecebido - totalSaidas;
 
-      // LISTAGEM UNIFICADA PARA A ABA DO FINANCEIRO (AGORA INCLUINDO AS SAÍDAS NO "TODOS")
+      // LISTAGEM UNIFICADA PARA A ABA DO FINANCEIRO
       const listaFinanceiro = useMemo(() => {
         if (filtroFinanceiro === 'Futuros') {
           return consultasValidas
-            .filter(c => (c.status_pagamento || 'Pendente') === 'Pendente')
+            .filter(c => c.status_pagamento !== 'Recebido')
             .map(c => ({ ...c, itemType: 'entrada' }));
         }
         if (filtroFinanceiro === 'Recebidos') {
@@ -1084,7 +1280,7 @@
                           </button>
                         )}
                       </p>
-                      <p className="text-xs text-slate-500">🎂 <strong>Nascimento:</strong> {selectedPaciente.data_nascimento ? new Date(selectedPaciente.data_nascimento + 'T00:00:00').toLocaleDateString('pt-BR') : 'Não informada'}</p>
+                      <p className="text-xs text-slate-500">🎂 <strong>Nascimento:</strong> {selectedPaciente.data_nascimento ? formatarDataBR(selectedPaciente.data_nascimento) : 'Não informada'}</p>
                     </div>
                   </div>
 
@@ -1120,7 +1316,7 @@
                               {f.tipo_ficha}
                             </span>
                             <p className="text-xs font-bold text-slate-800">
-                              Data: {new Date(f.data + 'T00:00:00').toLocaleDateString('pt-BR')}
+                              Data: {formatarDataBR(f.data)}
                             </p>
                             {f.queixa_principal && (
                               <p className="text-[11px] text-slate-500 truncate max-w-[200px]">Queixa: {f.queixa_principal}</p>
@@ -1170,7 +1366,7 @@
 
                   {documentosFiltrados.length === 0 ? (
                     <div className="text-center py-6 border border-dashed border-slate-200 rounded-2xl bg-slate-50/50">
-                      <p className="text-xs text-slate-400">Nenhum documento na categoria "{categoriaFiltro}".</p>
+                      <p className="text-xs text-slate-400">Nenum documento na categoria "{categoriaFiltro}".</p>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2 gap-3">
@@ -1191,7 +1387,7 @@
                             <div>
                               <p className="text-[10px] font-bold text-slate-800 truncate max-w-[100px]">{doc.titulo}</p>
                               {doc.descricao && <p className="text-[9px] text-slate-500 truncate max-w-[100px]">{doc.descricao}</p>}
-                              <p className="text-[9px] text-slate-400">{new Date(doc.created_at).toLocaleDateString('pt-BR')}</p>
+                              <p className="text-[9px] text-slate-400">{formatarDataBR(doc.created_at)}</p>
                             </div>
                             <button onClick={() => handleExcluirDoc(doc.id)} className="text-rose-600 p-1">
                               <IconTrash />
@@ -1239,6 +1435,9 @@
                   <div className="space-y-2.5">
                     {consultasDoDia.map(c => {
                       const foiPago = c.status_pagamento === 'Recebido';
+                      const parcelas = obterParcelas(c, todayStr);
+                      const temParcelaPendente = parcelas.some(p => !p.pago);
+
                       return (
                         <div key={c.id} className="p-4 bg-white/90 backdrop-blur-md rounded-2xl border border-slate-100 shadow-sm space-y-2.5">
                           <div className="flex justify-between items-start">
@@ -1264,14 +1463,16 @@
                               <h3 className="font-bold text-slate-800 text-sm mt-1">{c.paciente_nome}</h3>
                               <p className="text-xs text-rose-900 font-semibold">{c.procedimento}</p>
 
+                              <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-600 font-semibold">
+                                <span>💳 <strong>Forma:</strong> {c.forma_pagamento || 'PIX'}</span>
+                                <span>•</span>
+                                <span>📊 {Number(c.qtd_parcelas || 1) > 1 ? `${c.qtd_parcelas}x de R$ ${(Number(c.valor || 0) / Number(c.qtd_parcelas || 1)).toFixed(2)}` : 'À Vista'}</span>
+                              </div>
+
                               {foiPago && (
-                                <p className="text-[10px] text-emerald-800 font-extrabold mt-1 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100 w-fit">
+                                <p className="text-[10px] text-emerald-800 font-extrabold mt-1.5 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 w-fit">
                                   <span>✅ Pago em:</span>
-                                  <span>
-                                    {c.data_pagamento 
-                                      ? new Date(c.data_pagamento + 'T00:00:00').toLocaleDateString('pt-BR') 
-                                      : (c.data ? new Date(c.data + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data confirmada')}
-                                  </span>
+                                  <span>{formatarDataBR(c.data_pagamento || todayStr)}</span>
                                 </p>
                               )}
 
@@ -1316,21 +1517,42 @@
                             </div>
                           </div>
 
-                          <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-xs">
-                            <span className="text-[11px] text-slate-500 font-medium">Pagamento:</span>
-                            {foiPago ? (
-                              <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded-xl flex items-center gap-1">
-                                <IconCheck /> <span>Pago</span>
+                          {/* PAINEL DE PARCELAS E BAIXAS INDIVIDUAIS */}
+                          <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                            <div className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider flex justify-between items-center">
+                              <span>Parcelas e Pagamento</span>
+                              <span className={`px-2 py-0.5 rounded-md font-bold text-[9px] ${
+                                foiPago ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
+                              }`}>
+                                {foiPago ? '✅ Recebido' : (Number(c.qtd_parcelas || 1) > 1 ? '⏳ Aguardando Pagamento' : '⏳ Pendente')}
                               </span>
-                            ) : (
-                              <button 
-                                onClick={() => handleConfirmarPagamento(c.id)}
-                                className="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 text-[10px] font-extrabold rounded-xl transition-all flex items-center gap-1 shadow-sm active:scale-95"
-                              >
-                                <IconCheck /> <span>Dar Baixa</span>
-                              </button>
-                            )}
+                            </div>
+
+                            {parcelas.map(p => (
+                              <div key={p.numero} className="flex justify-between items-center bg-slate-50/80 p-2 rounded-xl text-xs border border-slate-100">
+                                <div>
+                                  <span className="font-bold text-slate-800">Parcela {p.numero}/{parcelas.length}:</span>{' '}
+                                  <span className="font-extrabold text-slate-900">R$ {Number(p.valor || 0).toFixed(2)}</span>
+                                </div>
+                                <div>
+                                  {p.pago ? (
+                                    <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-lg">
+                                      ✅ Pago em {formatarDataBR(p.data_pagamento || c.data_pagamento || todayStr)}
+                                    </span>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDarBaixaParcela(c.id, p.numero)}
+                                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-extrabold rounded-lg shadow-sm active:scale-95 transition-all flex items-center gap-1"
+                                    >
+                                      <IconCheck /> <span>Dar Baixa</span>
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
                           </div>
+
                         </div>
                       );
                     })}
@@ -1472,7 +1694,7 @@
                                   </span>
                                 </div>
                                 <p className="text-[10px] text-slate-400 font-bold block">
-                                  📅 {item.data ? new Date(item.data + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data não definida'}
+                                  📅 {formatarDataBR(item.data)}
                                 </p>
                                 {item.observacoes && (
                                   <p className="text-[11px] text-slate-600 mt-1 bg-slate-50 p-2 rounded-xl border border-slate-100">
@@ -1497,28 +1719,30 @@
                       const c = item;
                       const foiPago = c.status_pagamento === 'Recebido';
                       const dataExibicao = c.data || (c.data_hora ? c.data_hora.split('T')[0] : '');
+                      const parcelas = obterParcelas(c, todayStr);
 
                       return (
-                        <div key={`consulta-${c.id}`} className="p-4 bg-white/90 backdrop-blur-md border border-slate-100 rounded-2xl shadow-sm space-y-2">
+                        <div key={`consulta-${c.id}`} className="p-4 bg-white/90 backdrop-blur-md border border-slate-100 rounded-2xl shadow-sm space-y-2.5">
                           <div className="flex justify-between items-start">
                             <div>
                               <p className="text-[10px] text-slate-400 font-bold">
-                                📅 {dataExibicao ? new Date(dataExibicao + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data não definida'} às {c.hora || '14:00'}
+                                📅 {formatarDataBR(dataExibicao)} às {c.hora || '14:00'}
                               </p>
                               <h3 className="font-bold text-slate-800 text-sm mt-0.5">{c.paciente_nome}</h3>
                               <p className="text-xs text-rose-900 font-semibold">
                                 {c.procedimento} {c.sessao ? `(${cleanSessao(c.sessao)})` : ''}
                               </p>
 
-                              {/* DATA DE PAGAMENTO DA BAIXA EXIBIDA ABAIXO DO PROCEDIMENTO */}
+                              <div className="flex items-center gap-2 mt-1 text-[11px] text-slate-600 font-semibold">
+                                <span>💳 {c.forma_pagamento || 'PIX'}</span>
+                                <span>•</span>
+                                <span>📊 {Number(c.qtd_parcelas || 1) > 1 ? `${c.qtd_parcelas}x de R$ ${(Number(c.valor || 0) / Number(c.qtd_parcelas || 1)).toFixed(2)}` : 'À Vista'}</span>
+                              </div>
+
                               {foiPago && (
-                                <p className="text-[10px] text-emerald-800 font-extrabold mt-1 flex items-center gap-1 bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-100 w-fit">
+                                <p className="text-[10px] text-emerald-800 font-extrabold mt-1.5 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 w-fit">
                                   <span>✅ Pago em:</span>
-                                  <span>
-                                    {c.data_pagamento 
-                                      ? new Date(c.data_pagamento + 'T00:00:00').toLocaleDateString('pt-BR') 
-                                      : (c.data ? new Date(c.data + 'T00:00:00').toLocaleDateString('pt-BR') : 'Data confirmada')}
-                                  </span>
+                                  <span>{formatarDataBR(c.data_pagamento || todayStr)}</span>
                                 </p>
                               )}
                             </div>
@@ -1530,19 +1754,43 @@
                               <span className={`px-2 py-0.5 text-[9px] font-bold rounded-lg inline-block mt-1 ${
                                 foiPago ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900'
                               }`}>
-                                {foiPago ? '✅ Recebido' : '⏳ A Receber'}
+                                {foiPago ? '✅ Recebido' : (Number(c.qtd_parcelas || 1) > 1 ? '⏳ Aguardando Pagamento' : '⏳ Pendente')}
                               </span>
                             </div>
                           </div>
 
-                          {!foiPago && (
-                            <button 
-                              onClick={() => handleConfirmarPagamento(c.id)}
-                              className="w-full mt-2 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-sm flex items-center justify-center gap-1.5 active:scale-95 transition-all"
-                            >
-                              <IconCheck /> <span>Confirmar que o dinheiro entrou</span>
-                            </button>
-                          )}
+                          {/* LISTAGEM DE PARCELAS NO CARD FINANCEIRO */}
+                          <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                            <div className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider flex justify-between items-center">
+                              <span>Parcelas</span>
+                              <span>Total: R$ {Number(c.valor || 0).toFixed(2)}</span>
+                            </div>
+
+                            {parcelas.map(p => (
+                              <div key={p.numero} className="flex justify-between items-center bg-slate-50/80 p-2 rounded-xl text-xs border border-slate-100">
+                                <div>
+                                  <span className="font-bold text-slate-800">Parcela {p.numero}/{parcelas.length}:</span>{' '}
+                                  <span className="font-extrabold text-slate-900">R$ {Number(p.valor || 0).toFixed(2)}</span>
+                                </div>
+                                <div>
+                                  {p.pago ? (
+                                    <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-lg">
+                                      ✅ Pago em {formatarDataBR(p.data_pagamento || c.data_pagamento || todayStr)}
+                                    </span>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDarBaixaParcela(c.id, p.numero)}
+                                      className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-extrabold rounded-lg shadow-sm active:scale-95 transition-all flex items-center gap-1"
+                                    >
+                                      <IconCheck /> <span>Dar Baixa</span>
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
                         </div>
                       );
                     })}
@@ -1775,7 +2023,7 @@
                   {selectedFichaVer.tipo_ficha}
                 </span>
                 <h3 className="text-sm font-bold text-slate-800">Ficha de {selectedPaciente?.nome}</h3>
-                <p className="text-xs text-slate-400">Data: {new Date(selectedFichaVer.data + 'T00:00:00').toLocaleDateString('pt-BR')}</p>
+                <p className="text-xs text-slate-400">Data: {formatarDataBR(selectedFichaVer.data)}</p>
 
                 <div className="space-y-2.5 text-xs pt-2">
                   <div className="bg-slate-50 p-3 rounded-2xl border">
@@ -1975,10 +2223,41 @@
                     </div>
                   </div>
 
+                  {/* CAMPOS NOVOS: FORMA DE PAGAMENTO E PARCELAMENTO */}
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="font-bold text-slate-600 block mb-1">Valor (R$)</label>
-                      <input type="number" placeholder="Ex: 350" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.valor} onChange={e => setFormConsulta({...formConsulta, valor: e.target.value})} />
+                      <label className="font-bold text-slate-600 block mb-1">Forma de Pagamento *</label>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                        value={formConsulta.forma_pagamento}
+                        onChange={e => setFormConsulta({...formConsulta, forma_pagamento: e.target.value})}
+                      >
+                        {FORMAS_PAGAMENTO.map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Condição de Pagamento *</label>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                        value={formConsulta.qtd_parcelas}
+                        onChange={e => setFormConsulta({...formConsulta, qtd_parcelas: Number(e.target.value)})}
+                      >
+                        {CONDICOES_PAGAMENTO.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Valor Total (R$)</label>
+                      <input 
+                        type="number" 
+                        placeholder="Ex: 350" 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold" 
+                        value={formConsulta.valor} 
+                        onChange={e => setFormConsulta({...formConsulta, valor: e.target.value})} 
+                      />
                     </div>
                     <div>
                       <label className="font-bold text-slate-600 block mb-1">Status Pagamento</label>
@@ -1988,10 +2267,20 @@
                         onChange={e => setFormConsulta({...formConsulta, status_pagamento: e.target.value})}
                       >
                         <option value="Pendente">⏳ Pendente</option>
-                        <option value="Recebido">✅ Recebido</option>
+                        <option value="Recebido">✅ Recebido (Todas)</option>
                       </select>
                     </div>
                   </div>
+
+                  {/* RESUMO DO CÁLCULO DE PARCELAS */}
+                  {Number(formConsulta.valor) > 0 && Number(formConsulta.qtd_parcelas) > 1 && (
+                    <div className="p-3 bg-rose-50 border border-rose-200/80 rounded-2xl text-xs text-rose-950 space-y-1">
+                      <p className="font-extrabold uppercase text-[10px]">Cálculo do Parcelamento:</p>
+                      <p className="font-bold">
+                        Total R$ {Number(formConsulta.valor).toFixed(2)} em {formConsulta.qtd_parcelas}x de <span className="text-rose-900 font-black">R$ {(Number(formConsulta.valor) / Number(formConsulta.qtd_parcelas)).toFixed(2)}</span> / parcela
+                      </p>
+                    </div>
+                  )}
 
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Observação (Opcional)</label>
@@ -2071,6 +2360,30 @@
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Forma de Pagamento</label>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                        value={formConsulta.forma_pagamento}
+                        onChange={e => setFormConsulta({...formConsulta, forma_pagamento: e.target.value})}
+                      >
+                        {FORMAS_PAGAMENTO.map(f => <option key={f} value={f}>{f}</option>)}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="font-bold text-slate-600 block mb-1">Condição de Pagamento</label>
+                      <select 
+                        className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800"
+                        value={formConsulta.qtd_parcelas}
+                        onChange={e => setFormConsulta({...formConsulta, qtd_parcelas: Number(e.target.value)})}
+                      >
+                        {CONDICOES_PAGAMENTO.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
                   <div>
                     <label className="font-bold text-slate-600 block mb-1">Status do Atendimento</label>
                     <select className="w-full p-3 bg-slate-50 border rounded-2xl font-bold" value={formConsulta.status} onChange={e => setFormConsulta({...formConsulta, status: e.target.value})}>
@@ -2082,7 +2395,7 @@
 
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <label className="font-bold text-slate-600 block mb-1">Valor (R$)</label>
+                      <label className="font-bold text-slate-600 block mb-1">Valor Total (R$)</label>
                       <input type="number" className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.valor} onChange={e => setFormConsulta({...formConsulta, valor: e.target.value})} />
                     </div>
                     <div>
@@ -2093,7 +2406,7 @@
                         onChange={e => setFormConsulta({...formConsulta, status_pagamento: e.target.value})}
                       >
                         <option value="Pendente">⏳ Pendente</option>
-                        <option value="Recebido">✅ Recebido</option>
+                        <option value="Recebido">✅ Recebido (Todas)</option>
                       </select>
                     </div>
                   </div>
