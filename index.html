@@ -139,13 +139,7 @@
       const numParcelas = Number(c.qtd_parcelas) || 1;
       const total = Number(c.valor) || 0;
       const valorPorParcela = total > 0 ? Number((total / numParcelas).toFixed(2)) : 0;
-
-      const today = new Date().toISOString().split('T')[0];
-      const isPassado = c.data && c.data < today;
-      const foiPagoTotal = c.status_pagamento === 'Recebido' || (isPassado && c.status !== 'Cancelado');
-      
-      // PRIORIDADE DA DATA: Data do pagamento cadastrada -> Data do agendamento -> Hoje
-      const dataFallback = c.data_pagamento || c.data || today;
+      const foiPagoTotal = c.status_pagamento === 'Recebido';
 
       let parsed = null;
       if (c.parcelas_detalhe) {
@@ -162,7 +156,7 @@
           return {
             ...p,
             pago: pago,
-            data_pagamento: pago ? (p.data_pagamento || c.data_pagamento || c.data || today) : null
+            data_pagamento: pago ? (p.data_pagamento || c.data_pagamento || null) : null
           };
         });
       }
@@ -173,7 +167,7 @@
           numero: i,
           valor: valorPorParcela,
           pago: foiPagoTotal,
-          data_pagamento: foiPagoTotal ? dataFallback : null
+          data_pagamento: foiPagoTotal ? (c.data_pagamento || null) : null
         });
       }
       return list;
@@ -209,6 +203,11 @@
     const IconTrash = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>;
     const IconCamera = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>;
     const IconCheck = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg>;
+    const IconWhatsapp = () => (
+      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/>
+      </svg>
+    );
 
     // WHATSAPP
     function enviarWhatsappConsulta(consulta, telefonePaciente) {
@@ -429,7 +428,7 @@
         qtd_parcelas: 1,
         status: 'Agendado',
         status_pagamento: 'Pendente',
-        data_pagamento: todayStr,
+        data_pagamento: '',
         observacoes: ''
       });
 
@@ -755,7 +754,7 @@
             qtd_parcelas: 1,
             status: 'Agendado',
             status_pagamento: 'Pendente',
-            data_pagamento: todayStr,
+            data_pagamento: '',
             observacoes: ''
           });
         } else {
@@ -775,7 +774,7 @@
             qtd_parcelas: 1,
             status: 'Agendado',
             status_pagamento: 'Pendente',
-            data_pagamento: todayStr,
+            data_pagamento: '',
             observacoes: ''
           });
         }
@@ -804,9 +803,8 @@
         const procFinal = formConsulta.procedimento === "Outro Procedimento..." ? formConsulta.procedimento_custom : formConsulta.procedimento;
         if (!procFinal || !formConsulta.paciente_nome) return alert("Informe o nome da paciente e o procedimento.");
 
-        const isPassado = formConsulta.data < todayStr;
-        const foiPago = formConsulta.status_pagamento === 'Recebido' || (isPassado && formConsulta.status !== 'Cancelado');
-        const dataPagamentoDigitada = formConsulta.data_pagamento || formConsulta.data || todayStr;
+        const foiPago = formConsulta.status_pagamento === 'Recebido';
+        const dataPagamentoDigitada = foiPago ? (formConsulta.data_pagamento || todayStr) : null;
         const numParcelas = Number(formConsulta.qtd_parcelas) || 1;
         const valorTotal = Number(formConsulta.valor || 0);
         const valorParcela = valorTotal > 0 ? Number((valorTotal / numParcelas).toFixed(2)) : 0;
@@ -835,7 +833,7 @@
           qtd_parcelas: numParcelas,
           status: foiPago ? 'Concluído' : (formConsulta.status || 'Agendado'),
           status_pagamento: foiPago ? 'Recebido' : (numParcelas > 1 ? 'Aguardando Pagamento' : (formConsulta.status_pagamento || 'Pendente')),
-          data_pagamento: foiPago ? dataPagamentoDigitada : null,
+          data_pagamento: dataPagamentoDigitada,
           parcelas_detalhe: JSON.stringify(parcelasIniciais),
           observacoes: formConsulta.observacoes || ''
         };
@@ -888,7 +886,7 @@
           qtd_parcelas: c.qtd_parcelas || 1,
           status: c.status || 'Agendado',
           status_pagamento: c.status_pagamento || 'Pendente',
-          data_pagamento: c.data_pagamento || c.data || todayStr,
+          data_pagamento: c.data_pagamento || '',
           observacoes: c.observacoes || ''
         });
         setShowEditarConsulta(true);
@@ -899,9 +897,8 @@
         const procFinal = formConsulta.procedimento === "Outro Procedimento..." ? formConsulta.procedimento_custom : formConsulta.procedimento;
         const numParcelas = Number(formConsulta.qtd_parcelas) || 1;
         const valorTotal = Number(formConsulta.valor || 0);
-        const isPassado = formConsulta.data < todayStr;
-        const foiPago = formConsulta.status_pagamento === 'Recebido' || (isPassado && formConsulta.status !== 'Cancelado');
-        const dataPagamentoDigitada = formConsulta.data_pagamento || formConsulta.data || todayStr;
+        const foiPago = formConsulta.status_pagamento === 'Recebido';
+        const dataPagamentoDigitada = foiPago ? (formConsulta.data_pagamento || todayStr) : null;
 
         const parcelasNovas = obterParcelas({ ...formConsulta, valor: valorTotal, qtd_parcelas: numParcelas, data_pagamento: dataPagamentoDigitada });
 
@@ -919,7 +916,7 @@
           qtd_parcelas: numParcelas,
           status: foiPago ? 'Concluído' : formConsulta.status,
           status_pagamento: foiPago ? 'Recebido' : (numParcelas > 1 ? 'Aguardando Pagamento' : formConsulta.status_pagamento),
-          data_pagamento: foiPago ? dataPagamentoDigitada : null,
+          data_pagamento: dataPagamentoDigitada,
           parcelas_detalhe: JSON.stringify(parcelasNovas),
           observacoes: formConsulta.observacoes || ''
         };
@@ -974,7 +971,7 @@
 
         const statusPagamentoNovo = todasPagas ? 'Recebido' : 'Aguardando Pagamento';
         const statusNovo = peloMenosUmaPaga ? 'Concluído' : c.status;
-        const dataPagamentoNova = todasPagas ? dataHojeAtual : (c.data_pagamento || c.data || dataHojeAtual);
+        const dataPagamentoNova = todasPagas ? dataHojeAtual : (c.data_pagamento || null);
 
         const payload = {
           status_pagamento: statusPagamentoNovo,
@@ -1105,7 +1102,6 @@
         const dataHojeAtual = new Date().toISOString().split('T')[0];
         
         consultasValidas.forEach(c => {
-          const isPassado = c.data && c.data < dataHojeAtual;
           const parcelas = obterParcelas(c);
           if (parcelas.length > 1) {
             parcelas.forEach(p => {
@@ -1122,16 +1118,16 @@
                 forma_pagamento: c.forma_pagamento,
                 valor: p.valor,
                 pago: p.pago,
-                data: p.pago ? (p.data_pagamento || c.data_pagamento || c.data || dataHojeAtual) : (c.data || dataHojeAtual),
+                data: p.pago ? (p.data_pagamento || c.data_pagamento || dataHojeAtual) : (c.data || dataHojeAtual),
                 data_agendamento: c.data,
-                data_pagamento: p.data_pagamento || c.data_pagamento || c.data,
+                data_pagamento: p.data_pagamento || c.data_pagamento,
                 hora: c.hora,
                 consulta_ref: c
               });
             });
           } else {
-            const foiPago = c.status_pagamento === 'Recebido' || (isPassado && c.status !== 'Cancelado');
-            const dataPagamentoFinal = c.data_pagamento || c.data || dataHojeAtual;
+            const foiPago = c.status_pagamento === 'Recebido';
+            const dataPagamentoFinal = c.data_pagamento;
 
             itensEntrada.push({
               id: `c_${c.id}`,
@@ -1146,7 +1142,7 @@
               forma_pagamento: c.forma_pagamento,
               valor: c.valor,
               pago: foiPago,
-              data: foiPago ? dataPagamentoFinal : (c.data || dataHojeAtual),
+              data: foiPago ? (dataPagamentoFinal || todayStr) : (c.data || todayStr),
               data_agendamento: c.data,
               data_pagamento: dataPagamentoFinal,
               hora: c.hora,
@@ -1508,12 +1504,10 @@
                 ) : (
                   <div className="space-y-2.5">
                     {consultasDoDia.map(c => {
-                      const isPassado = c.data && c.data < todayStr;
-                      const foiPago = c.status_pagamento === 'Recebido' || (isPassado && c.status !== 'Cancelado');
+                      const foiPago = c.status_pagamento === 'Recebido';
                       
-                      // LÓGICA DE STATUS EXIBIDO: Se já foi pago ou passou do dia, assume 'Concluído' automaticamente
                       let statusExibicao = c.status || 'Agendado';
-                      if (c.status !== 'Cancelado' && (foiPago || isPassado)) {
+                      if (c.status !== 'Cancelado' && foiPago) {
                         statusExibicao = 'Concluído';
                       }
 
@@ -1550,10 +1544,14 @@
                                 <span>📊 {Number(c.qtd_parcelas || 1) > 1 ? `${c.qtd_parcelas}x de R$ ${(Number(c.valor || 0) / Number(c.qtd_parcelas || 1)).toFixed(2)}` : 'À Vista'}</span>
                               </div>
 
-                              {foiPago && (
+                              {foiPago && c.data_pagamento ? (
                                 <p className="text-[10px] text-emerald-800 font-extrabold mt-1.5 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 w-fit">
                                   <span>✅ Pago em:</span>
-                                  <span>{formatarDataBR(c.data_pagamento || c.data)}</span>
+                                  <span>{formatarDataBR(c.data_pagamento)}</span>
+                                </p>
+                              ) : (
+                                <p className="text-[10px] text-amber-800 font-extrabold mt-1.5 flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200/80 w-fit">
+                                  <span>⏳ Pagamento Pendente</span>
                                 </p>
                               )}
 
@@ -1569,29 +1567,40 @@
                                 R$ {Number(c.valor || 0).toFixed(2)}
                               </span>
                               
-                              <div className="flex items-center gap-1 mt-1">
+                              {/* BOTÕES PADRONIZADOS (SÓ ÍCONES) */}
+                              <div className="flex items-center gap-1.5 mt-1">
                                 <button 
                                   onClick={() => {
                                     const pObj = pacientes.find(p => p.id === c.paciente_id || (p.nome && p.nome.toLowerCase() === (c.paciente_nome || '').toLowerCase()));
                                     enviarWhatsappConsulta(c, pObj?.telefone || '');
                                   }} 
-                                  className="px-2 py-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 text-emerald-900 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95 shadow-xs"
+                                  className="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200/60 flex items-center justify-center transition-all active:scale-95 shadow-xs"
                                   title="Enviar lembrete por WhatsApp"
                                 >
-                                  <span>💬 Whats</span>
+                                  <IconWhatsapp />
                                 </button>
 
                                 <button 
                                   onClick={() => baixarEventoICS(c)} 
-                                  className="px-2 py-1 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 text-rose-950 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95 shadow-xs"
+                                  className="w-8 h-8 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200/60 flex items-center justify-center transition-all active:scale-95 shadow-xs"
                                   title="Salvar no Calendário do Celular (iOS / Apple)"
                                 >
-                                  <span>📅 iOS</span>
+                                  <IconCalendar />
                                 </button>
-                                <button onClick={() => handleAbrirEditarConsulta(c)} className="p-1.5 bg-slate-100 text-slate-700 rounded-lg">
+
+                                <button 
+                                  onClick={() => handleAbrirEditarConsulta(c)} 
+                                  className="w-8 h-8 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200/60 flex items-center justify-center transition-all active:scale-95 shadow-xs"
+                                  title="Editar Agendamento"
+                                >
                                   <IconEdit />
                                 </button>
-                                <button onClick={() => handleExcluirConsulta(c.id)} className="p-1.5 bg-rose-50 text-rose-700 rounded-lg">
+
+                                <button 
+                                  onClick={() => handleExcluirConsulta(c.id)} 
+                                  className="w-8 h-8 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200/60 flex items-center justify-center transition-all active:scale-95 shadow-xs"
+                                  title="Excluir Agendamento"
+                                >
                                   <IconTrash />
                                 </button>
                               </div>
@@ -1618,7 +1627,7 @@
                                 <div>
                                   {p.pago ? (
                                     <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-lg">
-                                      ✅ Pago em {formatarDataBR(p.data_pagamento || c.data_pagamento || c.data)}
+                                      ✅ Pago em {p.data_pagamento ? formatarDataBR(p.data_pagamento) : (c.data_pagamento ? formatarDataBR(c.data_pagamento) : 'Hoje')}
                                     </span>
                                   ) : (
                                     <button
@@ -1803,7 +1812,7 @@
                             <div>
                               <div className="flex items-center gap-1.5 mb-1">
                                 <span className="text-[10px] font-bold text-slate-400">
-                                  📅 {item.pago ? `Pago em: ${formatarDataBR(item.data_pagamento || item.data)}` : `Agendamento: ${formatarDataBR(item.data_agendamento)}`}
+                                  📅 {item.pago ? (item.data_pagamento ? `Pago em: ${formatarDataBR(item.data_pagamento)}` : 'Pago') : `Agendamento: ${formatarDataBR(item.data_agendamento)}`}
                                 </span>
                                 {item.isParcela && (
                                   <span className="px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-rose-100 text-rose-900">
@@ -2337,7 +2346,7 @@
                         type="date" 
                         required 
                         className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
-                        value={formConsulta.data_pagamento || formConsulta.data || todayStr} 
+                        value={formConsulta.data_pagamento || todayStr} 
                         onChange={e => setFormConsulta({...formConsulta, data_pagamento: e.target.value})} 
                       />
                     </div>
@@ -2490,7 +2499,7 @@
                         type="date" 
                         required 
                         className="w-full p-3 bg-slate-50 border rounded-2xl font-bold text-slate-800" 
-                        value={formConsulta.data_pagamento || formConsulta.data || todayStr} 
+                        value={formConsulta.data_pagamento || todayStr} 
                         onChange={e => setFormConsulta({...formConsulta, data_pagamento: e.target.value})} 
                       />
                     </div>
