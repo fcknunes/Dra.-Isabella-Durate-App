@@ -143,6 +143,8 @@
       const today = new Date().toISOString().split('T')[0];
       const isPassado = c.data && c.data < today;
       const foiPagoTotal = c.status_pagamento === 'Recebido' || (isPassado && c.status !== 'Cancelado');
+      
+      // PRIORIDADE DA DATA: Data do pagamento cadastrada -> Data do agendamento -> Hoje
       const dataFallback = c.data_pagamento || c.data || today;
 
       let parsed = null;
@@ -156,11 +158,11 @@
 
       if (parsed && Array.isArray(parsed) && parsed.length === numParcelas) {
         return parsed.map(p => {
-          const pago = p.pago || (isPassado && c.status !== 'Cancelado');
+          const pago = p.pago || foiPagoTotal;
           return {
             ...p,
             pago: pago,
-            data_pagamento: pago ? (p.data_pagamento || c.data_pagamento || c.data) : null
+            data_pagamento: pago ? (p.data_pagamento || c.data_pagamento || c.data || today) : null
           };
         });
       }
@@ -803,11 +805,11 @@
         if (!procFinal || !formConsulta.paciente_nome) return alert("Informe o nome da paciente e o procedimento.");
 
         const isPassado = formConsulta.data < todayStr;
+        const foiPago = formConsulta.status_pagamento === 'Recebido' || (isPassado && formConsulta.status !== 'Cancelado');
         const dataPagamentoDigitada = formConsulta.data_pagamento || formConsulta.data || todayStr;
         const numParcelas = Number(formConsulta.qtd_parcelas) || 1;
         const valorTotal = Number(formConsulta.valor || 0);
         const valorParcela = valorTotal > 0 ? Number((valorTotal / numParcelas).toFixed(2)) : 0;
-        const foiPago = formConsulta.status_pagamento === 'Recebido' || (isPassado && formConsulta.status !== 'Cancelado');
 
         const parcelasIniciais = [];
         for (let i = 1; i <= numParcelas; i++) {
@@ -972,7 +974,7 @@
 
         const statusPagamentoNovo = todasPagas ? 'Recebido' : 'Aguardando Pagamento';
         const statusNovo = peloMenosUmaPaga ? 'Concluído' : c.status;
-        const dataPagamentoNova = todasPagas ? dataHojeAtual : (c.data_pagamento || dataHojeAtual);
+        const dataPagamentoNova = todasPagas ? dataHojeAtual : (c.data_pagamento || c.data || dataHojeAtual);
 
         const payload = {
           status_pagamento: statusPagamentoNovo,
@@ -1508,7 +1510,13 @@
                     {consultasDoDia.map(c => {
                       const isPassado = c.data && c.data < todayStr;
                       const foiPago = c.status_pagamento === 'Recebido' || (isPassado && c.status !== 'Cancelado');
-                      const statusExibicao = (isPassado && c.status !== 'Cancelado') ? 'Concluído' : (c.status || 'Agendado');
+                      
+                      // LÓGICA DE STATUS EXIBIDO: Se já foi pago ou passou do dia, assume 'Concluído' automaticamente
+                      let statusExibicao = c.status || 'Agendado';
+                      if (c.status !== 'Cancelado' && (foiPago || isPassado)) {
+                        statusExibicao = 'Concluído';
+                      }
+
                       const parcelas = obterParcelas(c);
 
                       return (
