@@ -89,17 +89,7 @@
       "7ª Sessão",
       "8ª Sessão",
       "9ª Sessão",
-      "10ª Sessão",
-      "11ª Sessão",
-      "12ª Sessão",
-      "13ª Sessão",
-      "14ª Sessão",
-      "15ª Sessão",
-      "16ª Sessão",
-      "17ª Sessão",
-      "18ª Sessão",
-      "19ª Sessão",
-      "20ª Sessão"
+      "10ª Sessão"
     ];
 
     // FORMAS DE PAGAMENTO
@@ -136,6 +126,7 @@
     }
 
     // GERAÇÃO / MANUTENÇÃO DE DATAS DISTINTAS POR PARCELA
+    // CORREÇÃO: A partir da 2ª parcela (idx > 0), a data padrão fica em branco ("") caso não exista data previamente definida
     function getDatasArray(datasExistentes, numParcelas, dataBase) {
       const arr = [...(datasExistentes || [])];
       
@@ -144,21 +135,7 @@
         if (idx === 0) {
           arr.push(dataBase || new Date().toISOString().split('T')[0]);
         } else {
-          let dStr = dataBase || new Date().toISOString().split('T')[0];
-          let parts = dStr.split('-');
-          if (parts.length === 3) {
-            let year = parseInt(parts[0], 10);
-            let month = parseInt(parts[1], 10) - 1 + idx;
-            let day = parseInt(parts[2], 10);
-            
-            let targetDate = new Date(year, month, day);
-            let y = targetDate.getFullYear();
-            let m = String(targetDate.getMonth() + 1).padStart(2, '0');
-            let d = String(targetDate.getDate()).padStart(2, '0');
-            arr.push(`${y}-${m}-${d}`);
-          } else {
-            arr.push(dStr);
-          }
+          arr.push(''); // Segunda parcela em diante fica em branco por padrão
         }
       }
       return arr.slice(0, numParcelas);
@@ -187,7 +164,7 @@
           return {
             ...p,
             pago: pago,
-            data_pagamento: p.data_pagamento || baseDates[idx] || c.data_pagamento || c.data || null
+            data_pagamento: p.data_pagamento !== undefined ? p.data_pagamento : (baseDates[idx] || null)
           };
         });
       }
@@ -198,7 +175,7 @@
           numero: i,
           valor: valorPorParcela,
           pago: foiPagoTotal,
-          data_pagamento: baseDates[i - 1] || c.data_pagamento || c.data || null
+          data_pagamento: baseDates[i - 1] || null
         });
       }
       return list;
@@ -240,13 +217,15 @@
       </svg>
     );
 
-    // WHATSAPP
+    // WHATSAPP COM LINK DE CONFIRMAÇÃO E AVISO
     function enviarWhatsappConsulta(consulta, telefonePaciente) {
       const tel = (telefonePaciente || '').replace(/\D/g, '');
       if (!tel) return alert("Paciente sem telefone cadastrado ou número inválido.");
       
       const dataFormatada = consulta.data ? formatarDataBR(consulta.data) : '';
-      const msg = `Olá, ${consulta.paciente_nome}! Passando para lembrar do seu atendimento de *${consulta.procedimento}* com a Dra. Isabella Duarte no dia *${dataFormatada}* às *${consulta.hora || '14:00'}*. Duração: ${consulta.duracao || '1 hora'}. Podemos confirmar?`;
+      const linkConfirmacao = `${window.location.origin}${window.location.pathname}?confirmar=${consulta.id}`;
+      
+      const msg = `Olá, ${consulta.paciente_nome}! Passando para lembrar do seu atendimento de *${consulta.procedimento}* com a Dra. Isabella Duarte no dia *${dataFormatada}* às *${consulta.hora || '14:00'}*. Duração: ${consulta.duracao || '1 hora'}.\n\n👉 *Clique no link abaixo para confirmar sua presença:*\n${linkConfirmacao}\n\n⚠️ *Aviso importante:* Caso precise reagendar ou desmarcar, pedimos a gentileza de avisar com antecedência. Agradecemos a compreensão!`;
       
       window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(msg)}`, '_blank');
     }
@@ -426,6 +405,10 @@
       const [uploading, setUploading] = useState(false);
       const [modoPacienteManual, setModoPacienteManual] = useState(false);
 
+      // Telas e Pop-ups de Confirmação
+      const [telaConfirmacaoPaciente, setTelaConfirmacaoPaciente] = useState(null);
+      const [popupConfirmacaoIsa, setPopupConfirmacaoIsa] = useState(null);
+
       // Aniversariantes do dia
       const [aniversariantesHoje, setAniversariantesHoje] = useState([]);
       const [showPopupAniversario, setShowPopupAniversario] = useState(false);
@@ -472,6 +455,38 @@
         respostas_especificas: {}
       });
 
+      // VERIFICAÇÃO DE CONFIRMAÇÃO VIA URL (LINK DO WHATSAPP)
+      useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const confirmId = params.get('confirmar');
+        if (confirmId && isSupabaseConfigured) {
+          processarConfirmacaoViaLink(confirmId);
+        }
+      }, []);
+
+      async function processarConfirmacaoViaLink(confirmId) {
+        try {
+          const { data: cData } = await supabase.from('consultas').select('*').eq('id', confirmId).single();
+          if (cData) {
+            await supabase.from('consultas').update({ status: 'Confirmado' }).eq('id', confirmId);
+            
+            // Grava o aviso no localStorage para notificar a Isa quando abrir a tela
+            const avisoObj = {
+              id: cData.id,
+              paciente_nome: cData.paciente_nome,
+              procedimento: cData.procedimento,
+              data: cData.data,
+              hora: cData.hora
+            };
+            localStorage.setItem(`popup_isa_confirm_${cData.id}`, JSON.stringify(avisoObj));
+
+            setTelaConfirmacaoPaciente(cData);
+          }
+        } catch (err) {
+          console.error("Erro ao processar confirmação:", err);
+        }
+      }
+
       useEffect(() => {
         if (isSupabaseConfigured) {
           carregarDados();
@@ -485,6 +500,35 @@
           carregarFichas(selectedPaciente.id);
         }
       }, [selectedPaciente]);
+
+      // EXIBIÇÃO DO POPUP PARA A ISA QUANDO HÁ CONFIRMAÇÃO
+      useEffect(() => {
+        if (consultas.length > 0) {
+          const keys = Object.keys(localStorage).filter(k => k.startsWith('popup_isa_confirm_'));
+          if (keys.length > 0) {
+            const firstKey = keys[0];
+            try {
+              const data = JSON.parse(localStorage.getItem(firstKey));
+              const keyNaoMostrar = `hide_confirm_popup_${data.id}`;
+              if (!localStorage.getItem(keyNaoMostrar)) {
+                setPopupConfirmacaoIsa({ ...data, storageKey: firstKey });
+              } else {
+                localStorage.removeItem(firstKey);
+              }
+            } catch(e) {}
+          }
+        }
+      }, [consultas]);
+
+      function handleFecharPopupConfirmacaoIsa(naoMostrarMais = false) {
+        if (popupConfirmacaoIsa) {
+          if (naoMostrarMais) {
+            localStorage.setItem(`hide_confirm_popup_${popupConfirmacaoIsa.id}`, 'true');
+          }
+          localStorage.removeItem(popupConfirmacaoIsa.storageKey);
+          setPopupConfirmacaoIsa(null);
+        }
+      }
 
       // VERIFICAÇÃO DE ANIVERSARIANTES DO DIA
       useEffect(() => {
@@ -707,7 +751,7 @@
           }
         } catch (err) {
           alert("Erro no envio do ficheiro: " + (err.message || "Erro desconhecido."));
-        } finally {
+        } fontally {
           setUploading(false);
         }
       }
@@ -826,7 +870,7 @@
 
         const parcelasIniciais = [];
         for (let i = 1; i <= numParcelas; i++) {
-          const dtParc = datasArr[i - 1] || formConsulta.data || todayStr;
+          const dtParc = datasArr[i - 1] || null;
           parcelasIniciais.push({
             numero: i,
             valor: valorParcela,
@@ -890,7 +934,7 @@
 
       function handleAbrirEditarConsulta(c) {
         const parcelasAtuais = obterParcelas(c);
-        const datasArr = parcelasAtuais.map(p => p.data_pagamento || c.data_pagamento || c.data || todayStr);
+        const datasArr = parcelasAtuais.map(p => p.data_pagamento || '');
 
         setFormConsulta({
           id: c.id,
@@ -932,7 +976,7 @@
 
         const parcelasNovas = [];
         for (let i = 1; i <= numParcelas; i++) {
-          const dtParc = datasArr[i - 1] || formConsulta.data || todayStr;
+          const dtParc = datasArr[i - 1] || null;
           const pAnt = parcelasAnteriores[i - 1];
           const pago = foiPago ? true : (pAnt ? pAnt.pago : false);
 
@@ -1222,6 +1266,32 @@
       }, [consultasValidas, saidas, filtroFinanceiro]);
 
       const questoesAtuais = QUESTOES_POR_FICHA[formFicha.tipo_ficha] || [];
+
+      // TELA DE CONFIRMAÇÃO DIRETA DO PACIENTE
+      if (telaConfirmacaoPaciente) {
+        return (
+          <div className="max-w-md mx-auto min-h-screen flex flex-col items-center justify-center p-6 bg-[#faf7f8]">
+            <div className="bg-white p-6 rounded-3xl shadow-xl border border-rose-100 text-center space-y-4 w-full">
+              <div className="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center text-3xl mx-auto shadow-inner">
+                ✨
+              </div>
+              <h2 className="text-lg font-extrabold text-slate-800">Presença Confirmada!</h2>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Olá, <strong>{telaConfirmacaoPaciente.paciente_nome}</strong>! Seu atendimento de <strong>{telaConfirmacaoPaciente.procedimento}</strong> no dia <strong>{formatarDataBR(telaConfirmacaoPaciente.data)}</strong> às <strong>{telaConfirmacaoPaciente.hora || '14:00'}</strong> foi confirmado com sucesso.
+              </p>
+              <p className="text-[11px] text-rose-900 font-bold bg-rose-50 p-3 rounded-2xl border border-rose-100">
+                💖 Dra. Isabella Duarte aguarda você com carinho!
+              </p>
+              <button 
+                onClick={() => { window.location.href = window.location.pathname; }}
+                className="w-full py-3 bg-rose-900 text-white font-bold rounded-2xl text-xs shadow-md active:scale-95 transition-all"
+              >
+                Ir para o Início
+              </button>
+            </div>
+          </div>
+        );
+      }
 
       return (
         <div className="max-w-md mx-auto min-h-screen flex flex-col bg-[#faf7f8]/90 backdrop-blur-sm shadow-2xl">
@@ -1566,13 +1636,16 @@
                             <div>
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="text-xs font-extrabold text-slate-900">{c.hora || '14:00'}</span>
-                                <span className={`px-2 py-0.5 text-[9px] font-bold rounded-lg ${
+                                
+                                <span className={`px-2 py-0.5 text-[9px] font-extrabold rounded-lg ${
                                   statusExibicao === 'Concluído' ? 'bg-emerald-100 text-emerald-800' :
+                                  statusExibicao === 'Confirmado' ? 'bg-emerald-600 text-white font-black shadow-xs' :
                                   statusExibicao === 'Cancelado' ? 'bg-rose-100 text-rose-800' :
                                   'bg-amber-100 text-amber-800'
                                 }`}>
-                                  {statusExibicao}
+                                  {statusExibicao === 'Confirmado' ? '✨ Confirmado' : statusExibicao}
                                 </span>
+
                                 {c.sessao && (
                                   <span className="px-2 py-0.5 text-[9px] font-extrabold rounded-lg bg-rose-100 text-rose-900">
                                     {cleanSessao(c.sessao)}
@@ -1624,7 +1697,7 @@
                                     enviarWhatsappConsulta(c, pObj?.telefone || '');
                                   }} 
                                   className="w-9 h-9 min-w-[36px] min-h-[36px] shrink-0 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200/80 flex items-center justify-center transition-all active:scale-95 shadow-xs"
-                                  title="Enviar lembrete por WhatsApp"
+                                  title="Enviar confirmação e lembrete por WhatsApp"
                                 >
                                   <IconWhatsapp />
                                 </button>
@@ -1675,11 +1748,9 @@
                                 <div>
                                   <span className="font-bold text-slate-800">Parcela {p.numero}/{parcelas.length}:</span>{' '}
                                   <span className="font-extrabold text-slate-900">R$ {Number(p.valor || 0).toFixed(2)}</span>
-                                  {p.data_pagamento && (
-                                    <span className="text-[10px] text-slate-500 font-semibold block">
-                                      📅 {p.pago ? 'Pago em:' : 'Vencimento:'} {formatarDataBR(p.data_pagamento)}
-                                    </span>
-                                  )}
+                                  <span className="text-[10px] text-slate-500 font-semibold block">
+                                    📅 {p.pago ? 'Pago em:' : 'Vencimento:'} {p.data_pagamento ? formatarDataBR(p.data_pagamento) : 'A definir'}
+                                  </span>
                                 </div>
                                 <div>
                                   {p.pago ? (
@@ -1869,7 +1940,7 @@
                             <div>
                               <div className="flex items-center gap-1.5 mb-1">
                                 <span className="text-[10px] font-bold text-slate-400">
-                                  📅 {item.pago ? `Pago em: ${formatarDataBR(item.data)}` : `Vencimento: ${formatarDataBR(item.data)}`}
+                                  📅 {item.pago ? `Pago em: ${formatarDataBR(item.data)}` : `Vencimento: ${item.data ? formatarDataBR(item.data) : 'A definir'}`}
                                 </span>
                                 {item.isParcela && (
                                   <span className="px-2 py-0.5 text-[9px] font-extrabold rounded-md bg-rose-100 text-rose-900">
@@ -1923,6 +1994,53 @@
             )}
 
           </main>
+
+          {/* POPUP DE NOTIFICAÇÃO DE CONFIRMAÇÃO PARA A ISA */}
+          {popupConfirmacaoIsa && (
+            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl p-6 space-y-4 shadow-2xl border border-emerald-100 text-center">
+                <div className="w-16 h-16 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center text-3xl mx-auto shadow-inner">
+                  ✅
+                </div>
+
+                <div>
+                  <span className="text-[10px] uppercase tracking-widest font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                    Atendimento Confirmado
+                  </span>
+                  <h3 className="text-base font-extrabold text-slate-800 mt-2">
+                    Paciente confirmou a presença!
+                  </h3>
+                </div>
+
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-left text-xs space-y-1">
+                  <p className="text-slate-800">
+                    <strong>Paciente:</strong> {popupConfirmacaoIsa.paciente_nome}
+                  </p>
+                  <p className="text-slate-800">
+                    <strong>Procedimento:</strong> {popupConfirmacaoIsa.procedimento}
+                  </p>
+                  <p className="text-slate-800">
+                    <strong>Data & Hora:</strong> {formatarDataBR(popupConfirmacaoIsa.data)} às {popupConfirmacaoIsa.hora || '14:00'}
+                  </p>
+                </div>
+
+                <div className="space-y-2 pt-2">
+                  <button 
+                    onClick={() => handleFecharPopupConfirmacaoIsa(false)} 
+                    className="w-full p-3 bg-emerald-700 text-white font-bold rounded-2xl text-xs shadow-md active:scale-95 transition-all"
+                  >
+                    Entendido / Fechar
+                  </button>
+                  <button 
+                    onClick={() => handleFecharPopupConfirmacaoIsa(true)} 
+                    className="w-full p-2.5 text-slate-400 hover:text-slate-600 font-bold text-[11px]"
+                  >
+                    Não mostrar novamente
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* MODAL ADICIONAR SAÍDA DE CAIXA */}
           {showNovaSaida && (
@@ -2453,7 +2571,6 @@
                               <div className="flex-1">
                                 <input 
                                   type="date" 
-                                  required
                                   className="w-full p-2 bg-slate-50 border rounded-xl font-bold text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-500" 
                                   value={dataVal} 
                                   onChange={e => {
@@ -2598,6 +2715,7 @@
                     <label className="font-bold text-slate-600 block mb-1">Status do Atendimento</label>
                     <select className="w-full p-3 bg-slate-50 border rounded-2xl font-bold" value={formConsulta.status} onChange={e => setFormConsulta({...formConsulta, status: e.target.value})}>
                       <option value="Agendado">Agendado</option>
+                      <option value="Confirmado">✨ Confirmado</option>
                       <option value="Concluído">Concluído</option>
                       <option value="Cancelado">Cancelado</option>
                     </select>
@@ -2672,7 +2790,6 @@
                               <div className="flex-1">
                                 <input 
                                   type="date" 
-                                  required
                                   className="w-full p-2 bg-slate-50 border rounded-xl font-bold text-xs text-slate-800 focus:outline-none focus:ring-1 focus:ring-rose-500" 
                                   value={dataVal} 
                                   onChange={e => {
