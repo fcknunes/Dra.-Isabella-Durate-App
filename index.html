@@ -125,8 +125,6 @@
       return dateStr;
     }
 
-    // GERAÇÃO / MANUTENÇÃO DE DATAS DISTINTAS POR PARCELA
-    // CORREÇÃO: A partir da 2ª parcela (idx > 0), a data padrão fica em branco ("") caso não exista data previamente definida
     function getDatasArray(datasExistentes, numParcelas, dataBase) {
       const arr = [...(datasExistentes || [])];
       
@@ -135,7 +133,7 @@
         if (idx === 0) {
           arr.push(dataBase || new Date().toISOString().split('T')[0]);
         } else {
-          arr.push(''); // Segunda parcela em diante fica em branco por padrão
+          arr.push('');
         }
       }
       return arr.slice(0, numParcelas);
@@ -217,7 +215,6 @@
       </svg>
     );
 
-    // WHATSAPP COM LINK DE CONFIRMAÇÃO E AVISO
     function enviarWhatsappConsulta(consulta, telefonePaciente) {
       const tel = (telefonePaciente || '').replace(/\D/g, '');
       if (!tel) return alert("Paciente sem telefone cadastrado ou número inválido.");
@@ -239,7 +236,6 @@
       window.open(`https://api.whatsapp.com/send?phone=55${tel}&text=${encodeURIComponent(msg)}`, '_blank');
     }
 
-    // EVENTO ICS
     function baixarEventoICS(consulta) {
       const dataHoraInicio = new Date(`${consulta.data}T${consulta.hora || '14:00'}:00`);
 
@@ -278,7 +274,6 @@
       document.body.removeChild(link);
     }
 
-    // CALENDÁRIO INTERATIVO
     function CalendarWidget({ dataFiltro, setDataFiltro, consultas }) {
       const [currentMonth, setCurrentMonth] = useState(() => {
         if (dataFiltro) {
@@ -405,15 +400,12 @@
       const [uploading, setUploading] = useState(false);
       const [modoPacienteManual, setModoPacienteManual] = useState(false);
 
-      // Telas e Pop-ups de Confirmação
       const [telaConfirmacaoPaciente, setTelaConfirmacaoPaciente] = useState(null);
       const [popupConfirmacaoIsa, setPopupConfirmacaoIsa] = useState(null);
 
-      // Aniversariantes do dia
       const [aniversariantesHoje, setAniversariantesHoje] = useState([]);
       const [showPopupAniversario, setShowPopupAniversario] = useState(false);
 
-      // Modais
       const [showNovoPaciente, setShowNovoPaciente] = useState(false);
       const [showEditarPaciente, setShowEditarPaciente] = useState(false);
       const [showNovaConsulta, setShowNovaConsulta] = useState(false);
@@ -423,7 +415,6 @@
       const [showNovaSaida, setShowNovaSaida] = useState(false);
       const [selectedFichaVer, setSelectedFichaVer] = useState(null);
 
-      // Formulários
       const [formPaciente, setFormPaciente] = useState({ nome: '', telefone: '', data_nascimento: '', observacoes: '' });
       const [formDoc, setFormDoc] = useState({ titulo: '', descricao: '', categoria: 'Fotos', file: null });
       const [formSaida, setFormSaida] = useState({ categoria: 'Uso Pessoal', valor: '', data: todayStr, observacoes: '' });
@@ -455,7 +446,6 @@
         respostas_especificas: {}
       });
 
-      // VERIFICAÇÃO DE CONFIRMAÇÃO VIA URL (LINK DO WHATSAPP)
       useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const confirmId = params.get('confirmar');
@@ -470,7 +460,6 @@
           if (cData) {
             await supabase.from('consultas').update({ status: 'Confirmado' }).eq('id', confirmId);
             
-            // Grava o aviso no localStorage para notificar a Isa quando abrir a tela
             const avisoObj = {
               id: cData.id,
               paciente_nome: cData.paciente_nome,
@@ -501,7 +490,6 @@
         }
       }, [selectedPaciente]);
 
-      // EXIBIÇÃO DO POPUP PARA A ISA QUANDO HÁ CONFIRMAÇÃO
       useEffect(() => {
         if (consultas.length > 0) {
           const keys = Object.keys(localStorage).filter(k => k.startsWith('popup_isa_confirm_'));
@@ -530,7 +518,6 @@
         }
       }
 
-      // VERIFICAÇÃO DE ANIVERSARIANTES DO DIA
       useEffect(() => {
         if (pacientes.length > 0) {
           const today = new Date();
@@ -751,7 +738,7 @@
           }
         } catch (err) {
           alert("Erro no envio do ficheiro: " + (err.message || "Erro desconhecido."));
-        } fontally {
+        } finally {
           setUploading(false);
         }
       }
@@ -1039,7 +1026,6 @@
         }
       }
 
-      // DAR BAIXA EM UMA PARCELA ESPECÍFICA
       async function handleDarBaixaParcela(consultaId, numeroParcela) {
         const c = consultas.find(item => item.id === consultaId);
         if (!c) return;
@@ -1090,7 +1076,6 @@
         }
       }
 
-      // DAR BAIXA TOTAL
       async function handleConfirmarPagamento(id) {
         const dataHojeAtual = new Date().toISOString().split('T')[0];
         const c = consultas.find(item => item.id === id);
@@ -1152,7 +1137,6 @@
         }
       }
 
-      // Filtros e Cálculos
       const pacientesFiltrados = pacientes.filter(p => 
         (p.nome && p.nome.toLowerCase().includes(busca.toLowerCase())) || 
         (p.telefone && p.telefone.includes(busca))
@@ -1167,7 +1151,6 @@
         return dataConsulta === dataFiltro;
       });
 
-      // CÁLCULOS FINANCEIROS PROPORCIONAIS
       const consultasValidas = consultas.filter(c => c.status !== 'Cancelado');
 
       const valorRecebido = consultasValidas.reduce((acc, c) => {
@@ -1186,7 +1169,6 @@
       const totalSaidas = saidas.reduce((acc, s) => acc + Number(s.valor || 0), 0);
       const saldoEmConta = valorRecebido - totalSaidas;
 
-      // LISTAGEM UNIFICADA DAS PARCELAS
       const listaFinanceiro = useMemo(() => {
         const itensEntrada = [];
         const dataHojeAtual = new Date().toISOString().split('T')[0];
@@ -1267,7 +1249,6 @@
 
       const questoesAtuais = QUESTOES_POR_FICHA[formFicha.tipo_ficha] || [];
 
-      // TELA DE CONFIRMAÇÃO DIRETA DO PACIENTE
       if (telaConfirmacaoPaciente) {
         return (
           <div className="max-w-md mx-auto min-h-screen flex flex-col items-center justify-center p-6 bg-[#faf7f8]">
@@ -1448,7 +1429,6 @@
                   </div>
                 </div>
 
-                {/* DADOS BÁSICOS */}
                 <div className="bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-start">
                     <div>
@@ -1478,7 +1458,6 @@
                   )}
                 </div>
 
-                {/* FICHAS DE ANAMNESE DIGITAL */}
                 <div className="bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-center">
                     <div>
@@ -1523,7 +1502,6 @@
                   )}
                 </div>
 
-                {/* GALERIA DE FOTOS/DOCUMENTOS DO PACIENTE */}
                 <div className="bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-slate-100 space-y-3">
                   <div className="flex justify-between items-center">
                     <div>
@@ -1664,7 +1642,6 @@
                                 <span>📊 {Number(c.qtd_parcelas || 1) > 1 ? `${c.qtd_parcelas}x de R$ ${(Number(c.valor || 0) / Number(c.qtd_parcelas || 1)).toFixed(2)}` : 'À Vista'}</span>
                               </div>
 
-                              {/* ETIQUETA DE STATUS DE PAGAMENTO */}
                               {foiPago ? (
                                 <p className="text-[10px] text-emerald-800 font-extrabold mt-1.5 flex items-center gap-1 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-100 w-fit">
                                   <span>✅ Pago em:</span>
@@ -1688,7 +1665,6 @@
                                 R$ {Number(c.valor || 0).toFixed(2)}
                               </span>
                               
-                              {/* BOTÕES PADRONIZADOS */}
                               <div className="flex items-center gap-1.5 mt-1 shrink-0">
                                 <button 
                                   type="button"
@@ -1732,7 +1708,6 @@
                             </div>
                           </div>
 
-                          {/* PAINEL DE PARCELAS COM DATAS ESPECÍFICAS DE CADA UMA */}
                           <div className="pt-2 border-t border-slate-100 space-y-1.5">
                             <div className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider flex justify-between items-center">
                               <span>Parcelas do Agendamento</span>
@@ -1792,7 +1767,6 @@
                   </button>
                 </div>
 
-                {/* CARD DESTACADO: SALDO ATUAL EM CONTA */}
                 <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-900 text-white p-5 rounded-3xl shadow-md border border-emerald-700/50 flex justify-between items-center">
                   <div className="space-y-1">
                     <div className="flex items-center gap-1.5 text-emerald-200">
@@ -1811,7 +1785,6 @@
                   </div>
                 </div>
 
-                {/* MÉTRICAS SECUNDÁRIAS */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-amber-500/90 backdrop-blur-md text-white p-4 rounded-3xl shadow-sm border border-amber-400 flex flex-col justify-between min-h-[105px]">
                     <div>
@@ -1846,7 +1819,6 @@
                   </div>
                 </div>
 
-                {/* ABAS DE FILTRO DO FINANCEIRO */}
                 <div className="flex bg-slate-200/70 p-1 rounded-2xl text-xs font-bold text-slate-600 gap-1 backdrop-blur-sm">
                   <button 
                     onClick={() => setFiltroFinanceiro('Futuros')}
@@ -1882,7 +1854,6 @@
                   </button>
                 </div>
 
-                {/* LISTAGEM UNIFICADA DAS PARCELAS E SAÍDAS */}
                 {listaFinanceiro.length === 0 ? (
                   <div className="text-center py-10 border border-dashed border-slate-200 rounded-3xl bg-white/90 backdrop-blur-md space-y-2">
                     <p className="text-xs text-slate-400">Nenhum lançamento encontrado nesta categoria.</p>
@@ -1933,7 +1904,6 @@
                         );
                       }
 
-                      // SE FOR PARCELA OU ENTRADA INDIVIDUAL
                       return (
                         <div key={item.id} className="p-4 bg-white/90 backdrop-blur-md border border-slate-100 rounded-2xl shadow-sm space-y-2">
                           <div className="flex justify-between items-start">
@@ -2200,7 +2170,6 @@
                     <textarea placeholder="Ex: Queixa de marcas de expressão ou flacidez..." className="w-full p-3 bg-slate-50 border rounded-2xl h-16" value={formFicha.queixa_principal} onChange={e => setFormFicha({...formFicha, queixa_principal: e.target.value})} />
                   </div>
 
-                  {/* CAMPOS DINÂMICOS */}
                   {questoesAtuais.length > 0 && (
                     <div className="p-3 bg-rose-50/50 border border-rose-100 rounded-2xl space-y-3">
                       <p className="text-[10px] font-extrabold uppercase tracking-wider text-rose-900">Perguntas Específicas: {formFicha.tipo_ficha}</p>
@@ -2464,7 +2433,6 @@
                     </div>
                   </div>
 
-                  {/* FORMA DE PAGAMENTO E PARCELAMENTO */}
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="font-bold text-slate-600 block mb-1">Forma de Pagamento *</label>
@@ -2520,7 +2488,6 @@
                     </div>
                   </div>
 
-                  {/* DATAS DE PAGAMENTO DISTINTAS POR PARCELA */}
                   {Number(formConsulta.qtd_parcelas || 1) <= 1 ? (
                     <div>
                       <label className="font-bold text-slate-600 block mb-1">
@@ -2592,7 +2559,6 @@
                     </div>
                   )}
 
-                  {/* RESUMO DO PARCELAMENTO */}
                   {Number(formConsulta.valor) > 0 && Number(formConsulta.qtd_parcelas) > 1 && (
                     <div className="p-3 bg-rose-50 border border-rose-200/80 rounded-2xl text-xs text-rose-950 space-y-1">
                       <p className="font-extrabold uppercase text-[10px]">Cálculo do Parcelamento:</p>
@@ -2739,7 +2705,6 @@
                     </div>
                   </div>
 
-                  {/* DATAS DE PAGAMENTO DISTINTAS POR PARCELA */}
                   {Number(formConsulta.qtd_parcelas || 1) <= 1 ? (
                     <div>
                       <label className="font-bold text-slate-600 block mb-1">
@@ -2874,7 +2839,7 @@
             </div>
           )}
 
-          {/* Menu Flutuante Inferior */}
+          {/* MENU FLUTUANTE INFERIOR */}
           <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto glass-nav border-t border-slate-200/80 px-4 py-2 flex justify-around text-[10px] font-bold text-slate-400 z-20 shadow-2xl">
             <button onClick={() => { setActiveTab('dashboard'); setSelectedPaciente(null); }} className={`flex flex-col items-center gap-1 ${activeTab === 'dashboard' ? 'text-rose-900 font-black' : ''}`}>
               <IconHome /> <span>Início</span>
@@ -2894,7 +2859,9 @@
       );
     }
 
-    ReactDOM.render(<App />, document.getElementById('root'));
+    const container = document.getElementById('root');
+    const root = ReactDOM.createRoot(container);
+    root.render(<App />);
   </script>
 </body>
 </html>
