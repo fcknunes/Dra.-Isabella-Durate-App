@@ -220,7 +220,8 @@
       if (!tel) return alert("Paciente sem telefone cadastrado ou número inválido.");
       
       const dataFormatada = consulta.data ? formatarDataBR(consulta.data) : '';
-      const linkConfirmacao = `${window.location.origin}${window.location.pathname}?confirmar=${consulta.id}`;
+      const baseUrl = window.location.origin.replace(/\/+$/, '');
+      const linkConfirmacao = `${baseUrl}?confirmar=${consulta.id}`;
       
       const msg = `Olá, ${consulta.paciente_nome}! Passando para lembrar do seu atendimento de *${consulta.procedimento}* com a Dra. Isabella Duarte no dia *${dataFormatada}* às *${consulta.hora || '14:00'}*. Duração: ${consulta.duracao || '1 hora'}.\n\n👉 *Clique no link abaixo para confirmar sua presença:*\n${linkConfirmacao}\n\n⚠️ *Aviso importante:* Caso precise reagendar ou desmarcar, pedimos a gentileza de avisar com antecedência. Agradecemos a compreensão!`;
       
