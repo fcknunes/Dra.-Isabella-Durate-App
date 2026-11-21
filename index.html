@@ -410,6 +410,7 @@
       const [loading, setLoading] = useState(false);
       const [uploading, setUploading] = useState(false);
       const [modoPacienteManual, setModoPacienteManual] = useState(false);
+      const [pagamentoDataManual, setPagamentoDataManual] = useState(false);
 
       const [telaConfirmacaoPaciente, setTelaConfirmacaoPaciente] = useState(null);
       const [modalAvisoPaciente, setModalAvisoPaciente] = useState(null);
@@ -848,8 +849,10 @@
       function handleAbrirNovoAgendamento(pacientePreSelecionado = null) {
         const pId = pacientePreSelecionado ? pacientePreSelecionado.id : (pacientes[0]?.id || '');
         const pNome = pacientePreSelecionado ? pacientePreSelecionado.nome : (pacientes[0]?.nome || '');
+        const dataInicial = activeTab === 'agenda' ? (dataFiltro || todayStr) : todayStr;
 
         setModoPacienteManual(pacientePreSelecionado ? false : (pacientes.length === 0));
+        setPagamentoDataManual(false);
         setFormConsulta({
           id: null,
           paciente_id: pId,
@@ -858,18 +861,34 @@
           procedimento_custom: '',
           sessao: OPCOES_SESSAO[0],
           duracao: OPCOES_DURACAO[0],
-          data: todayStr,
+          data: dataInicial,
           hora: '14:00',
           valor: '',
           forma_pagamento: 'PIX',
           qtd_parcelas: 1,
           status: 'Agendado',
           status_pagamento: 'Pendente',
-          data_pagamento: todayStr,
-          datas_parcelas: [todayStr],
+          data_pagamento: dataInicial,
+          datas_parcelas: [dataInicial],
           observacoes: ''
         });
         setShowNovaConsulta(true);
+      }
+
+      function handleDataConsultaChange(novaData) {
+        setFormConsulta(prev => {
+          const nParc = Number(prev.qtd_parcelas) || 1;
+          const datasAtuais = getDatasArray(prev.datas_parcelas, nParc, prev.data);
+          if (!pagamentoDataManual) {
+            datasAtuais[0] = novaData;
+          }
+          return {
+            ...prev,
+            data: novaData,
+            data_pagamento: !pagamentoDataManual ? novaData : prev.data_pagamento,
+            datas_parcelas: datasAtuais
+          };
+        });
       }
 
       function handleProcedimentoChange(nomeProcedimento) {
@@ -966,9 +985,12 @@
       }
 
       function handleAbrirEditarConsulta(c) {
+        const dataConsultaBase = c.data || todayStr;
+        const dataPagBase = c.data_pagamento || dataConsultaBase;
         const parcelasAtuais = obterParcelas(c);
-        const datasArr = parcelasAtuais.map(p => p.data_pagamento || '');
+        const datasArr = parcelasAtuais.map((p, idx) => p.data_pagamento || (idx === 0 ? dataPagBase : ''));
 
+        setPagamentoDataManual(Boolean(c.data_pagamento && c.data_pagamento !== dataConsultaBase));
         setFormConsulta({
           id: c.id,
           paciente_id: c.paciente_id || '',
@@ -977,14 +999,14 @@
           procedimento_custom: '',
           sessao: cleanSessao(c.sessao) || OPCOES_SESSAO[0],
           duracao: c.duracao || OPCOES_DURACAO[0],
-          data: c.data || todayStr,
+          data: dataConsultaBase,
           hora: c.hora || '14:00',
           valor: c.valor || '',
           forma_pagamento: c.forma_pagamento || 'PIX',
           qtd_parcelas: c.qtd_parcelas || 1,
           status: c.status || 'Agendado',
           status_pagamento: c.status_pagamento || 'Pendente',
-          data_pagamento: c.data_pagamento || '',
+          data_pagamento: dataPagBase,
           datas_parcelas: datasArr,
           observacoes: c.observacoes || ''
         });
@@ -2630,7 +2652,7 @@
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="font-bold text-slate-600 block mb-1">Data da Consulta *</label>
-                      <input type="date" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.data} onChange={e => setFormConsulta({...formConsulta, data: e.target.value})} />
+                      <input type="date" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.data} onChange={e => handleDataConsultaChange(e.target.value)} />
                     </div>
                     <div>
                       <label className="font-bold text-slate-600 block mb-1">Horário *</label>
@@ -2704,6 +2726,7 @@
                         value={(formConsulta.datas_parcelas && formConsulta.datas_parcelas[0]) || formConsulta.data_pagamento || ''} 
                         onChange={e => {
                           const val = e.target.value;
+                          setPagamentoDataManual(true);
                           setFormConsulta({
                             ...formConsulta,
                             data_pagamento: val,
@@ -2747,6 +2770,7 @@
                                   value={dataVal} 
                                   onChange={e => {
                                     const novaVal = e.target.value;
+                                    if (idx === 0) setPagamentoDataManual(true);
                                     const arrAtual = getDatasArray(formConsulta.datas_parcelas, Number(formConsulta.qtd_parcelas), formConsulta.data);
                                     arrAtual[idx] = novaVal;
                                     setFormConsulta({
@@ -2843,7 +2867,7 @@
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="font-bold text-slate-600 block mb-1">Data</label>
-                      <input type="date" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.data} onChange={e => setFormConsulta({...formConsulta, data: e.target.value})} />
+                      <input type="date" required className="w-full p-3 bg-slate-50 border rounded-2xl" value={formConsulta.data} onChange={e => handleDataConsultaChange(e.target.value)} />
                     </div>
                     <div>
                       <label className="font-bold text-slate-600 block mb-1">Horário</label>
@@ -2921,6 +2945,7 @@
                         value={(formConsulta.datas_parcelas && formConsulta.datas_parcelas[0]) || formConsulta.data_pagamento || ''} 
                         onChange={e => {
                           const val = e.target.value;
+                          setPagamentoDataManual(true);
                           setFormConsulta({
                             ...formConsulta,
                             data_pagamento: val,
@@ -2964,6 +2989,7 @@
                                   value={dataVal} 
                                   onChange={e => {
                                     const novaVal = e.target.value;
+                                    if (idx === 0) setPagamentoDataManual(true);
                                     const arrAtual = getDatasArray(formConsulta.datas_parcelas, Number(formConsulta.qtd_parcelas), formConsulta.data);
                                     arrAtual[idx] = novaVal;
                                     setFormConsulta({
